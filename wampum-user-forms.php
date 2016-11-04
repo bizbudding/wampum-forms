@@ -133,39 +133,90 @@ final class Wampum_User_Forms {
 		require_once WAMPUM_USER_FORMS_INCLUDES_DIR . '/forms.php';
 	}
 
-	public function setup() {
+	function setup() {
 		register_activation_hook( __FILE__,   array( $this, 'activate' ) );
 		register_deactivation_hook( __FILE__, array( $this, 'deactivate' ) );
+
+		// Do the things
+		add_action( 'rest_api_init', 	  array( $this, 'register_rest_endpoint' ) );
 
 		// Register styles and scripts
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_stylesheets' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
 
-		// Add new load point for ACF json field groups
-		add_filter( 'acf/settings/load_json', array( $this, 'acf_json_load_point' ) );
-		// Custom 'none' location for field groups
-		add_filter( 'acf/location/rule_types', 								array( $this, 'acf_none_rule_type' ) );
-		add_filter( 'acf/location/rule_values/none', 						array( $this, 'acf_none_location_rules_values' ) );
-		// Don't save form values
-		add_filter('acf/pre_save_post' , array( $this, 'remove_form_values' ), 10, 1 );
-
-		// Validate username
-		add_action( 'acf/validate_value/name=wampum_login_username', array( $this, 'validate_login' ), 10, 4 );
-		// Validate password reset
-		add_action( 'acf/validate_value/name=wampum_user_password', array( $this, 'validate_password' ), 10, 4 );
-
 		add_action( 'get_header', array( $this, 'maybe_do_user_forms' ) );
 
 	}
 
-	public function activate() {
+	function activate() {
 	}
 	/**
 	 * Deactivates the plugin if Genesis isn't running
 	 *
 	 * @since 1.0.0
 	 */
-	public function deactivate() {
+	function deactivate() {
+	}
+
+	/**
+	 * Register rest endpoint
+	 *
+	 * @since  1.0.0
+	 *
+	 * @return void
+	 */
+	function register_rest_endpoint() {
+
+	    register_rest_route( 'wampum/v1', '/login/', array(
+			'methods'  => 'POST',
+			'callback' => array( $this, 'login' ),
+	    ));
+
+	    register_rest_route( 'wampum/v1', '/change-password/', array(
+			'methods'  => 'POST',
+			'callback' => array( $this, 'disconnect' ),
+			'args'	   => array(
+	            'from' => array(
+					'validate_callback' => function($param, $request, $key) {
+						return is_numeric( $param );
+					}
+	            ),
+	            'to' => array(
+					'validate_callback' => function($param, $request, $key) {
+						return is_numeric( $param );
+					}
+	            ),
+	        ),
+	    ));
+
+	}
+
+	/**
+	 * Login a user
+	 *
+	 * @since   1.0.0
+	 *
+	 * @param 	array  $data  Associative array containing 'username' (string), 'password' (string), and 'rememberme' (bool)
+	 *
+	 * @return  array
+	 */
+	function login( $data = array() ) {
+
+		$user = wp_signon( $data );
+
+		// If error
+		if ( is_wp_error( $user ) ) {
+			return array(
+				'success' => false,
+				'message' => $user->get_error_message(),
+			);
+		}
+		// Success
+		else {
+			return array(
+				'success' => true,
+			);
+		}
 	}
 
 	/**
@@ -177,7 +228,7 @@ final class Wampum_User_Forms {
 	 *
 	 * @return null
 	 */
-	public function register_stylesheets() {
+	function register_stylesheets() {
 	    wp_register_style( 'wampum-user-forms', WAMPUM_USER_FORMS_PLUGIN_URL . 'css/slim-user-shortcodes.css', array(), WAMPUM_USER_FORMS_VERSION );
 	}
 
@@ -190,94 +241,15 @@ final class Wampum_User_Forms {
 	 *
 	 * @return null
 	 */
-	public function register_scripts() {
+	function register_scripts() {
+        wp_register_script( 'restful-p2p', RESTFUL_P2P_PLUGIN_URL . '/js/restful-p2p.js', array('jquery'), RESTFUL_P2P_VERSION, true );
+        wp_localize_script( 'restful-p2p', 'restful_p2p_vars', array(
+			'root'	=> esc_url_raw( rest_url() ),
+			'nonce'	=> wp_create_nonce( 'wp_rest' ),
+        ) );
 	}
 
-	/**
-	 * Add the new load point for ACF JSON files in the plugin
-	 *
-	 * @since  1.0.0
-	 *
-	 * @return string
-	 */
-	public function acf_json_load_point( $paths ) {
-	    $paths[] = WAMPUM_USER_FORMS_INCLUDES_DIR . 'acf-json';
-	    return $paths;
-	}
-
-	/**
-	 * ACF custom location rule for 'none'
-	 * Allows a field group to be created solely for use elsewhere (via acf_form() )
-	 *
-	 * @since  1.0.0
-	 *
-	 * @return array
-	 */
-	public function acf_none_rule_type( $choices ) {
-	    $choices['None']['none'] = 'None';
-	    return $choices;
-	}
-
-	public function acf_none_location_rules_values( $choices ) {
-		return array(
-			'none' => 'None',
-		);
-	}
-
-	public function remove_form_values( $post_id ) {
-
-		$forms = array(
-			'wampum_user_login',
-			'wampum_user_password',
-		);
-
-		if ( ! in_array( $post_id, $forms ) ) {
-	        return $post_id;
-	    }
-	    // No ID to save to, woot!
-	    return '';
-	}
-
-	public function validate_login( $valid, $value, $field, $input ) {
-		if ( ! $valid ) {
-			return $valid;
-		}
-		$user		= get_user_by( 'login', $value );
-		$password	= $_POST['acf']['field_581951bde7d77'];
-
-		// If no user exists
-		if ( ! $user ) {
-			$valid = '<strong>' . __( 'ERROR', 'wampum' ) . '</strong>: ' . __( 'Invalid username', 'wampum' ) . '<a href="' . wp_lostpassword_url($clean_url) . '">' . __( 'Lost your password?', 'wampum' ) . '</a>';
-		}
-		// If user exists but password is wrong
-		elseif ( $user && ! wp_check_password( $password, $user->user_pass, $user->ID ) ) {
-			$valid = '<strong>' . __( 'ERROR', 'wampum' ) . '</strong>: ' . __( 'The password you entered for the username', 'wampum' ) . ' <strong>jivedig</strong> ' . __( 'is incorrect', 'wampum' ) . '<a href="' . wp_lostpassword_url($clean_url) . '">' . __( 'Lost your password?', 'wampum' ) . '</a>';
-		}
-
-		// global $wp;
-		elseif ( $user && wp_check_password( $password, $user->user_pass, $user->ID ) ) {
-			wp_setcookie( $value, $password, true);
-			wp_set_current_user( $user->ID, $value );
-			do_action( 'wp_login', $value );
-			// wp_redirect( home_url(remove_query_arg( 'user' ) ) ); exit;
-		}
-		// wp_redirect( remove_query_arg( 'user' ) ); exit;
-
-		// Still need to return to force redirect set in acf_form()
-		return $valid;
-	}
-
-	public function validate_password( $valid, $value, $field, $input ) {
-		// Must use field key
-		$password_confirm = 'field_58194312da6ff';
-		// Check for password match
-		if ( $value != $_POST['acf'][$password_confirm]) {
-			$valid = 'Passwords do not match';
-		}
-		return $valid;
-	}
-
-	public function maybe_do_user_forms() {
+	function maybe_do_user_forms() {
 	    // Bail if no user parameter set
 	    if ( ! isset($_GET['user']) ) {
 	        return;
@@ -286,55 +258,48 @@ final class Wampum_User_Forms {
 	    	'login',
 	    	'password'
     	);
+    	if ( ! in_array( $_GET['user'], $vars ) ) {
+    		return;
+    	}
 	    // Login form
 	    if ( 'login' == $_GET['user'] && ! is_user_logged_in() ) {
-            // ACF required
-            acf_form_head();
-            // Do the form
-			add_action( 'wampum_popups', array( $this, 'do_login_form' ) );
+	    	$this->do_login_form();
         }
 	    // Password form
 	    elseif ( 'password' == $_GET['user'] && is_user_logged_in() ) {
-            // ACF required
-            acf_form_head();
-			// Do the form
-	    	add_action( 'wampum_popups', array( $this, 'do_password_form' ) );
 	    }
 	}
 
-	public function do_login_form() {
+	function do_login_form() {
 		ob_start();
-		$args = array(
-			'field_groups'	=> array(39272),
-			'post_id'		=> 'wampum_user_login',
-			'return'		=> home_url(remove_query_arg('user')),
-		);
-		acf_form($args);
-		$form = ob_get_contents();
+		?>
+		<form id="wampum_login" name="wampum_login" method="post">
+			<p class="login-username">
+				<label for="wampum_user_login">Username or Email</label>
+				<input type="text" name="log" id="wampum_user_login" class="input" value="" size="20">
+			</p>
+			<p class="login-password">
+				<label for="wampum_user_pass">Password</label>
+				<input type="password" name="wampum_user_pass" id="wampum_user_pass" class="input" value="" size="20">
+			</p>
 
-		$content = '';
-		$content .= '<h4>Login</h4>';
-		$content .= $form;
+			<p class="login-remember">
+				<label><input name="wampum_rememberme" type="checkbox" id="wampum_rememberme" value="forever"> Remember Me</label>
+			</p>
+			<p class="login-submit">
+				<input type="submit" name="wp-submit" id="wp-submit" class="button-primary" value="Log In">
+				<input type="hidden" name="redirect_to" value="<?php echo home_url(remove_query_var('user')); ?>">
+			</p>
+		</form>
+		<?php
+		$content = ob_get_clean();
         // Do popup
         wampum_popup( $content, array( 'hidden' => false ) );
 	}
 
-	public function do_password_form() {
-		ob_start();
-		$args = array(
-			'field_groups'	=> array(39269),
-			'post_id'		=> 'wampum_user_password',
-			'return'		=> home_url(remove_query_arg('user')),
-			// 'honeypot'		=> true,
-		);
-		acf_form($args);
-		$form = ob_get_contents();
-
+	function do_password_form() {
 		$content = '';
-		$content .= '<h4>Password</h4>';
-		$content .= '<p>Set a new password for your account</p>';
-		$content .= $form;
-		// Do popup
+        // Do popup
         wampum_popup( $content, array( 'hidden' => false ) );
 	}
 
