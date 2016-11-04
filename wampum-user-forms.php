@@ -172,11 +172,6 @@ final class Wampum_User_Forms {
 			'callback' => array( $this, 'login' ),
 	    ));
 
-	    register_rest_route( 'wampum/v1', '/password/', array(
-			'methods'  => 'POST',
-			'callback' => array( $this, 'password' ),
-	    ));
-
 	}
 
 	/**
@@ -205,56 +200,6 @@ final class Wampum_User_Forms {
 				'success' => true,
 			);
 		}
-	}
-
-	/**
-	 * Change a users password
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param 	array  $data  Associative array of data to process
-	 *
-	 * @return  array
-	 */
-	function password( $data = array() ) {
-
-		// If not logged in
-		if ( ! is_user_logged_in() ) {
-			return array(
-				'success' => false,
-				'message' => __( 'You must be logged in to change your password', 'wampum' ),
-			);
-		}
-		// Mismatch
-		elseif ( $data['password'] != $data['password_confirm'] ) {
-			return array(
-				'success' => false,
-				'message' => __( 'Passwords do not match', 'wampum' ),
-			);
-		}
-		else {
-
-			$data = array(
-				'ID'		=> absint($data['user_id']),
-				'user_pass'	=> $data['password'],
-			);
-			$user = wp_update_user( $data );
-
-			// If error
-			if ( is_wp_error( $user ) ) {
-				return array(
-					'success' => false,
-					'message' => $user->get_error_message(),
-				);
-			}
-			// Success
-			else {
-				return array(
-					'success' => true,
-				);
-			}
-		}
-
 	}
 
 	/**
@@ -292,9 +237,11 @@ final class Wampum_User_Forms {
         wp_register_script( 'wampum-zxcvbn', WAMPUM_USER_FORMS_PLUGIN_URL . 'js/zxcvbn.js', array('jquery'), '4.4.1', true );
         wp_register_script( 'wampum-user-password', WAMPUM_USER_FORMS_PLUGIN_URL . 'js/wampum-user-password.js', array('wampum-zxcvbn'), WAMPUM_USER_FORMS_VERSION, true );
         wp_localize_script( 'wampum-user-password', 'wampum_user_password', array(
-			'root'		=> esc_url_raw( rest_url() ),
-			'nonce'		=> wp_create_nonce( 'wp_rest' ),
-			'failure'	=> __( 'Something went wrong, please try again.', 'wampum' ),
+			'root'				=> esc_url_raw( rest_url() ),
+			'nonce'				=> wp_create_nonce( 'wp_rest' ),
+			'current_user_id'	=> get_current_user_id(),
+			'mismatch'			=> __( 'Passwords do not match', 'wampum' ),
+			'failure'			=> __( 'Something went wrong, please try again.', 'wampum' ),
         ) );
 	}
 
@@ -328,7 +275,7 @@ final class Wampum_User_Forms {
 			'echo'           => false,
 			'remember'       => true,
 			'redirect'       => home_url( remove_query_arg('user') ),
-			'form_id'        => 'wampum_loginform',
+			'form_id'        => 'wampum_user_login_form',
 			'id_username'    => 'wampum_user_login',
 			'id_password'    => 'wampum_user_pass',
 			'id_remember'    => 'wampum_rememberme',
@@ -354,13 +301,22 @@ final class Wampum_User_Forms {
 		ob_start();
 		?>
 		<form id="wampum_user_password_form" name="wampum_user_password_form" method="post">
+
 			<p class="password">
 				<label for="wampum_user_password"><?php _e( 'Password', 'wampum' ); ?></label>
 				<input type="password" name="log" id="wampum_user_password" class="input" value="" size="20">
 			</p>
+
 			<p class="password-confirm">
 				<label for="wampum_user_password_confirm"><?php _e( 'Confirm Password', 'wampum' ); ?></label>
 				<input type="password" name="wampum_user_password_confirm" id="wampum_user_password_confirm" class="input" value="" size="20">
+			</p>
+
+			<p>
+				<meter max="4" id="password-strength-meter">
+					<span></span>
+					<span id="password-strength-text"></span>
+				</meter>
 			</p>
 
 			<p class="login-submit">
@@ -368,6 +324,7 @@ final class Wampum_User_Forms {
 				<input type="hidden" name="wampum_user_id" id="wampum_user_id" value="<?php echo get_current_user_id(); ?>">
 				<input type="hidden" name="redirect_to" value="<?php echo home_url( remove_query_arg('user') ); ?>">
 			</p>
+
 		</form>
 		<?php
 		$form = ob_get_clean();

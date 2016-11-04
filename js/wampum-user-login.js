@@ -1,18 +1,18 @@
 ;(function( $ ) {
     'use strict';
 
-    $( '#wampum_loginform' ).submit(function(e){
+    $( '#wampum_user_login_form' ).submit(function(e){
 
         e.preventDefault();
 
         // Hide any notices
-        $( '#wampum_loginform' ).find('.wampum-notice').fadeOut('fast');
+        $( '#wampum_user_login_form' ).find('.wampum-notice').fadeOut('fast');
 
         // Setup our form data array
         var data = {
-                user_login: $( '#wampum_loginform' ).find( '#wampum_user_login' ).val(),
-                user_password: $( '#wampum_loginform' ).find( '#wampum_user_pass' ).val(),
-                remember: $( '#wampum_loginform' ).find( '#wampum_rememberme' ).val(),
+                user_login: $( '#wampum_user_login_form' ).find( '#wampum_user_login' ).val(),
+                user_password: $( '#wampum_user_login_form' ).find( '#wampum_user_pass' ).val(),
+                remember: $( '#wampum_user_login_form' ).find( '#wampum_rememberme' ).val(),
             };
 
         $.ajax({
@@ -25,18 +25,18 @@
             success: function( response ) {
                 if ( response.success == true ) {
                     // Display success message
-                    $('#wampum_loginform').hide().prepend('<div class="wampum-notice success">Success!</div>').fadeIn('fast', function() {
+                    $('#wampum_user_login_form').hide().prepend('<div class="wampum-notice success">Success!</div>').fadeIn('fast', function() {
                         // Refresh/redirect
-                        window.location.replace( $( '#wampum_loginform' ).find( 'input[name="redirect_to"]' ).val() );
+                        window.location.replace( $( '#wampum_user_login_form' ).find( 'input[name="redirect_to"]' ).val() );
                     });
                 } else {
                     // Display error message
-                    $('#wampum_loginform').hide().prepend('<div class="wampum-notice error">' + response.message + '</div>').fadeIn('fast');
+                    $('#wampum_user_login_form').hide().prepend('<div class="wampum-notice error">' + response.message + '</div>').fadeIn('fast');
                 }
             },
             fail: function( response ) {
                 // Not sure when this would happen, but fallbacks!
-                $('#wampum_loginform').hide().prepend('<div class="wampum-notice error">' + wampum_user_login.failure + '</div>').fadeIn('fast');
+                $('#wampum_user_login_form').hide().prepend('<div class="wampum-notice error">' + wampum_user_login.failure + '</div>').fadeIn('fast');
             }
         });
 
