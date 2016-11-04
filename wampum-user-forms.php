@@ -144,7 +144,7 @@ final class Wampum_User_Forms {
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_stylesheets' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
 
-		add_action( 'get_header', array( $this, 'maybe_do_user_forms' ) );
+		add_action( 'wp_footer', array( $this, 'maybe_do_user_forms' ) );
 
 	}
 
@@ -172,21 +172,9 @@ final class Wampum_User_Forms {
 			'callback' => array( $this, 'login' ),
 	    ));
 
-	    register_rest_route( 'wampum/v1', '/change-password/', array(
+	    register_rest_route( 'wampum/v1', '/password/', array(
 			'methods'  => 'POST',
-			'callback' => array( $this, 'disconnect' ),
-			'args'	   => array(
-	            'from' => array(
-					'validate_callback' => function($param, $request, $key) {
-						return is_numeric( $param );
-					}
-	            ),
-	            'to' => array(
-					'validate_callback' => function($param, $request, $key) {
-						return is_numeric( $param );
-					}
-	            ),
-	        ),
+			'callback' => array( $this, 'password' ),
 	    ));
 
 	}
@@ -196,7 +184,7 @@ final class Wampum_User_Forms {
 	 *
 	 * @since   1.0.0
 	 *
-	 * @param 	array  $data  Associative array containing 'username' (string), 'password' (string), and 'rememberme' (bool)
+	 * @param 	array  $data  Associative array of data to process
 	 *
 	 * @return  array
 	 */
@@ -220,6 +208,56 @@ final class Wampum_User_Forms {
 	}
 
 	/**
+	 * Change a users password
+	 *
+	 * @since   1.0.0
+	 *
+	 * @param 	array  $data  Associative array of data to process
+	 *
+	 * @return  array
+	 */
+	function password( $data = array() ) {
+
+		// If not logged in
+		if ( ! is_user_logged_in() ) {
+			return array(
+				'success' => false,
+				'message' => __( 'You must be logged in to change your password', 'wampum' ),
+			);
+		}
+		// Mismatch
+		elseif ( $data['password'] != $data['password_confirm'] ) {
+			return array(
+				'success' => false,
+				'message' => __( 'Passwords do not match', 'wampum' ),
+			);
+		}
+		else {
+
+			$data = array(
+				'ID'		=> absint($data['user_id']),
+				'user_pass'	=> $data['password'],
+			);
+			$user = wp_update_user( $data );
+
+			// If error
+			if ( is_wp_error( $user ) ) {
+				return array(
+					'success' => false,
+					'message' => $user->get_error_message(),
+				);
+			}
+			// Success
+			else {
+				return array(
+					'success' => true,
+				);
+			}
+		}
+
+	}
+
+	/**
 	 * Register stylesheets for later use
 	 *
 	 * Use via wp_enqueue_style('wampum-user-forms'); in a template
@@ -235,17 +273,28 @@ final class Wampum_User_Forms {
 	/**
 	 * Register scripts for later use
 	 *
-	 * Use via wp_enqueue_script('magnific-popup'); in a template
+	 * Use via wp_enqueue_script('wampum-login'); in a template
 	 *
 	 * @since  1.0.0
 	 *
 	 * @return null
 	 */
 	function register_scripts() {
-        wp_register_script( 'restful-p2p', RESTFUL_P2P_PLUGIN_URL . '/js/restful-p2p.js', array('jquery'), RESTFUL_P2P_VERSION, true );
-        wp_localize_script( 'restful-p2p', 'restful_p2p_vars', array(
-			'root'	=> esc_url_raw( rest_url() ),
-			'nonce'	=> wp_create_nonce( 'wp_rest' ),
+		// Login
+        wp_register_script( 'wampum-user-login', WAMPUM_USER_FORMS_PLUGIN_URL . 'js/wampum-user-login.js', array('jquery'), WAMPUM_USER_FORMS_VERSION, true );
+        wp_localize_script( 'wampum-user-login', 'wampum_user_login', array(
+			'root'		=> esc_url_raw( rest_url() ),
+			'nonce'		=> wp_create_nonce( 'wp_rest' ),
+			'failure'	=> __( 'Something went wrong, please try again.', 'wampum' ),
+        ) );
+
+        // Password
+        wp_register_script( 'wampum-zxcvbn', WAMPUM_USER_FORMS_PLUGIN_URL . 'js/zxcvbn.js', array('jquery'), '4.4.1', true );
+        wp_register_script( 'wampum-user-password', WAMPUM_USER_FORMS_PLUGIN_URL . 'js/wampum-user-password.js', array('wampum-zxcvbn'), WAMPUM_USER_FORMS_VERSION, true );
+        wp_localize_script( 'wampum-user-password', 'wampum_user_password', array(
+			'root'		=> esc_url_raw( rest_url() ),
+			'nonce'		=> wp_create_nonce( 'wp_rest' ),
+			'failure'	=> __( 'Something went wrong, please try again.', 'wampum' ),
         ) );
 	}
 
@@ -263,42 +312,68 @@ final class Wampum_User_Forms {
     	}
 	    // Login form
 	    if ( 'login' == $_GET['user'] && ! is_user_logged_in() ) {
-	    	$this->do_login_form();
+	    	add_action( 'wampum_popups', array( $this, 'do_login_form') );
         }
 	    // Password form
 	    elseif ( 'password' == $_GET['user'] && is_user_logged_in() ) {
+	    	add_action( 'wampum_popups', array( $this, 'do_password_form') );
 	    }
 	}
 
 	function do_login_form() {
-		ob_start();
-		?>
-		<form id="wampum_login" name="wampum_login" method="post">
-			<p class="login-username">
-				<label for="wampum_user_login">Username or Email</label>
-				<input type="text" name="log" id="wampum_user_login" class="input" value="" size="20">
-			</p>
-			<p class="login-password">
-				<label for="wampum_user_pass">Password</label>
-				<input type="password" name="wampum_user_pass" id="wampum_user_pass" class="input" value="" size="20">
-			</p>
 
-			<p class="login-remember">
-				<label><input name="wampum_rememberme" type="checkbox" id="wampum_rememberme" value="forever"> Remember Me</label>
-			</p>
-			<p class="login-submit">
-				<input type="submit" name="wp-submit" id="wp-submit" class="button-primary" value="Log In">
-				<input type="hidden" name="redirect_to" value="<?php echo home_url(remove_query_var('user')); ?>">
-			</p>
-		</form>
-		<?php
-		$content = ob_get_clean();
-        // Do popup
-        wampum_popup( $content, array( 'hidden' => false ) );
+    	wp_enqueue_script('wampum-user-login');
+
+		$args = array(
+			'echo'           => false,
+			'remember'       => true,
+			'redirect'       => home_url( remove_query_arg('user') ),
+			'form_id'        => 'wampum_loginform',
+			'id_username'    => 'wampum_user_login',
+			'id_password'    => 'wampum_user_pass',
+			'id_remember'    => 'wampum_rememberme',
+			'id_submit'      => 'wampum_submit',
+			'label_username' => __( 'Username' ),
+			'label_password' => __( 'Password' ),
+			'label_remember' => __( 'Remember Me' ),
+			'label_log_in'   => __( 'Log In' ),
+			'value_username' => '',
+			'value_remember' => true
+		);
+		$content = '';
+		$content .= '<h4>' . __( 'Login', 'wampum' ) . '</h4>';
+		$content .= wp_login_form($args);
+		wampum_popup( $content, array( 'hidden' => false ) );
 	}
 
 	function do_password_form() {
+
+    	wp_enqueue_script('wampum-zxcvbn');
+    	wp_enqueue_script('wampum-user-password');
+
+		ob_start();
+		?>
+		<form id="wampum_user_password_form" name="wampum_user_password_form" method="post">
+			<p class="password">
+				<label for="wampum_user_password"><?php _e( 'Password', 'wampum' ); ?></label>
+				<input type="password" name="log" id="wampum_user_password" class="input" value="" size="20">
+			</p>
+			<p class="password-confirm">
+				<label for="wampum_user_password_confirm"><?php _e( 'Confirm Password', 'wampum' ); ?></label>
+				<input type="password" name="wampum_user_password_confirm" id="wampum_user_password_confirm" class="input" value="" size="20">
+			</p>
+
+			<p class="login-submit">
+				<input type="submit" name="wampum_submit" id="wampum_submit" class="button" value="Log In">
+				<input type="hidden" name="wampum_user_id" id="wampum_user_id" value="<?php echo get_current_user_id(); ?>">
+				<input type="hidden" name="redirect_to" value="<?php echo home_url( remove_query_arg('user') ); ?>">
+			</p>
+		</form>
+		<?php
+		$form = ob_get_clean();
 		$content = '';
+		$content .= '<h4>' . __( 'Set A New Password', 'wampum' ) . '</h4>';
+		$content .= $form;
         // Do popup
         wampum_popup( $content, array( 'hidden' => false ) );
 	}
