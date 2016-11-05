@@ -271,25 +271,9 @@ final class Wampum_User_Forms {
 
     	wp_enqueue_script('wampum-user-login');
 
-		$args = array(
-			'echo'           => false,
-			'remember'       => true,
-			'redirect'       => home_url( remove_query_arg('user') ),
-			'form_id'        => 'wampum_user_login_form',
-			'id_username'    => 'wampum_user_login',
-			'id_password'    => 'wampum_user_pass',
-			'id_remember'    => 'wampum_rememberme',
-			'id_submit'      => 'wampum_submit',
-			'label_username' => __( 'Username' ),
-			'label_password' => __( 'Password' ),
-			'label_remember' => __( 'Remember Me' ),
-			'label_log_in'   => __( 'Log In' ),
-			'value_username' => '',
-			'value_remember' => true
-		);
 		$content = '';
 		$content .= '<h4>' . __( 'Login', 'wampum' ) . '</h4>';
-		$content .= wp_login_form($args);
+		$content .= wampum_get_login_form( $this->get_login_form_args() );
 		wampum_popup( $content, array( 'hidden' => false ) );
 	}
 
@@ -298,41 +282,23 @@ final class Wampum_User_Forms {
     	wp_enqueue_script('wampum-zxcvbn');
     	wp_enqueue_script('wampum-user-password');
 
-		ob_start();
-		?>
-		<form id="wampum_user_password_form" name="wampum_user_password_form" method="post">
-
-			<p class="password">
-				<label for="wampum_user_password"><?php _e( 'Password', 'wampum' ); ?></label>
-				<input type="password" name="log" id="wampum_user_password" class="input" value="" size="20">
-			</p>
-
-			<p class="password-confirm">
-				<label for="wampum_user_password_confirm"><?php _e( 'Confirm Password', 'wampum' ); ?></label>
-				<input type="password" name="wampum_user_password_confirm" id="wampum_user_password_confirm" class="input" value="" size="20">
-			</p>
-
-			<p>
-				<meter max="4" id="password-strength-meter">
-					<span></span>
-					<span id="password-strength-text"></span>
-				</meter>
-			</p>
-
-			<p class="login-submit">
-				<input type="submit" name="wampum_submit" id="wampum_submit" class="button" value="Log In">
-				<input type="hidden" name="wampum_user_id" id="wampum_user_id" value="<?php echo get_current_user_id(); ?>">
-				<input type="hidden" name="redirect_to" value="<?php echo home_url( remove_query_arg('user') ); ?>">
-			</p>
-
-		</form>
-		<?php
-		$form = ob_get_clean();
 		$content = '';
 		$content .= '<h4>' . __( 'Set A New Password', 'wampum' ) . '</h4>';
-		$content .= $form;
+		$content .= wampum_get_password_form( $this->get_password_form_args() );
         // Do popup
         wampum_popup( $content, array( 'hidden' => false ) );
+	}
+
+	function get_login_form_args() {
+		return array(
+			'redirect' => home_url( remove_query_arg('user') ),
+		);
+	}
+
+	function get_password_form_args() {
+		return array(
+			'redirect' => home_url( remove_query_arg('user') ),
+		);
 	}
 
 }
