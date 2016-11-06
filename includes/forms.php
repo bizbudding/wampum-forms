@@ -12,6 +12,8 @@ function wampum_get_login_form( $args ) {
 		return;
 	}
 
+	// TODO
+	// Change to method, so we can localize script with variables if needed - see wampum_get_membership_form()
 	wp_enqueue_script('wampum-user-login');
 
 	$args = shortcode_atts( array(
@@ -44,6 +46,8 @@ function wampum_get_password_form( $args ) {
 		return;
 	}
 
+	// TODO
+	// Change to method, so can localize user ID for backup safety
 	wp_enqueue_script('wampum-zxcvbn');
 	wp_enqueue_script('wampum-user-password');
 

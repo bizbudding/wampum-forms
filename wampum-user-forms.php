@@ -144,7 +144,7 @@ final class Wampum_User_Forms {
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_stylesheets' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
 
-		add_action( 'wp_footer', array( $this, 'maybe_do_user_forms' ) );
+		add_action( 'wp_footer', array( $this, 'query_var_forms' ) );
 	}
 
 	function activate() {
@@ -247,17 +247,18 @@ final class Wampum_User_Forms {
 			);
 	    }
 
+	    // TODO: Let's have all the defaults set in wp_localize_script() ?!?!?
 
 	    // Set defaults
-	 //    $defaults = array(
-	 //        'plan_id'    => false, // required
-	 //        'user_email' => false, // required
-	 //        'user_login' => false,
-	 //        'user_pass'  => false,
-	 //        'first_name' => false,
-	 //        'last_name'  => false,
-	 //        'note'       => false,
-	 //    );
+	    // $defaults = array(
+	        // 'plan_id'    => false, // required
+	        // 'user_email' => false, // required
+	        // 'user_login' => false,
+	        // 'user_pass'  => false,
+	        // 'first_name' => false,
+	        // 'last_name'  => false,
+	        // 'note'       => false,
+	    // );
 		// $data = wp_parse_args( $data, $defaults );
 
 
@@ -363,11 +364,6 @@ final class Wampum_User_Forms {
 	        // If current user is not logged in
 	        if ( ! is_user_logged_in() ) {
 
-	        	// Login without password - Eek
-	            // wp_set_current_user( $user_id, $user->user_login );
-	            // wp_set_auth_cookie( $user_id );
-	            // do_action( 'wp_login', $user->user_login );
-
 	            // Log them in!
 				$user = wp_signon( $data );
 
@@ -442,6 +438,13 @@ final class Wampum_User_Forms {
 
 	}
 
+	/**
+	 * We need to put some info in wp_localize_script so it's safer than getting it with hidden form values
+	 * It is safer, right?!?!?
+	 *
+	 * @param  [type] $args [description]
+	 * @return [type]       [description]
+	 */
 	function register_membership_scripts( $args ) {
 
 		$defaults = array(
@@ -461,7 +464,7 @@ final class Wampum_User_Forms {
         ) );
 	}
 
-	function maybe_do_user_forms() {
+	function query_var_forms() {
 	    // Bail if no user parameter set
 	    if ( ! isset($_GET['user']) ) {
 	        return;
@@ -497,6 +500,18 @@ final class Wampum_User_Forms {
         // Do popup
         wampum_popup( $content, array( 'hidden' => false ) );
 	}
+
+	/**
+	 * TODO
+	 * Do membership form ?user=membership&plan_id=1234
+	 *
+	 * TODO - Don't forget we must confirm membership is FREE incase they change ID of query_var
+	 *
+	 * @return [type] [description]
+	 */
+	function do_membership_form() {
+	}
+
 
 	function get_login_form_args() {
 		return array(
