@@ -94,6 +94,9 @@ function wampum_get_password_form( $args ) {
  */
 function wampum_get_membership_form( $args ) {
 
+	// TODO
+	// Check if logged in user is already part of the membership (plan_id), then display message?
+
 	$args = shortcode_atts( array(
 		'plan_id'		=> false, // required
 		'redirect'		=> false,
