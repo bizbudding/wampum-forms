@@ -137,15 +137,14 @@ final class Wampum_User_Forms {
 		register_activation_hook( __FILE__,   array( $this, 'activate' ) );
 		register_deactivation_hook( __FILE__, array( $this, 'deactivate' ) );
 
-		// Do the things
-		add_action( 'rest_api_init', 	  array( $this, 'register_rest_endpoint' ) );
+		// Register WP-API endpoint
+		add_action( 'rest_api_init', 	  array( $this, 'register_rest_endpoints' ) );
 
 		// Register styles and scripts
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_stylesheets' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
 
 		add_action( 'wp_footer', array( $this, 'maybe_do_user_forms' ) );
-
 	}
 
 	function activate() {
@@ -165,11 +164,16 @@ final class Wampum_User_Forms {
 	 *
 	 * @return void
 	 */
-	function register_rest_endpoint() {
+	function register_rest_endpoints() {
 
 	    register_rest_route( 'wampum/v1', '/login/', array(
 			'methods'  => 'POST',
 			'callback' => array( $this, 'login' ),
+	    ));
+
+	    register_rest_route( 'wampum/v1', '/membership/', array(
+			'methods'  => 'POST',
+			'callback' => array( $this, 'add_to_membership' ),
 	    ));
 
 	}
@@ -179,7 +183,13 @@ final class Wampum_User_Forms {
 	 *
 	 * @since   1.0.0
 	 *
-	 * @param 	array  $data  Associative array of data to process
+	 * @param 	array  $data  {
+	 *      Associative array of data to process
+	 *
+	 * 		@type  string  $user_login 		Username
+	 * 		@type  string  $user_password 	Password
+	 * 		@type  string  $remember 		Stay logged in
+	 * }
 	 *
 	 * @return  array
 	 */
@@ -200,6 +210,192 @@ final class Wampum_User_Forms {
 				'success' => true,
 			);
 		}
+	}
+
+	/**
+	 * Add membership to user
+	 * If user doesn't exists, create one first
+	 *
+	 * @since 	1.0.0
+	 *
+	 * @param   array  $data  Array of data when maybe creating a user and adding a membership to a user
+	 *
+	 * @param 	array  $data  {
+	 *      Associative array of data to process
+	 *
+	 * 		NOT SURE WHERE WE'RE AT WITH THIS, SINCE RESTFUL MAYBE CAN'T USE wp_parse_args or similar
+	 *
+	 * 		@type  integer  $plan_id 		(required) The WooCommerce Memberships ID
+	 * 		@type  string   $user_email 	(required) User email
+	 * 		@type  string   $user_login 	Username
+	 * 		@type  string   $user_pass 		Password
+	 * 		@type  string   $first_name 	First name
+	 * 		@type  string   $last_name	 	Last name
+	 * 		@type  string   $note 		 	Note to add to membership during save
+	 * }
+	 *
+	 *
+	 * @return  bool|WP_Error  Whether a new user was created during the process
+	 */
+	function add_to_membership( $data = array() ) {
+
+	    // Bail if Woo Memberships is not active
+	    if ( ! function_exists( 'wc_memberships' ) ) {
+			return array(
+				'success' => false,
+				'message' => __( 'Membership is currently inactive', 'wampum' ),
+			);
+	    }
+
+
+	    // Set defaults
+	 //    $defaults = array(
+	 //        'plan_id'    => false, // required
+	 //        'user_email' => false, // required
+	 //        'user_login' => false,
+	 //        'user_pass'  => false,
+	 //        'first_name' => false,
+	 //        'last_name'  => false,
+	 //        'note'       => false,
+	 //    );
+		// $data = wp_parse_args( $data, $defaults );
+
+
+	    // Minimum data we need is a plan ID and user email
+	    if ( ! $data['plan_id'] || ! $data['user_email'] ) {
+			return array(
+				'success' => false,
+				'message' => __( 'Email or membership plan is missing', 'wampum' ),
+			);
+	    }
+
+	    $email = sanitize_email($data['user_email']);
+
+	    // If user is logged in
+	    if ( is_user_logged_in() ) {
+	    	// Return error if they are trying to register another email
+	    	$current_user = wp_get_current_user();
+	    	if ( $email != $current_user->user_email ) {
+				return array(
+					'success' => false,
+					'message' => __( 'You must use your current user email', 'wampum' ),
+				);
+	    	}
+	    }
+
+		$email_exists	 = email_exists( $email );
+		// Username is not required, so check it first
+		$username_exists = isset($data['user_login']) ? username_exists( $data['user_login'] ) : false;
+
+	    // If the email or username is already a registered user
+	    if ( $email_exists || $username_exists ) {
+	    	if ( $email_exists ) {
+	            $user_id = $email_exists;
+	        } else {
+	            $user_id = $username_exists;
+	        }
+	    }
+	    // Not a user
+	    else {
+	        // Set the new user data
+	        $userdata = array(
+	            'user_email' => $email,
+	        );
+
+	        // If we don't have a login, use the email instead
+	        if ( ! $data['user_login'] ) {
+	            $userdata['user_login'] = $email;
+	        } else {
+	            $userdata['user_login'] = $data['user_login'];
+	        }
+
+	        // Set password. Set as variable first, cause we need it later for wp_signon()
+	        $password = isset($data['user_pass']) ? $data['user_pass'] : wp_generate_password( $length = 12, $include_standard_special_chars = true );
+            $userdata['user_pass'] = $password;
+
+	        // If we have a first name, set it
+	        if ( $data['first_name'] ) {
+	            $userdata['first_name'] = $data['first_name'];
+	        }
+
+	        // If we have a last name, set it
+	        if ( $data['last_name'] ) {
+	            $userdata['last_name'] = $data['last_name'];
+	        }
+
+	        // Create a new user
+	        $user_id = wp_insert_user( $userdata ) ;
+
+	        // If it's an error, return it
+	        if ( is_wp_error( $user_id ) ) {
+				return array(
+					'success' => false,
+					'message' => $user_id,
+				);
+	        }
+
+	    }
+
+	    // If have a user
+	    if ( $user_id ) {
+
+	    	$plan_id = absint($data['plan_id']);
+
+	        // If user is not an existing member of the plan
+	        if ( ! wc_memberships_is_user_member( $user_id, $plan_id ) ) {
+
+	            // Add the user to the membership
+	            $membership_args = array(
+	                'plan_id'   => $plan_id,
+	                'user_id'   => $user_id,
+	            );
+	            wc_memberships_create_user_membership( $membership_args );
+
+	            // If we have a note, save it to the user membership
+	            if ( $data['note'] ) {
+	                // Get the new membership
+	                $user_membership = wc_memberships_get_user_membership( $user_id, $membership_args['plan_id'] );
+	                // Add a note so we know how this was registered.
+	                $user_membership->add_note( esc_html($data['note']) );
+	            }
+	        }
+
+	        // If current user is not logged in
+	        if ( ! is_user_logged_in() ) {
+
+	        	// Login without password - Eek
+	            // wp_set_current_user( $user_id, $user->user_login );
+	            // wp_set_auth_cookie( $user_id );
+	            // do_action( 'wp_login', $user->user_login );
+
+	            // Log them in!
+				$user = wp_signon( $data );
+
+				// If error
+				if ( is_wp_error( $user ) ) {
+					return array(
+						'success' => false,
+						'message' => $user->get_error_message(),
+					);
+				}
+
+	        }
+
+	        // Success!
+			return array(
+				'success' => true,
+			);
+
+	    }
+    	// I don't know how we got here, but we did... return a generic, hopefully no one ever sees it, error.
+	    else {
+			return array(
+				'success' => false,
+				'message' => __( 'Sorry, something went wrong. Please try again.', 'wampum' ),
+			);
+
+	    }
+
 	}
 
 	/**
@@ -239,9 +435,29 @@ final class Wampum_User_Forms {
         wp_localize_script( 'wampum-user-password', 'wampum_user_password', array(
 			'root'				=> esc_url_raw( rest_url() ),
 			'nonce'				=> wp_create_nonce( 'wp_rest' ),
-			'current_user_id'	=> get_current_user_id(),
+			'current_user_id'	=> get_current_user_id(), // Are we using this?
 			'mismatch'			=> __( 'Passwords do not match', 'wampum' ),
 			'failure'			=> __( 'Something went wrong, please try again.', 'wampum' ),
+        ) );
+
+	}
+
+	function register_membership_scripts( $args ) {
+
+		$defaults = array(
+			'plan_id'	=> false,
+			'redirect'	=> false,
+		);
+		$args = wp_parse_args( $args, $defaults );
+
+		// Membership
+        wp_enqueue_script( 'wampum-user-membership', WAMPUM_USER_FORMS_PLUGIN_URL . 'js/wampum-user-membership.js', array('jquery'), WAMPUM_USER_FORMS_VERSION, true );
+        wp_localize_script( 'wampum-user-membership', 'wampum_user_membership', array(
+			'root'		=> esc_url_raw( rest_url() ),
+			'nonce'		=> wp_create_nonce( 'wp_rest' ),
+			'plan_id'	=> $args['plan_id'],
+			'redirect'	=> $args['redirect'],
+			'failure'	=> __( 'Something went wrong, please try again.', 'wampum' ),
         ) );
 	}
 
@@ -268,9 +484,6 @@ final class Wampum_User_Forms {
 	}
 
 	function do_login_form() {
-
-    	wp_enqueue_script('wampum-user-login');
-
 		$content = '';
 		$content .= '<h4>' . __( 'Login', 'wampum' ) . '</h4>';
 		$content .= wampum_get_login_form( $this->get_login_form_args() );
@@ -278,10 +491,6 @@ final class Wampum_User_Forms {
 	}
 
 	function do_password_form() {
-
-    	wp_enqueue_script('wampum-zxcvbn');
-    	wp_enqueue_script('wampum-user-password');
-
 		$content = '';
 		$content .= '<h4>' . __( 'Set A New Password', 'wampum' ) . '</h4>';
 		$content .= wampum_get_password_form( $this->get_password_form_args() );
