@@ -247,20 +247,8 @@ final class Wampum_User_Forms {
 			);
 	    }
 
-	    // TODO: Let's have all the defaults set in wp_localize_script() ?!?!?
-
-	    // Set defaults
-	    // $defaults = array(
-	        // 'plan_id'    => false, // required
-	        // 'user_email' => false, // required
-	        // 'user_login' => false,
-	        // 'user_pass'  => false,
-	        // 'first_name' => false,
-	        // 'last_name'  => false,
-	        // 'note'       => false,
-	    // );
-		// $data = wp_parse_args( $data, $defaults );
-
+	    // Honeypot
+		$this->validate_say_what($data);
 
 	    // Minimum data we need is a plan ID and user email
 	    if ( ! $data['plan_id'] || ! $data['user_email'] ) {
@@ -269,6 +257,9 @@ final class Wampum_User_Forms {
 				'message' => __( 'Email or membership plan is missing', 'wampum' ),
 			);
 	    }
+
+	    // Set redirect so we can maybe add query_var later
+	    $redirect = $data['redirect'];
 
 	    $email = sanitize_email($data['user_email']);
 
@@ -282,22 +273,25 @@ final class Wampum_User_Forms {
 					'message' => __( 'You must use your current user email', 'wampum' ),
 				);
 	    	}
-	    }
 
-		$email_exists	 = email_exists( $email );
-		// Username is not required, so check it first
-		$username_exists = isset($data['user_login']) ? username_exists( $data['user_login'] ) : false;
+	    	$user_id = get_current_user_id();
 
-	    // If the email or username is already a registered user
-	    if ( $email_exists || $username_exists ) {
-	    	if ( $email_exists ) {
-	            $user_id = $email_exists;
-	        } else {
-	            $user_id = $username_exists;
-	        }
 	    }
-	    // Not a user
+	    // Not logged in
 	    else {
+
+			$email_exists	 = email_exists( $email );
+			// Username is not required, so check it first
+			$username_exists = isset($data['user_login']) ? username_exists( $data['user_login'] ) : false;
+
+		    // If the email or username is already a registered user
+		    if ( $email_exists || $username_exists ) {
+				return array(
+					'success' => false,
+					'message' => __( 'User already exists. If your email is correct, log in first.', 'wampum' ),
+				);
+		    }
+
 	        // Set the new user data
 	        $userdata = array(
 	            'user_email' => $email,
@@ -312,7 +306,7 @@ final class Wampum_User_Forms {
 
 	        // Set password. Set as variable first, cause we need it later for wp_signon()
 	        $password = isset($data['user_pass']) ? $data['user_pass'] : wp_generate_password( $length = 12, $include_standard_special_chars = true );
-            $userdata['user_pass'] = $password;
+	        $userdata['user_pass'] = $password;
 
 	        // If we have a first name, set it
 	        if ( $data['first_name'] ) {
@@ -331,67 +325,70 @@ final class Wampum_User_Forms {
 	        if ( is_wp_error( $user_id ) ) {
 				return array(
 					'success' => false,
-					'message' => $user_id,
+					'message' => $user_id->get_error_message(),
 				);
 	        }
 
-	    }
+	        // Log them in!
+	        $signon_data = array(
+				'user_login'	=> $userdata['user_login'],
+				'user_password'	=> $userdata['user_pass'],
+				'remember'		=> true,
+	    	);
+			$user = wp_signon( $signon_data );
 
-	    // If have a user
-	    if ( $user_id ) {
+			// If error
+			if ( is_wp_error( $user ) ) {
+				return array(
+					'success' => false,
+					'message' => $user->get_error_message(),
+				);
+			}
 
-	    	$plan_id = absint($data['plan_id']);
+			if ( function_exists('wampum_popup') ) {
+				$redirect = add_query_var( 'user', 'password', $redirect );
+			}
 
-	        // If user is not an existing member of the plan
-	        if ( ! wc_memberships_is_user_member( $user_id, $plan_id ) ) {
-
-	            // Add the user to the membership
-	            $membership_args = array(
-	                'plan_id'   => $plan_id,
-	                'user_id'   => $user_id,
-	            );
-	            wc_memberships_create_user_membership( $membership_args );
-
-	            // If we have a note, save it to the user membership
-	            if ( $data['note'] ) {
-	                // Get the new membership
-	                $user_membership = wc_memberships_get_user_membership( $user_id, $membership_args['plan_id'] );
-	                // Add a note so we know how this was registered.
-	                $user_membership->add_note( esc_html($data['note']) );
-	            }
-	        }
-
-	        // If current user is not logged in
-	        if ( ! is_user_logged_in() ) {
-
-	            // Log them in!
-				$user = wp_signon( $data );
-
-				// If error
-				if ( is_wp_error( $user ) ) {
-					return array(
-						'success' => false,
-						'message' => $user->get_error_message(),
-					);
-				}
-
-	        }
-
-	        // Success!
-			return array(
-				'success' => true,
-			);
+			$user_id = $user->ID;
 
 	    }
-    	// I don't know how we got here, but we did... return a generic, hopefully no one ever sees it, error.
-	    else {
+
+    	$plan_id = absint($data['plan_id']);
+
+        // If user is not an existing member of the plan
+        if ( ! wc_memberships_is_user_member( $user_id, $plan_id ) ) {
+
+            // Add the user to the membership
+            $membership_args = array(
+                'plan_id'   => $plan_id,
+                'user_id'   => $user_id,
+            );
+            wc_memberships_create_user_membership( $membership_args );
+
+            // If we have a note, save it to the user membership
+            if ( $data['note'] ) {
+                // Get the new membership
+                $user_membership = wc_memberships_get_user_membership( $user_id, $membership_args['plan_id'] );
+                // Add a note so we know how this was registered.
+                $user_membership->add_note( esc_html($data['note']) );
+            }
+        }
+
+        // Success!
+		return array(
+			'success'	=> true,
+			'redirect'	=> esc_url($redirect),
+		);
+
+	}
+
+	function validate_say_what( $data ) {
+		if ( '' != $data['say_what '] ) {
 			return array(
 				'success' => false,
-				'message' => __( 'Sorry, something went wrong. Please try again.', 'wampum' ),
+				'message' => __( 'Spam detected', 'wampum' ),
 			);
-
-	    }
-
+		}
 	}
 
 	/**
@@ -404,7 +401,7 @@ final class Wampum_User_Forms {
 	 * @return null
 	 */
 	function register_stylesheets() {
-	    wp_register_style( 'wampum-user-forms', WAMPUM_USER_FORMS_PLUGIN_URL . 'css/slim-user-shortcodes.css', array(), WAMPUM_USER_FORMS_VERSION );
+	    wp_register_style( 'wampum-user-forms', WAMPUM_USER_FORMS_PLUGIN_URL . 'css/wampum-user-forms.css', array(), WAMPUM_USER_FORMS_VERSION );
 	}
 
 	/**
@@ -420,9 +417,11 @@ final class Wampum_User_Forms {
 		// Login
         wp_register_script( 'wampum-user-login', WAMPUM_USER_FORMS_PLUGIN_URL . 'js/wampum-user-login.js', array('jquery'), WAMPUM_USER_FORMS_VERSION, true );
         wp_localize_script( 'wampum-user-login', 'wampum_user_login', array(
-			'root'		=> esc_url_raw( rest_url() ),
-			'nonce'		=> wp_create_nonce( 'wp_rest' ),
-			'failure'	=> __( 'Something went wrong, please try again.', 'wampum' ),
+			'root'			=> esc_url_raw( rest_url() ),
+			'nonce'			=> wp_create_nonce( 'wp_rest' ),
+			'empty'			=> __( 'Username and password fields are empty', 'wampum' ), // Why are these fields not required in WP?!?!
+			'failure'		=> __( 'Something went wrong, please try again.', 'wampum' ),
+			// 'wampum_popup'	=> function_exists( 'wampum_popup' ) ? true : false,
         ) );
 
         // Password
@@ -434,34 +433,18 @@ final class Wampum_User_Forms {
 			'current_user_id'	=> get_current_user_id(), // Are we using this?
 			'mismatch'			=> __( 'Passwords do not match', 'wampum' ),
 			'failure'			=> __( 'Something went wrong, please try again.', 'wampum' ),
+			// 'wampum_popup'		=> function_exists( 'wampum_popup' ) ? true : false,
         ) );
-
-	}
-
-	/**
-	 * We need to put some info in wp_localize_script so it's safer than getting it with hidden form values
-	 * It is safer, right?!?!?
-	 *
-	 * @param  [type] $args [description]
-	 * @return [type]       [description]
-	 */
-	function register_membership_scripts( $args ) {
-
-		$defaults = array(
-			'plan_id'	=> false,
-			'redirect'	=> false,
-		);
-		$args = wp_parse_args( $args, $defaults );
 
 		// Membership
-        wp_enqueue_script( 'wampum-user-membership', WAMPUM_USER_FORMS_PLUGIN_URL . 'js/wampum-user-membership.js', array('jquery'), WAMPUM_USER_FORMS_VERSION, true );
+        wp_register_script( 'wampum-user-membership', WAMPUM_USER_FORMS_PLUGIN_URL . 'js/wampum-user-membership.js', array('jquery'), WAMPUM_USER_FORMS_VERSION, true );
         wp_localize_script( 'wampum-user-membership', 'wampum_user_membership', array(
-			'root'		=> esc_url_raw( rest_url() ),
-			'nonce'		=> wp_create_nonce( 'wp_rest' ),
-			'plan_id'	=> $args['plan_id'],
-			'redirect'	=> $args['redirect'],
-			'failure'	=> __( 'Something went wrong, please try again.', 'wampum' ),
+			'root'			=> esc_url_raw( rest_url() ),
+			'nonce'			=> wp_create_nonce( 'wp_rest' ),
+			'failure'		=> __( 'Something went wrong, please try again.', 'wampum' ),
+			// 'wampum_popup'	=> function_exists( 'wampum_popup' ) ? true : false,
         ) );
+
 	}
 
 	function query_var_forms() {

@@ -12,8 +12,9 @@ function wampum_get_login_form( $args ) {
 		return;
 	}
 
-	// TODO
-	// Change to method, so we can localize script with variables if needed - see wampum_get_membership_form()
+	// CSS
+	wp_enqueue_style('wampum-user-forms');
+	// JS
 	wp_enqueue_script('wampum-user-login');
 
 	$args = shortcode_atts( array(
@@ -46,14 +47,15 @@ function wampum_get_password_form( $args ) {
 		return;
 	}
 
-	// TODO
-	// Change to method, so can localize user ID for backup safety
+	// CSS
+	wp_enqueue_style('wampum-user-forms');
+	// JS
 	wp_enqueue_script('wampum-zxcvbn');
 	wp_enqueue_script('wampum-user-password');
 
 	$args = shortcode_atts( array(
-		'button' 	=> __( 'Submit', 'wampum' ),
-		'redirect' 	=> false,
+		'button'	=> __( 'Submit', 'wampum' ),
+		'redirect'	=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'],
 	), $args, 'wampum_password_form' );
 
 	ob_start();
@@ -71,11 +73,12 @@ function wampum_get_password_form( $args ) {
 				<input type="password" name="wampum_user_password_confirm" id="wampum_user_password_confirm" class="input" value="" required>
 			</p>
 
-			<p>
-				<meter max="4" id="password-strength-meter">
-					<span></span>
-					<span id="password-strength-text"></span>
-				</meter>
+			<p class="password-strength">
+				<span class="password-strength-meter" data-strength="">
+					<span class="password-strength-color">
+						<span class="password-strength-text"></span>
+					</span>
+				</span>
 			</p>
 
 			<p class="password-submit">
@@ -98,12 +101,13 @@ function wampum_get_password_form( $args ) {
  */
 function wampum_get_membership_form( $args ) {
 
-	// TODO
-	// Check if logged in user is already part of the membership (plan_id), then display message?
+	if ( ! function_exists( 'wc_memberships' ) ) {
+		return;
+	}
 
 	$args = shortcode_atts( array(
 		'plan_id'		=> false, // required
-		'redirect'		=> false,
+		'redirect'      => ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'],
 		'title'			=> false,
 		'title_wrap'	=> 'h2',
 		'button'		=> __( 'Submit', 'wampum' ),
@@ -114,14 +118,15 @@ function wampum_get_membership_form( $args ) {
 		return;
 	}
 
-	$script_args = array(
-		'plan_id'	=> absint($args['plan_id']),
-		'redirect'	=> $args['redirect'],
-	);
+	// Bail if user is already a member
+	if ( is_user_logged_in() && wc_memberships_is_user_member( get_current_user_id(), $args['plan_id'] ) ) {
+		return;
+	}
 
-	// Register script
-	$wampum_user_forms = Wampum_User_Forms();
-	$wampum_user_forms->register_membership_scripts( $script_args );
+	// CSS
+	wp_enqueue_style('wampum-user-forms');
+	// JS
+	wp_enqueue_script('wampum-user-membership');
 
 	$name = $email = '';
 
@@ -131,17 +136,24 @@ function wampum_get_membership_form( $args ) {
 		$last			= $current_user->last_name;
 		$name 			= trim( $first . ' ' . $last );
 		$email 			= $current_user->user_email;
+	} else {
+		// user is logged out, so after successful form submission require them to change their password
+		$args['redirect'] = add_query_arg( 'user', 'password', $args['redirect'] );
 	}
 
 	ob_start();
 	?>
 	<div class="wampum-form">
+		<?php
+		// Maybe display a title
+		echo $args['title'] ? sprintf( '<%s>%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : '';
+		?>
 		<form id="wampum_user_membership_form" name="wampum_user_membership_form" method="post">
 
-			<?php
-			// Maybe display a title
-			echo $args['title'] ? sprintf( '<%s>%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : '';
-			?>
+			<p class="wampum-say-what">
+				<label for="wampum_membership_name">Say What?</label>
+				<input type="text" name="wampum_say_what" id="wampum_say_what" value="">
+			</p>
 
 			<p class="membership-name">
 				<label for="wampum_membership_name"><?php _e( 'Name', 'wampum' ); ?></label>
@@ -155,10 +167,12 @@ function wampum_get_membership_form( $args ) {
 
 			<p class="membership-submit">
 				<input type="submit" name="wampum_submit" id="wampum_submit" class="button" value="<?php echo $args['button']; ?>">
+				<input type="hidden" name="wampum_plan_id" id="wampum_plan_id" value="<?php echo $args['plan_id']; ?>">
 				<input type="hidden" name="redirect_to" value="<?php echo $args['redirect']; ?>">
 			</p>
 
 		</form>
+		<style media="screen" type="text/css">.wampum-say-what { display: none; visibility: hidden; }</style>
 	</div>
 	<?php
 	return ob_get_clean();

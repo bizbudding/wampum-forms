@@ -2,42 +2,34 @@
     'use strict';
 
     var strength = {
-        0: "Bad",
-        1: "Bad",
-        2: "Weak",
+        0: "Weak",
+        1: "Weak",
+        2: "Okay",
         3: "Good",
-        4: "Strong",
+        4: "Great",
     }
 
-    // var password_field = $( '#wampum_user_password_form' ).find( '#wampum_user_password' );
-    var password_field = document.getElementById('wampum_user_password');
-    var meter = document.getElementById('password-strength-meter');
-    var text  = document.getElementById('password-strength-text');
+    var field = document.getElementById('wampum_user_password');
+    var meter = $( '#wampum_user_password_form' ).find( '.password-strength-meter' );
+    var text  = $( '#wampum_user_password_form' ).find( '.password-strength-text' );
 
-    password_field.addEventListener( 'input', function() {
+    field.addEventListener( 'input', function() {
 
-        // console.log(password_field);
-
-        // if ( password_field.val() === 0 ) {
-        //     meter.removeClass('hasvalue');
-        // } else {
-        //     meter.addClass('hasvalue');
-        // }
-
-        var val    = password_field.value;
+        var val    = field.value;
         var result = zxcvbn(val);
 
         // Update the password strength meter
-        meter.value = result.score;
+        meter.attr('data-strength', result.score);
 
         // Update the text indicator
         if ( val !== "" ) {
-            text.innerHTML = strength[result.score];
+            text.html(strength[result.score]);
         } else {
-            text.innerHTML = "";
+            text.html("");
         }
 
     });
+
 
     $( '#wampum_user_password_form' ).submit(function(e){
 

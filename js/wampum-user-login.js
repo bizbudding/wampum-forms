@@ -15,6 +15,12 @@
                 remember: $( '#wampum_user_login_form' ).find( '#wampum_rememberme' ).val(),
             };
 
+        // Display an error if username and password fields are emmpty. Why is those fields not required in WP core?
+        if ( ! data.user_login && ! data.user_password ) {
+            $('#wampum_user_login_form').hide().prepend('<div class="wampum-notice error">' + wampum_user_login.empty + '</div>').fadeIn('fast');
+            return false;
+        }
+
         $.ajax({
             method: 'POST',
             url: wampum_user_login.root + 'wampum/v1/login/',
@@ -23,6 +29,7 @@
                 xhr.setRequestHeader( 'X-WP-Nonce', wampum_user_login.nonce );
             },
             success: function( response ) {
+                console.log(response);
                 if ( response.success == true ) {
                     // Display success message
                     $('#wampum_user_login_form').hide().prepend('<div class="wampum-notice success">Success!</div>').fadeIn('fast', function() {
