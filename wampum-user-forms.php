@@ -184,6 +184,7 @@ final class Wampum_User_Forms {
 	 * @since   1.0.0
 	 *
 	 * @param 	array  $data  {
+	 *
 	 *      Associative array of data to process
 	 *
 	 * 		@type  string  $user_login 		Username
@@ -221,9 +222,8 @@ final class Wampum_User_Forms {
 	 * @param   array  $data  Array of data when maybe creating a user and adding a membership to a user
 	 *
 	 * @param 	array  $data  {
-	 *      Associative array of data to process
 	 *
-	 * 		NOT SURE WHERE WE'RE AT WITH THIS, SINCE RESTFUL MAYBE CAN'T USE wp_parse_args or similar
+	 *      Associative array of data to process
 	 *
 	 * 		@type  integer  $plan_id 		(required) The WooCommerce Memberships ID
 	 * 		@type  string   $user_email 	(required) User email
@@ -232,12 +232,14 @@ final class Wampum_User_Forms {
 	 * 		@type  string   $first_name 	First name
 	 * 		@type  string   $last_name	 	Last name
 	 * 		@type  string   $note 		 	Note to add to membership during save
+	 * 		@type  string   $redirect 		URL to redirect after form submission
+	 * 		@type  string   $say_what 		Honeypot field
 	 * }
 	 *
 	 *
 	 * @return  bool|WP_Error  Whether a new user was created during the process
 	 */
-	function add_to_membership( $data = array() ) {
+	function add_to_membership( $data ) {
 
 	    // Bail if Woo Memberships is not active
 	    if ( ! function_exists( 'wc_memberships' ) ) {
@@ -249,6 +251,18 @@ final class Wampum_User_Forms {
 
 	    // Honeypot
 		$this->validate_say_what($data);
+
+		// No point in defaults?
+	    // $defaults = array(
+		// 	'plan_id'		=> '',
+		// 	'user_email'	=> '',
+		// 	'user_login'	=> '',
+		// 	'user_pass'		=> '',
+		// 	'first_name'	=> '',
+		// 	'last_name'		=> '',
+		// 	'note'			=> '',
+		// );
+		// $data = wp_parse_args( $data, $defaults );
 
 	    // Minimum data we need is a plan ID and user email
 	    if ( ! $data['plan_id'] || ! $data['user_email'] ) {
@@ -346,6 +360,7 @@ final class Wampum_User_Forms {
 			}
 
 			if ( function_exists('wampum_popup') ) {
+				// TODO, check if another redirect already exists?!?!?
 				$redirect = add_query_var( 'user', 'password', $redirect );
 			}
 

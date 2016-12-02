@@ -1,8 +1,8 @@
 <?php
 
-add_shortcode( 'wampum_login_form', 'wampum_get_login_form' );
-add_shortcode( 'wampum_password_form', 'wampum_get_password_form' );
-add_shortcode( 'wampum_membership_form', 'wampum_get_membership_form' );
+add_shortcode( 'wampum-login-form', 'wampum_get_login_form' );
+add_shortcode( 'wampum-password-form', 'wampum_get_password_form' );
+add_shortcode( 'wampum-membership-form', 'wampum_get_membership_form' );
 
 
 function wampum_get_login_form( $args ) {
@@ -63,17 +63,17 @@ function wampum_get_password_form( $args ) {
 	<div class="wampum-form">
 		<form id="wampum_user_password_form" name="wampum_user_password_form" method="post">
 
-			<p class="password">
+			<p class="wampum-field password">
 				<label for="wampum_user_password"><?php _e( 'Password', 'wampum' ); ?></label>
 				<input type="password" name="log" id="wampum_user_password" class="input" value="" required>
 			</p>
 
-			<p class="password-confirm">
+			<p class="wampum-field password-confirm">
 				<label for="wampum_user_password_confirm"><?php _e( 'Confirm Password', 'wampum' ); ?></label>
 				<input type="password" name="wampum_user_password_confirm" id="wampum_user_password_confirm" class="input" value="" required>
 			</p>
 
-			<p class="password-strength">
+			<p class="wampum-field password-strength">
 				<span class="password-strength-meter" data-strength="">
 					<span class="password-strength-color">
 						<span class="password-strength-text"></span>
@@ -81,7 +81,7 @@ function wampum_get_password_form( $args ) {
 				</span>
 			</p>
 
-			<p class="password-submit">
+			<p class="wampum-field password-submit">
 				<input type="submit" name="wampum_submit" id="wampum_submit" class="button" value="<?php _e( 'Save Password', 'wampum' ); ?>">
 				<input type="hidden" name="wampum_user_id" id="wampum_user_id" value="<?php echo get_current_user_id(); ?>">
 				<input type="hidden" name="redirect_to" value="<?php echo home_url( remove_query_arg('user') ); ?>">
@@ -107,9 +107,10 @@ function wampum_get_membership_form( $args ) {
 
 	$args = shortcode_atts( array(
 		'plan_id'		=> false, // required
-		'redirect'      => ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'],
+		'redirect'		=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'],
 		'title'			=> false,
 		'title_wrap'	=> 'h2',
+		'name'			=> true,
 		'button'		=> __( 'Submit', 'wampum' ),
 	), $args, 'wampum_membership_form' );
 
@@ -120,6 +121,7 @@ function wampum_get_membership_form( $args ) {
 
 	// Bail if user is already a member
 	if ( is_user_logged_in() && wc_memberships_is_user_member( get_current_user_id(), $args['plan_id'] ) ) {
+		// param for already a member message?
 		return;
 	}
 
@@ -141,6 +143,9 @@ function wampum_get_membership_form( $args ) {
 		$args['redirect'] = add_query_arg( 'user', 'password', $args['redirect'] );
 	}
 
+	$name		= filter_var( $atts['name'], FILTER_VALIDATE_BOOLEAN );
+	$last_name	= filter_var( $atts['last_name'], FILTER_VALIDATE_BOOLEAN );
+
 	ob_start();
 	?>
 	<div class="wampum-form">
@@ -150,22 +155,26 @@ function wampum_get_membership_form( $args ) {
 		?>
 		<form id="wampum_user_membership_form" name="wampum_user_membership_form" method="post">
 
-			<p class="wampum-say-what">
+			<p class="wampum-field wampum-say-what">
 				<label for="wampum_membership_name">Say What?</label>
 				<input type="text" name="wampum_say_what" id="wampum_say_what" value="">
 			</p>
 
-			<p class="membership-name">
-				<label for="wampum_membership_name"><?php _e( 'Name', 'wampum' ); ?></label>
-				<input type="text" name="wampum_membership_name" id="wampum_membership_name" class="input" value="<?php echo $name; ?>" required>
-			</p>
+			<?php if ( $name ) { ?>
 
-			<p class="membership-email">
+				<p class="wampum-field membership-name">
+					<label for="wampum_membership_name"><?php _e( 'Name', 'wampum' ); ?></label>
+					<input type="text" name="wampum_membership_name" id="wampum_membership_name" class="input" value="<?php echo $first; ?>" required>
+				</p>
+
+			<?php } ?>
+
+			<p class="wampum-field membership-email">
 				<label for="wampum_membership_email"><?php _e( 'Email', 'wampum' ); ?></label>
 				<input type="email" name="wampum_membership_email" id="wampum_membership_email" class="input" value="<?php echo $email; ?>" required>
 			</p>
 
-			<p class="membership-submit">
+			<p class="wampum-field membership-submit">
 				<input type="submit" name="wampum_submit" id="wampum_submit" class="button" value="<?php echo $args['button']; ?>">
 				<input type="hidden" name="wampum_plan_id" id="wampum_plan_id" value="<?php echo $args['plan_id']; ?>">
 				<input type="hidden" name="redirect_to" value="<?php echo $args['redirect']; ?>">
