@@ -298,7 +298,7 @@ final class Wampum_User_Forms {
 	        );
 
 	        // If we don't have a login, use the email instead
-	        if ( ! $data['user_login'] ) {
+	        if ( ! isset($data['user_login']) || ! $data['user_login'] ) {
 	            $userdata['user_login'] = $email;
 	        } else {
 	            $userdata['user_login'] = $data['user_login'];
