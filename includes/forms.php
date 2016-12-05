@@ -18,6 +18,8 @@ function wampum_get_login_form( $args ) {
 	wp_enqueue_script('wampum-user-login');
 
 	$args = shortcode_atts( array(
+		'title'				=> false,
+		'title_wrap'		=> 'h2',
 		'remember'       => true,
 		'redirect'       => ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'],
 		'form_id'        => 'wampum_user_login_form',
@@ -40,7 +42,11 @@ function wampum_get_login_form( $args ) {
 	if ( filter_var( $args['inline'], FILTER_VALIDATE_BOOLEAN ) ) {
 		$classes .= ' wampum-form-inline';
 	}
-	return sprintf( '<div class="%s">%s</div>', $classes, wp_login_form($args) );
+	return sprintf( '<div class="%s">%s%s</div>',
+		$classes,
+		$args['title'] ? sprintf( '<%s>%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : '',
+		wp_login_form($args)
+	);
 }
 
 
@@ -58,9 +64,11 @@ function wampum_get_password_form( $args ) {
 	wp_enqueue_script('wampum-user-password');
 
 	$args = shortcode_atts( array(
-		'button'	=> __( 'Submit', 'wampum' ),
-		'redirect'	=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'],
-		'inline'	=> false,
+		'title'			=> false,
+		'title_wrap'	=> 'h2',
+		'button'		=> __( 'Submit', 'wampum' ),
+		'redirect'		=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'],
+		'inline'		=> false,
 	), $args, 'wampum_password_form' );
 
 	$classes = 'wampum-form';
@@ -71,6 +79,9 @@ function wampum_get_password_form( $args ) {
 	ob_start();
 	?>
 	<div class="<?php echo $classes; ?>">
+		<?php
+		echo $args['title'] ? sprintf( '<%s>%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : '';
+		?>
 		<form id="wampum_user_password_form" name="wampum_user_password_form" method="post">
 
 			<p class="wampum-field password">
@@ -165,10 +176,10 @@ function wampum_get_membership_form( $args ) {
 	?>
 	<div class="<?php echo $classes; ?>">
 		<?php
-		// if ( is_user_logged_in() && wc_memberships_is_user_member( get_current_user_id(), $args['plan_id'] ) ) {
-			// $message = $args['member_message'] ? $args['member_message'] : '';
-			// echo wpautop($args['member_message']);
-		// } else {
+		if ( is_user_logged_in() && wc_memberships_is_user_member( get_current_user_id(), $args['plan_id'] ) ) {
+			$message = $args['member_message'] ? $args['member_message'] : '';
+			echo wpautop($args['member_message']);
+		} else {
 			// Maybe display a title
 			echo $args['title'] ? sprintf( '<%s>%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : '';
 			?>
@@ -239,7 +250,7 @@ function wampum_get_membership_form( $args ) {
 			</form>
 			<style media="screen" type="text/css">.wampum-say-what { display: none; visibility: hidden; }</style>
 		<?php
-		// }
+		}
 		?>
 	</div>
 	<?php
