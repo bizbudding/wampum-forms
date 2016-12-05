@@ -5,14 +5,19 @@
 
         e.preventDefault();
 
+        // Set button as Working...
+
         // Hide any notices
         $( '#wampum_user_membership_form' ).find('.wampum-notice').fadeOut('fast');
 
         // Setup our form data array
         var data = {
                 plan_id: $( '#wampum_user_membership_form' ).find( '#wampum_plan_id' ).val(),
-                first_name: $( '#wampum_user_membership_form' ).find( '#wampum_membership_name' ).val(),
+                first_name: $( '#wampum_user_membership_form' ).find( '#wampum_membership_first_name' ).val(),
+                last_name: $( '#wampum_user_membership_form' ).find( '#wampum_membership_last_name' ).val(),
                 user_email: $( '#wampum_user_membership_form' ).find( '#wampum_membership_email' ).val(),
+                username: $( '#wampum_user_membership_form' ).find( '#wampum_membership_username' ).val(),
+                password: $( '#wampum_user_membership_form' ).find( '#wampum_membership_password' ).val(),
                 say_what: $( '#wampum_user_membership_form' ).find( '#wampum_say_what' ).val(), // honeypot
                 redirect: $( '#wampum_user_membership_form' ).find( 'input[name="redirect_to"]' ).val(),
             };

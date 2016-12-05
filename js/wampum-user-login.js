@@ -5,6 +5,8 @@
 
         e.preventDefault();
 
+        // Set button as Working...
+
         // Hide any notices
         $( '#wampum_user_login_form' ).find('.wampum-notice').fadeOut('fast');
 
@@ -16,7 +18,7 @@
             };
 
         // Display an error if username and password fields are emmpty. Why is those fields not required in WP core?
-        if ( ! data.user_login && ! data.user_password ) {
+        if ( ! ( data.user_login && data.user_password ) ) {
             $('#wampum_user_login_form').hide().prepend('<div class="wampum-notice error">' + wampum_user_login.empty + '</div>').fadeIn('fast');
             return false;
         }

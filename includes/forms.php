@@ -74,12 +74,12 @@ function wampum_get_password_form( $args ) {
 		<form id="wampum_user_password_form" name="wampum_user_password_form" method="post">
 
 			<p class="wampum-field password">
-				<label for="wampum_user_password"><?php _e( 'Password', 'wampum' ); ?></label>
+				<label for="wampum_user_password"><?php _e( 'Password', 'wampum' ); ?><span class="required">*</span></label>
 				<input type="password" name="log" id="wampum_user_password" class="input" value="" required>
 			</p>
 
 			<p class="wampum-field password-confirm">
-				<label for="wampum_user_password_confirm"><?php _e( 'Confirm Password', 'wampum' ); ?></label>
+				<label for="wampum_user_password_confirm"><?php _e( 'Confirm Password', 'wampum' ); ?><span class="required">*</span></label>
 				<input type="password" name="wampum_user_password_confirm" id="wampum_user_password_confirm" class="input" value="" required>
 			</p>
 
@@ -123,6 +123,8 @@ function wampum_get_membership_form( $args ) {
 		'title_wrap'		=> 'h2',
 		'first_name'		=> true,
 		'last_name'			=> false,
+		'username'			=> false,
+		'password'			=> false,
 		'button'			=> __( 'Submit', 'wampum' ),
 		'inline'			=> false,
 		'member_message'	=> '',
@@ -139,18 +141,20 @@ function wampum_get_membership_form( $args ) {
 	// JS
 	wp_enqueue_script('wampum-user-membership');
 
-	$first_name = $last_name = $email = '';
+	$first_name = $last_name = $email = $disabled = '';
 
 	if ( is_user_logged_in() ) {
 		$current_user	= wp_get_current_user();
 		$first_name		= $current_user->first_name;
 		$last_name		= $current_user->last_name;
-		// $name			= trim( $first . ' ' . $last );
+		// $name		= trim( $first . ' ' . $last );
 		$email			= $current_user->user_email;
+		$disabled		= ' disabled';
 	} else {
 		// user is logged out, so after successful form submission require them to change their password
 		$args['redirect'] = add_query_arg( 'user', 'password', $args['redirect'] );
 	}
+
 
 	$classes = 'wampum-form';
 	if ( filter_var( $args['inline'], FILTER_VALIDATE_BOOLEAN ) ) {
@@ -170,11 +174,13 @@ function wampum_get_membership_form( $args ) {
 			?>
 			<form id="wampum_user_membership_form" class="wampum-user-membership-form" name="wampum_user_membership_form" method="post">
 
+				<!-- Honeypot -->
 				<p class="wampum-field wampum-say-what">
 					<label for="wampum_membership_name">Say What?</label>
 					<input type="text" name="wampum_say_what" id="wampum_say_what" value="">
 				</p>
 
+				<!-- First Name -->
 				<?php if ( filter_var( $args['first_name'], FILTER_VALIDATE_BOOLEAN ) ) { ?>
 
 					<p class="wampum-field membership-name membership-first-name">
@@ -184,6 +190,7 @@ function wampum_get_membership_form( $args ) {
 
 				<?php } ?>
 
+				<!-- Last Name -->
 				<?php if ( filter_var( $args['last_name'], FILTER_VALIDATE_BOOLEAN ) ) { ?>
 
 					<p class="wampum-field membership-name membership-last-name">
@@ -193,10 +200,35 @@ function wampum_get_membership_form( $args ) {
 
 				<?php } ?>
 
-				<p class="wampum-field membership-email">
-					<label for="wampum_membership_email"><?php _e( 'Email', 'wampum' ); ?></label>
-					<input type="email" name="wampum_membership_email" id="wampum_membership_email" class="input" value="<?php echo $email; ?>" required>
+				<!-- Email -->
+				<p class="wampum-field<?php echo $disabled; ?> membership-email">
+					<label for="wampum_membership_email"><?php _e( 'Email', 'wampum' ); ?><span class="required">*</span></label>
+					<input type="email" name="wampum_membership_email" id="wampum_membership_email" class="input" value="<?php echo $email; ?>" required<?php echo $disabled; ?>>
 				</p>
+
+			    <?php
+			    if ( ! is_user_logged_in() ) {
+
+				    if ( filter_var( $args['username'], FILTER_VALIDATE_BOOLEAN ) ) {
+				    	?>
+						<p class="wampum-field membership-username">
+							<label for="wampum_membership_username"><?php _e( 'Username', 'wampum' ); ?><span class="required">*</span></label>
+							<input type="text" name="wampum_membership_username" id="wampum_membership_username" class="input" value="" required>
+						</p>
+						<?php
+					}
+
+				    if ( filter_var( $args['password'], FILTER_VALIDATE_BOOLEAN ) ) {
+				    	?>
+						<p class="wampum-field membership-password">
+							<label for="wampum_membership_password"><?php _e( 'Password', 'wampum' ); ?><span class="required">*</span></label>
+							<input type="password" name="wampum_membership_password" id="wampum_membership_password" class="input" value="" required>
+						</p>
+						<?php
+					}
+
+				}
+				?>
 
 				<p class="wampum-field wampum-submit membership-submit">
 					<input type="submit" name="wampum_submit" id="wampum_submit" class="button" value="<?php echo $args['button']; ?>">

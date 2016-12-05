@@ -2,7 +2,7 @@
 
 @media only screen and (min-width: 544px) {
 
-	.wampum-form-inline form {
+	.wampum-forms-inline form {
 	    box-sizing: border-box;
 	    display: -webkit-flex;display: -ms-flexbox;display: flex;
 	    -webkit-flex: 0 1 auto;-ms-flex: 0 1 auto;flex: 0 1 auto;
@@ -12,7 +12,7 @@
 		margin: 0 -5px;
 	}
 
-	.wampum-form-inline .wampum-field {
+	.wampum-forms-inline .wampum-field {
 		-webkit-flex: 0 1 auto;-ms-flex: 0 1 auto;flex: 0 1 auto;
 	    max-width: 100%;
 	    margin-left: 5px;
@@ -26,11 +26,20 @@
     margin-bottom: 15px;
 }
 
+.wampum-form .wampum-field .required {
+	color: red;
+	margin-left: 2px;
+}
+
+.wampum-form .wampum-field.disabled {
+	opacity: 0.6;
+}
+
 /* Wampum Notices */
 
 .wampum-notice {
     background-color: #444;
-    color: #fff;
+    color: rgba(255, 255, 255, 0.85);
     padding: 8px 12px;
     margin-left: 0;
     margin-bottom: 12px;
@@ -49,8 +58,15 @@
 }
 
 .wampum-notice a {
-	color: #fff !important;
-	text-decoration: underline;
+	color: rgba(255, 255, 255, 0.85) !important;
+	text-decoration: none !important;
+	border: none !important;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.85) !important;
+}
+
+.wampum-notice a:hover {
+	color: rgba(255, 255, 255, 1) !important;
+	border-bottom-color: rgba(255, 255, 255, 1) !important;
 }
 
 /* Password Strength */

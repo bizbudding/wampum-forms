@@ -35,6 +35,8 @@
 
         e.preventDefault();
 
+        // Set button as Working...
+
         // Hide any notices
         $( '#wampum_user_password_form' ).find('.wampum-notice').fadeOut('fast');
 
