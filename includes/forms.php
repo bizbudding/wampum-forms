@@ -36,7 +36,11 @@ function wampum_get_login_form( $args ) {
 	// Force return of wp_login_form() function
 	$args['echo'] = false;
 
-	return sprintf( '<div class="wampum-form">%s</div>', wp_login_form($args) );
+	$classes = 'wampum-form';
+	if ( filter_var( $args['inline'], FILTER_VALIDATE_BOOLEAN ) ) {
+		$classes .= ' wampum-form-inline';
+	}
+	return sprintf( '<div class="%s">%s</div>', $classes, wp_login_form($args) );
 }
 
 
@@ -56,11 +60,17 @@ function wampum_get_password_form( $args ) {
 	$args = shortcode_atts( array(
 		'button'	=> __( 'Submit', 'wampum' ),
 		'redirect'	=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'],
+		'inline'	=> false,
 	), $args, 'wampum_password_form' );
+
+	$classes = 'wampum-form';
+	if ( filter_var( $args['inline'], FILTER_VALIDATE_BOOLEAN ) ) {
+		$classes .= ' wampum-form-inline';
+	}
 
 	ob_start();
 	?>
-	<div class="wampum-form">
+	<div class="<?php echo $classes; ?>">
 		<form id="wampum_user_password_form" name="wampum_user_password_form" method="post">
 
 			<p class="wampum-field password">
@@ -81,7 +91,7 @@ function wampum_get_password_form( $args ) {
 				</span>
 			</p>
 
-			<p class="wampum-field password-submit">
+			<p class="wampum-field wampum-submit password-submit">
 				<input type="submit" name="wampum_submit" id="wampum_submit" class="button" value="<?php _e( 'Save Password', 'wampum' ); ?>">
 				<input type="hidden" name="wampum_user_id" id="wampum_user_id" value="<?php echo get_current_user_id(); ?>">
 				<input type="hidden" name="redirect_to" value="<?php echo home_url( remove_query_arg('user') ); ?>">
@@ -94,7 +104,8 @@ function wampum_get_password_form( $args ) {
 }
 
 /**
- * NEED TO ADD OPTIONAL EXTRA FIELDS! FIRST NAME, LAST, ETC
+ * Get a form to add a user to a membership
+ * Creates a new user if one doesn't exist
  *
  * @param  [type] $args [description]
  * @return [type]       [description]
@@ -106,22 +117,20 @@ function wampum_get_membership_form( $args ) {
 	}
 
 	$args = shortcode_atts( array(
-		'plan_id'		=> false, // required
-		'redirect'		=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'],
-		'title'			=> false,
-		'title_wrap'	=> 'h2',
-		'name'			=> true,
-		'button'		=> __( 'Submit', 'wampum' ),
+		'plan_id'			=> false, // required
+		'redirect'			=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'],
+		'title'				=> false,
+		'title_wrap'		=> 'h2',
+		'first_name'		=> true,
+		'last_name'			=> false,
+		'button'			=> __( 'Submit', 'wampum' ),
+		'inline'			=> false,
+		'member_message'	=> '',
 	), $args, 'wampum_membership_form' );
+
 
 	// Bail if no plan ID
 	if ( ! $args['plan_id'] ) {
-		return;
-	}
-
-	// Bail if user is already a member
-	if ( is_user_logged_in() && wc_memberships_is_user_member( get_current_user_id(), $args['plan_id'] ) ) {
-		// param for already a member message?
 		return;
 	}
 
@@ -130,58 +139,76 @@ function wampum_get_membership_form( $args ) {
 	// JS
 	wp_enqueue_script('wampum-user-membership');
 
-	$name = $email = '';
+	$first_name = $last_name = $email = '';
 
 	if ( is_user_logged_in() ) {
 		$current_user	= wp_get_current_user();
-		$first			= $current_user->first_name;
-		$last			= $current_user->last_name;
-		$name 			= trim( $first . ' ' . $last );
-		$email 			= $current_user->user_email;
+		$first_name		= $current_user->first_name;
+		$last_name		= $current_user->last_name;
+		// $name			= trim( $first . ' ' . $last );
+		$email			= $current_user->user_email;
 	} else {
 		// user is logged out, so after successful form submission require them to change their password
 		$args['redirect'] = add_query_arg( 'user', 'password', $args['redirect'] );
 	}
 
-	$name		= filter_var( $atts['name'], FILTER_VALIDATE_BOOLEAN );
-	$last_name	= filter_var( $atts['last_name'], FILTER_VALIDATE_BOOLEAN );
+	$classes = 'wampum-form';
+	if ( filter_var( $args['inline'], FILTER_VALIDATE_BOOLEAN ) ) {
+		$classes .= ' wampum-form-inline';
+	}
 
 	ob_start();
 	?>
-	<div class="wampum-form">
+	<div class="<?php echo $classes; ?>">
 		<?php
-		// Maybe display a title
-		echo $args['title'] ? sprintf( '<%s>%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : '';
-		?>
-		<form id="wampum_user_membership_form" name="wampum_user_membership_form" method="post">
+		// if ( is_user_logged_in() && wc_memberships_is_user_member( get_current_user_id(), $args['plan_id'] ) ) {
+			// $message = $args['member_message'] ? $args['member_message'] : '';
+			// echo wpautop($args['member_message']);
+		// } else {
+			// Maybe display a title
+			echo $args['title'] ? sprintf( '<%s>%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : '';
+			?>
+			<form id="wampum_user_membership_form" class="wampum-user-membership-form" name="wampum_user_membership_form" method="post">
 
-			<p class="wampum-field wampum-say-what">
-				<label for="wampum_membership_name">Say What?</label>
-				<input type="text" name="wampum_say_what" id="wampum_say_what" value="">
-			</p>
-
-			<?php if ( $name ) { ?>
-
-				<p class="wampum-field membership-name">
-					<label for="wampum_membership_name"><?php _e( 'Name', 'wampum' ); ?></label>
-					<input type="text" name="wampum_membership_name" id="wampum_membership_name" class="input" value="<?php echo $first; ?>" required>
+				<p class="wampum-field wampum-say-what">
+					<label for="wampum_membership_name">Say What?</label>
+					<input type="text" name="wampum_say_what" id="wampum_say_what" value="">
 				</p>
 
-			<?php } ?>
+				<?php if ( filter_var( $args['first_name'], FILTER_VALIDATE_BOOLEAN ) ) { ?>
 
-			<p class="wampum-field membership-email">
-				<label for="wampum_membership_email"><?php _e( 'Email', 'wampum' ); ?></label>
-				<input type="email" name="wampum_membership_email" id="wampum_membership_email" class="input" value="<?php echo $email; ?>" required>
-			</p>
+					<p class="wampum-field membership-name membership-first-name">
+						<label for="wampum_membership_first_name"><?php _e( 'First Name', 'wampum' ); ?></label>
+						<input type="text" name="wampum_membership_first_name" id="wampum_membership_first_name" class="input" value="<?php echo $first_name; ?>">
+					</p>
 
-			<p class="wampum-field membership-submit">
-				<input type="submit" name="wampum_submit" id="wampum_submit" class="button" value="<?php echo $args['button']; ?>">
-				<input type="hidden" name="wampum_plan_id" id="wampum_plan_id" value="<?php echo $args['plan_id']; ?>">
-				<input type="hidden" name="redirect_to" value="<?php echo $args['redirect']; ?>">
-			</p>
+				<?php } ?>
 
-		</form>
-		<style media="screen" type="text/css">.wampum-say-what { display: none; visibility: hidden; }</style>
+				<?php if ( filter_var( $args['last_name'], FILTER_VALIDATE_BOOLEAN ) ) { ?>
+
+					<p class="wampum-field membership-name membership-last-name">
+						<label for="wampum_membership_last_name"><?php _e( 'Last Name', 'wampum' ); ?></label>
+						<input type="text" name="wampum_membership_last_name" id="wampum_membership_last_name" class="input" value="<?php echo $last_name; ?>">
+					</p>
+
+				<?php } ?>
+
+				<p class="wampum-field membership-email">
+					<label for="wampum_membership_email"><?php _e( 'Email', 'wampum' ); ?></label>
+					<input type="email" name="wampum_membership_email" id="wampum_membership_email" class="input" value="<?php echo $email; ?>" required>
+				</p>
+
+				<p class="wampum-field wampum-submit membership-submit">
+					<input type="submit" name="wampum_submit" id="wampum_submit" class="button" value="<?php echo $args['button']; ?>">
+					<input type="hidden" name="wampum_plan_id" id="wampum_plan_id" value="<?php echo $args['plan_id']; ?>">
+					<input type="hidden" name="redirect_to" value="<?php echo $args['redirect']; ?>">
+				</p>
+
+			</form>
+			<style media="screen" type="text/css">.wampum-say-what { display: none; visibility: hidden; }</style>
+		<?php
+		// }
+		?>
 	</div>
 	<?php
 	return ob_get_clean();

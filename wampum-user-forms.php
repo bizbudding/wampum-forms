@@ -149,11 +149,6 @@ final class Wampum_User_Forms {
 
 	function activate() {
 	}
-	/**
-	 * Deactivates the plugin if Genesis isn't running
-	 *
-	 * @since 1.0.0
-	 */
 	function deactivate() {
 	}
 
