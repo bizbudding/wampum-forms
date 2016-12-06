@@ -296,11 +296,12 @@ final class Wampum_User_Forms {
 
 	    	$user_id = get_current_user_id();
 
+
 	    }
 	    // Not logged in
 	    else {
 
-			$email_exists	 = email_exists( $email );
+			$email_exists = email_exists( $email );
 			// Username is not required, so check it first
 			$username_exists = isset($data['username']) ? username_exists( $data['username'] ) : false;
 
@@ -409,8 +410,8 @@ final class Wampum_User_Forms {
 
         // Success!
 		return array(
-			'success'	=> true,
-			'redirect'	=> esc_url($data['redirect']),
+			'success'  => true,
+			'redirect' => esc_url($data['redirect']),
 		);
 
 	}

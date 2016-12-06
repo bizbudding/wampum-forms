@@ -1,25 +1,34 @@
 ;(function( $ ) {
     'use strict';
 
-    $( '#wampum_user_login_form' ).submit(function(e){
+    var LoginForm = $( '#wampum_user_login_form' );
+
+    LoginForm.submit(function(e){
 
         e.preventDefault();
 
-        // Set button as Working...
+        // Set button as a variable
+        var button = LoginForm.find( '#wampum_submit' );
+        // Disable the button
+        // NOTE: We can't do the fun loading icon because it's not a button, it's an input[type="submit"]
+        button.attr( 'disabled', true );
 
         // Hide any notices
-        $( '#wampum_user_login_form' ).find('.wampum-notice').fadeOut('fast');
+        LoginForm.find('.wampum-notice').fadeOut('fast');
 
         // Setup our form data array
         var data = {
-                user_login: $( '#wampum_user_login_form' ).find( '#wampum_user_login' ).val(),
-                user_password: $( '#wampum_user_login_form' ).find( '#wampum_user_pass' ).val(),
-                remember: $( '#wampum_user_login_form' ).find( '#wampum_rememberme' ).val(),
+                user_login: LoginForm.find( '#wampum_user_login' ).val(),
+                user_password: LoginForm.find( '#wampum_user_pass' ).val(),
+                remember: LoginForm.find( '#wampum_rememberme' ).val(),
             };
 
         // Display an error if username and password fields are emmpty. Why is those fields not required in WP core?
         if ( ! ( data.user_login && data.user_password ) ) {
-            $('#wampum_user_login_form').hide().prepend('<div class="wampum-notice error">' + wampum_user_login.empty + '</div>').fadeIn('fast');
+            LoginForm.hide().prepend('<div class="wampum-notice error">' + wampum_user_login.empty + '</div>').fadeIn('fast');
+            // Re-enable the button
+            button.attr( 'disabled', false );
+            // Stop the submission!
             return false;
         }
 
@@ -34,18 +43,22 @@
                 console.log(response);
                 if ( response.success == true ) {
                     // Display success message
-                    $('#wampum_user_login_form').hide().prepend('<div class="wampum-notice success">Success!</div>').fadeIn('fast', function() {
+                    LoginForm.hide().prepend('<div class="wampum-notice success">Success!</div>').fadeIn('fast', function() {
                         // Refresh/redirect
-                        window.location.replace( $( '#wampum_user_login_form' ).find( 'input[name="redirect_to"]' ).val() );
+                        window.location.replace( LoginForm.find( 'input[name="redirect_to"]' ).val() );
                     });
                 } else {
                     // Display error message
-                    $('#wampum_user_login_form').hide().prepend('<div class="wampum-notice error">' + response.message + '</div>').fadeIn('fast');
+                    LoginForm.hide().prepend('<div class="wampum-notice error">' + response.message + '</div>').fadeIn('fast');
                 }
             },
             fail: function( response ) {
                 // Not sure when this would happen, but fallbacks!
-                $('#wampum_user_login_form').hide().prepend('<div class="wampum-notice error">' + wampum_user_login.failure + '</div>').fadeIn('fast');
+                LoginForm.hide().prepend('<div class="wampum-notice error">' + wampum_user_login.failure + '</div>').fadeIn('fast');
+            },
+            complete: function( response ) {
+                // Re-enable the button
+                button.html(button_html).attr( 'disabled', false );
             }
         });
 

@@ -112,3 +112,39 @@
 .wampum-form .password-strength-text {
 	padding: 0 12px;
 }
+
+/* Submit Spinner */
+
+.wampum-loading {
+}
+
+.wampum-loading .wampum-loading-circle {
+    display: inline-block;
+    margin: 0 2px;
+    -webkit-animation: wampum-loading 1.4s ease-in-out 0s infinite both;animation: wampum-loading 1.4s ease-in-out 0s infinite both;
+}
+
+.wampum-loading .wampum-loading-circle1 {
+    -webkit-animation-delay: -0.32s;animation-delay: -0.32s;
+}
+
+.wampum-loading .wampum-loading-circle2 {
+    -webkit-animation-delay: -0.16s;animation-delay: -0.16s;
+}
+
+@-webkit-keyframes wampum-loading {
+	0%, 80%, 100% {
+	    -webkit-transform: scale(1);-ms-transform: scale(1);transform: scale(1);
+	}
+	40% {
+	    -webkit-transform: scale(2); -ms-transform: scale(2); transform: scale(2);
+	}
+}
+@keyframes wampum-loading {
+	0%, 80%, 100% {
+		-webkit-transform: scale(1);-ms-transform: scale(1);transform: scale(1);
+	}
+	40% {
+		-webkit-transform: scale(2);-ms-transform: scale(2);transform: scale(2);
+	}
+}

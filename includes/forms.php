@@ -17,7 +17,7 @@ function wampum_get_login_form( $args ) {
 	// JS
 	wp_enqueue_script('wampum-user-login');
 
-	$args = shortcode_atts( array(
+	$atts = shortcode_atts( array(
 		'title'				=> false,
 		'title_wrap'		=> 'h2',
 		'remember'       => true,
@@ -33,18 +33,28 @@ function wampum_get_login_form( $args ) {
 		'label_log_in'   => __( 'Log In', 'wampum' ),
 		'value_username' => '',
 		'value_remember' => true,
-	), $args, 'wampum_login_form' );
+	), $atts, 'wampum-login-form' );
 
-	// Force return of wp_login_form() function
-	$args['echo'] = false;
+	// wp_login_form() args
+	$args = array(
+		'echo'			 => false, // Force return
+		'remember'       => $atts['remember'],
+		'redirect'       => $atts['redirect'],
+		'form_id'        => $atts['form_id'],
+		'id_username'    => $atts['id_username'],
+		'id_password'    => $atts['id_password'],
+		'id_remember'    => $atts['id_remember'],
+		'id_submit'      => $atts['id_submit'],
+		'label_username' => $atts['label_username'],
+		'label_password' => $atts['label_password'],
+		'label_remember' => $atts['label_remember'],
+		'label_log_in'   => $atts['label_log_in'],
+		'value_username' => $atts['value_username'],
+		'value_remember' => $atts['value_remember'],
+	);
 
-	$classes = 'wampum-form';
-	if ( filter_var( $args['inline'], FILTER_VALIDATE_BOOLEAN ) ) {
-		$classes .= ' wampum-form-inline';
-	}
-	return sprintf( '<div class="%s">%s%s</div>',
-		$classes,
-		$args['title'] ? sprintf( '<%s>%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : '',
+	return sprintf( '<div class="wampum-form">%s%s</div>',
+		$atts['title'] ? sprintf( '<%s>%s</%s>', $atts['title_wrap'], $atts['title'], $atts['title_wrap'] ) : '',
 		wp_login_form($args)
 	);
 }
@@ -69,7 +79,7 @@ function wampum_get_password_form( $args ) {
 		'button'		=> __( 'Submit', 'wampum' ),
 		'redirect'		=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'],
 		'inline'		=> false,
-	), $args, 'wampum_password_form' );
+	), $args, 'wampum-password-form' );
 
 	$classes = 'wampum-form';
 	if ( filter_var( $args['inline'], FILTER_VALIDATE_BOOLEAN ) ) {
@@ -103,7 +113,7 @@ function wampum_get_password_form( $args ) {
 			</p>
 
 			<p class="wampum-field wampum-submit password-submit">
-				<input type="submit" name="wampum_submit" id="wampum_submit" class="button" value="<?php _e( 'Save Password', 'wampum' ); ?>">
+				<button id="wampum_submit" class="button" type="submit"><?php _e( 'Save Password', 'wampum' ); ?></button>
 				<input type="hidden" name="wampum_user_id" id="wampum_user_id" value="<?php echo get_current_user_id(); ?>">
 				<input type="hidden" name="redirect_to" value="<?php echo home_url( remove_query_arg('user') ); ?>">
 			</p>
@@ -139,7 +149,9 @@ function wampum_get_membership_form( $args ) {
 		'button'			=> __( 'Submit', 'wampum' ),
 		'inline'			=> false,
 		'member_message'	=> '',
-	), $args, 'wampum_membership_form' );
+		'ss_baseuri'		=> '', // 'https://app-3QMU9AFX44.marketingautomation.services/webforms/receivePostback/MzawMDE2MjCwAAA/'
+		'ss_endpoint'		=> '', // 'b19a2e43-3904-4b80-b587-353767f56849'
+	), $args, 'wampum-membership-form' );
 
 
 	// Bail if no plan ID
@@ -158,14 +170,23 @@ function wampum_get_membership_form( $args ) {
 		$current_user	= wp_get_current_user();
 		$first_name		= $current_user->first_name;
 		$last_name		= $current_user->last_name;
-		// $name		= trim( $first . ' ' . $last );
 		$email			= $current_user->user_email;
 		$disabled		= ' disabled';
-	} else {
-		// user is logged out, so after successful form submission require them to change their password
-		$args['redirect'] = add_query_arg( 'user', 'password', $args['redirect'] );
 	}
 
+	// Keep fields filled out if something crazy happens and page refreshes
+	if ( isset($_POST['wampum_membership_first_name']) && ! empty($_POST['wampum_membership_first_name']) ) {
+		$email = sanitize_text_field($_POST['wampum_membership_first_name']);
+	}
+	if ( isset($_POST['wampum_membership_last_name']) && ! empty($_POST['wampum_membership_last_name']) ) {
+		$email = sanitize_text_field($_POST['wampum_membership_last_name']);
+	}
+	if ( isset($_POST['wampum_membership_email']) && ! empty($_POST['wampum_membership_email']) ) {
+		$email = sanitize_text_field($_POST['wampum_membership_email']);
+	}
+	if ( isset($_POST['wampum_membership_username']) && ! empty($_POST['wampum_membership_username']) ) {
+		$email = sanitize_text_field($_POST['wampum_membership_username']);
+	}
 
 	$classes = 'wampum-form';
 	if ( filter_var( $args['inline'], FILTER_VALIDATE_BOOLEAN ) ) {
@@ -177,12 +198,12 @@ function wampum_get_membership_form( $args ) {
 	<div class="<?php echo $classes; ?>">
 		<?php
 		if ( is_user_logged_in() && wc_memberships_is_user_member( get_current_user_id(), $args['plan_id'] ) ) {
-			$message = $args['member_message'] ? $args['member_message'] : '';
-			echo wpautop($args['member_message']);
+			echo $args['member_message'] ? wpautop($args['member_message']) : '';
 		} else {
 			// Maybe display a title
 			echo $args['title'] ? sprintf( '<%s>%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : '';
 			?>
+			<!-- TODO: Make form ID unique to each plan? -->
 			<form id="wampum_user_membership_form" class="wampum-user-membership-form" name="wampum_user_membership_form" method="post">
 
 				<!-- Honeypot -->
@@ -242,9 +263,19 @@ function wampum_get_membership_form( $args ) {
 				?>
 
 				<p class="wampum-field wampum-submit membership-submit">
-					<input type="submit" name="wampum_submit" id="wampum_submit" class="button" value="<?php echo $args['button']; ?>">
+					<button id="wampum_submit" class="button" type="submit"><?php echo $args['button']; ?></button>
 					<input type="hidden" name="wampum_plan_id" id="wampum_plan_id" value="<?php echo $args['plan_id']; ?>">
 					<input type="hidden" name="redirect_to" value="<?php echo $args['redirect']; ?>">
+					<?php
+					// SharpSpring baseURI
+					if ( $args['ss_baseuri'] ) {
+						echo '<input type="hidden" name="wampum_ss_baseuri" id="wampum_ss_baseuri" value="' . sanitize_text_field($args['ss_baseuri']) . '">';
+					}
+					// SharpSpring endpoint
+					if ( $args['ss_endpoint'] ) {
+						echo '<input type="hidden" name="wampum_ss_endpoint" id="wampum_ss_endpoint" value="' . sanitize_text_field($args['ss_endpoint']) . '">';
+					}
+					?>
 				</p>
 
 			</form>
