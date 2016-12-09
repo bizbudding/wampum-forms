@@ -456,15 +456,15 @@ final class Wampum_User_Forms {
 			'current_url'		=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], // For login URL if email/username exists
 			'current_user_id'	=> get_current_user_id(), // For rest endpoint 'wp/v2/users/123'
 			'login'	=> array(
-				'form'	=> wampum_get_login_form(),
+				'form'	=> wampum_get_login_form( array() ),
 				'empty'	=> __( 'Username and password fields are empty', 'wampum' ), // Why are these fields not required in WP?!?!
 			),
 			'password' => array(
-				'form'		=> wampum_get_password_form(),
+				'form'		=> wampum_get_password_form( array() ),
 				'mismatch'	=> __( 'Passwords do not match', 'wampum' ),
 			),
 			'membership' => array(
-				'form' => wampum_get_membership_form(),
+				'form' => wampum_get_membership_form( array() ),
 			),
         ) );
 

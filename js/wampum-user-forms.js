@@ -15,10 +15,10 @@
 	        e.preventDefault();
 
 	        // Set button as a variable
-	        var login_button = LoginForm.find( '#wampum_submit' );
+	        // var button = LoginForm.find( '#wampum_submit' );
 	        // Disable the button
 	        // NOTE: We can't do the fun loading icon because it's not a button, it's an input[type="submit"]
-	        login_button.attr( 'disabled', true );
+	        // button.attr( 'disabled', true );
 
 	        // Hide any notices
 	        LoginForm.find('.wampum-notice').fadeOut('fast');
@@ -34,7 +34,7 @@
 	        if ( ! ( data.user_login && data.user_password ) ) {
 	            LoginForm.hide().prepend('<div class="wampum-notice error">' + wampum_user_forms.login.empty + '</div>').fadeIn('fast');
 	            // Re-enable the button
-	            // login_button.attr( 'disabled', false );
+	            // button.attr( 'disabled', false );
 	            // Stop the submission!
 	            return false;
 	        }
@@ -65,7 +65,7 @@
 	            },
 	            complete: function( response ) {
 	                // Re-enable the button
-	                // login_button.html().attr( 'disabled', false );
+	                // button.html(button_html).attr( 'disabled', false );
 	            }
 	        });
 
