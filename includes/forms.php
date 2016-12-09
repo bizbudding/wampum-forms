@@ -15,11 +15,12 @@ function wampum_get_login_form( $args ) {
 	// CSS
 	wp_enqueue_style('wampum-user-forms');
 	// JS
-	wp_enqueue_script('wampum-user-login');
+	wp_enqueue_script('wampum-zxcvbn');
+	wp_enqueue_script('wampum-user-forms');
 
 	$atts = shortcode_atts( array(
-		'title'				=> false,
-		'title_wrap'		=> 'h2',
+		'title'			 => __( 'Login', 'wampum' ),
+		'title_wrap'	 => 'h2',
 		'remember'       => true,
 		'redirect'       => ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'],
 		'form_id'        => 'wampum_user_login_form',
@@ -57,6 +58,7 @@ function wampum_get_login_form( $args ) {
 		$atts['title'] ? sprintf( '<%s>%s</%s>', $atts['title_wrap'], $atts['title'], $atts['title_wrap'] ) : '',
 		wp_login_form($args)
 	);
+
 }
 
 
@@ -71,10 +73,10 @@ function wampum_get_password_form( $args ) {
 	wp_enqueue_style('wampum-user-forms');
 	// JS
 	wp_enqueue_script('wampum-zxcvbn');
-	wp_enqueue_script('wampum-user-password');
+	wp_enqueue_script('wampum-user-forms');
 
 	$args = shortcode_atts( array(
-		'title'			=> false,
+		'title'			=> __( 'Set A New Password', 'wampum' ),
 		'title_wrap'	=> 'h2',
 		'button'		=> __( 'Submit', 'wampum' ),
 		'redirect'		=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'],
@@ -153,7 +155,6 @@ function wampum_get_membership_form( $args ) {
 		'ss_endpoint'		=> '', // 'b19a2e43-3904-4b80-b587-353767f56849'
 	), $args, 'wampum-membership-form' );
 
-
 	// Bail if no plan ID
 	if ( ! $args['plan_id'] ) {
 		return;
@@ -162,7 +163,8 @@ function wampum_get_membership_form( $args ) {
 	// CSS
 	wp_enqueue_style('wampum-user-forms');
 	// JS
-	wp_enqueue_script('wampum-user-membership');
+	wp_enqueue_script('wampum-zxcvbn');
+	wp_enqueue_script('wampum-user-forms');
 
 	$first_name = $last_name = $email = $disabled = '';
 

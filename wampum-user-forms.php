@@ -317,7 +317,7 @@ final class Wampum_User_Forms {
 		    	}
 				return array(
 					'success' => false,
-					'message' => __( 'A user account already exists with that info.', 'wampum' ) . ' <a href="' . esc_url($login_url) . '" title="Log in">Log in?</a>',
+					'message' => __( 'A user account already exists with that info.', 'wampum' ) . ' <a class="login-link" href="' . esc_url($login_url) . '" title="Log in">Log in?</a>',
 				);
 		    }
 
@@ -447,6 +447,27 @@ final class Wampum_User_Forms {
 	 * @return null
 	 */
 	function register_scripts() {
+		// All Forms
+        wp_register_script( 'wampum-user-forms', WAMPUM_USER_FORMS_PLUGIN_URL . 'js/wampum-user-forms.js', array('jquery'), WAMPUM_USER_FORMS_VERSION, true );
+        wp_localize_script( 'wampum-user-forms', 'wampum_user_forms', array(
+			'root'				=> esc_url_raw( rest_url() ),
+			'nonce'				=> wp_create_nonce( 'wp_rest' ),
+			'failure'			=> __( 'Something went wrong, please try again.', 'wampum' ),
+			'current_url'		=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], // For login URL if email/username exists
+			'current_user_id'	=> get_current_user_id(), // For rest endpoint 'wp/v2/users/123'
+			'login'	=> array(
+				'form'	=> wampum_get_login_form(),
+				'empty'	=> __( 'Username and password fields are empty', 'wampum' ), // Why are these fields not required in WP?!?!
+			),
+			'password' => array(
+				'form'		=> wampum_get_password_form(),
+				'mismatch'	=> __( 'Passwords do not match', 'wampum' ),
+			),
+			'membership' => array(
+				'form' => wampum_get_membership_form(),
+			),
+        ) );
+
 		// Login
         wp_register_script( 'wampum-user-login', WAMPUM_USER_FORMS_PLUGIN_URL . 'js/wampum-user-login.js', array('jquery'), WAMPUM_USER_FORMS_VERSION, true );
         wp_localize_script( 'wampum-user-login', 'wampum_user_login', array(
