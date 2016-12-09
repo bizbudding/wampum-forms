@@ -9,14 +9,14 @@
  * @wordpress-plugin
  * Plugin Name:        Wampum - User Forms
  * Description: 	   Add login and password forms that use the WP-API form processing
- * Plugin URI:         TBD
+ * Plugin URI:         https://github.com/JiveDig/wampum-user-forms
  * Author:             Mike Hemberger
  * Author URI:         https://bizbudding.com
  * Text Domain:        wampum
  * License:            GPL-2.0+
  * License URI:        http://www.gnu.org/licenses/gpl-2.0.txt
  * Version:            1.0.0
- * GitHub Plugin URI:  TBD
+ * GitHub Plugin URI:  https://github.com/JiveDig/wampum-user-forms
  * GitHub Branch:	   master
  */
 
@@ -295,7 +295,6 @@ final class Wampum_User_Forms {
 	    	}
 
 	    	$user_id = get_current_user_id();
-
 
 	    }
 	    // Not logged in
