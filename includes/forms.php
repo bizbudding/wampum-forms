@@ -15,7 +15,7 @@ function wampum_get_login_form( $args ) {
 	// CSS
 	wp_enqueue_style('wampum-user-forms');
 	// JS
-	wp_enqueue_script('wampum-zxcvbn');
+	// wp_enqueue_script('wampum-zxcvbn');
 	wp_enqueue_script('wampum-user-forms');
 
 	$atts = shortcode_atts( array(
@@ -28,7 +28,7 @@ function wampum_get_login_form( $args ) {
 		'id_password'    => 'wampum_user_pass',
 		'id_remember'    => 'wampum_rememberme',
 		'id_submit'      => 'wampum_submit',
-		'label_username' => __( 'Username', 'wampum' ),
+		'label_username' => __( 'Username/Email', 'wampum' ),
 		'label_password' => __( 'Password', 'wampum' ),
 		'label_remember' => __( 'Remember Me', 'wampum' ),
 		'label_log_in'   => __( 'Log In', 'wampum' ),
@@ -166,14 +166,18 @@ function wampum_get_membership_form( $args ) {
 	wp_enqueue_script('wampum-zxcvbn');
 	wp_enqueue_script('wampum-user-forms');
 
+
 	$first_name = $last_name = $email = $disabled = '';
 
 	if ( is_user_logged_in() ) {
+		// $login_form 	= '';
 		$current_user	= wp_get_current_user();
 		$first_name		= $current_user->first_name;
 		$last_name		= $current_user->last_name;
 		$email			= $current_user->user_email;
 		$disabled		= ' disabled';
+	} else {
+		$login_form = wampum_get_login_form( array() );
 	}
 
 	// Keep fields filled out if something crazy happens and page refreshes
@@ -288,4 +292,5 @@ function wampum_get_membership_form( $args ) {
 	</div>
 	<?php
 	return ob_get_clean();
+	// return ob_get_clean() . $login_form;
 }

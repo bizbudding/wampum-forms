@@ -167,12 +167,14 @@ final class Wampum_User_Forms {
 
 	    register_rest_route( 'wampum/v1', '/login/', array(
 			'methods'  => 'GET',
-			'callback' => array( $this, 'status' ),
+			'callback' => array( $this, 'get_login_form' ),
 		));
+
+		// TODO: Add get password method!
 
 	    register_rest_route( 'wampum/v1', '/membership/', array(
 			'methods'  => 'GET',
-			'callback' => array( $this, 'status' ),
+			'callback' => array( $this, 'get_membership_form' ),
 	    ));
 
 		/* **** *
@@ -192,8 +194,16 @@ final class Wampum_User_Forms {
 	}
 
 	// This function displays a message when visiting the endpoint, to confirm it's actually registered
-	function status() {
-		return array( 'success' => 'All is well in the world of Wampum' );
+	// function status() {
+	// 	return array( 'success' => 'All is well in the world of Wampum' );
+	// }
+
+	function get_login_form( $data = array() ) {
+		return wampum_get_login_form( $data );
+	}
+
+	function get_membership_form( $data = array() ) {
+		return wampum_get_membership_form( $data );
 	}
 
 	/**

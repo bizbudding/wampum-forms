@@ -1,83 +1,70 @@
 ;(function( $ ) {
     'use strict';
 
-    // var LoginForm = $( '#wampum_user_login_form' );
+    $( '.wampum-form' ).on( 'submit', '#wampum_user_login_form', function(e) {
 
-    // if ( LoginForm.length ) {
+    	var LoginForm = $(this);
 
-	    // LoginForm.submit(function(e){
-	    $( '.wampum-form' ).on( 'submit', '#wampum_user_login_form', function(e) {
+    	console.log('Login form submitted');
 
-	    	var LoginForm = $(this);
+        e.preventDefault();
 
-	    	console.log('Login form submitted');
+        // Set button as a variable
+        // var button = LoginForm.find( '#wampum_submit' );
+        // Disable the button
+        // NOTE: We can't do the fun loading icon because it's not a button, it's an input[type="submit"]
+        // button.attr( 'disabled', true );
 
-	        e.preventDefault();
+        // Hide any notices
+        LoginForm.find('.wampum-notice').fadeOut('fast');
 
-	        // Set button as a variable
-	        // var button = LoginForm.find( '#wampum_submit' );
-	        // Disable the button
-	        // NOTE: We can't do the fun loading icon because it's not a button, it's an input[type="submit"]
-	        // button.attr( 'disabled', true );
+        // Setup our form data array
+        var data = {
+                user_login: LoginForm.find( '#wampum_user_login' ).val(),
+                user_password: LoginForm.find( '#wampum_user_pass' ).val(),
+                remember: LoginForm.find( '#wampum_rememberme' ).val(),
+            };
 
-	        // Hide any notices
-	        LoginForm.find('.wampum-notice').fadeOut('fast');
+        // Display an error if username and password fields are emmpty. Why is those fields not required in WP core?
+        if ( ! ( data.user_login && data.user_password ) ) {
+            LoginForm.hide().prepend('<div class="wampum-notice error">' + wampum_user_forms.login.empty + '</div>').fadeIn('fast');
+            // Re-enable the button
+            // button.attr( 'disabled', false );
+            // Stop the submission!
+            return false;
+        }
 
-	        // Setup our form data array
-	        var data = {
-	                user_login: LoginForm.find( '#wampum_user_login' ).val(),
-	                user_password: LoginForm.find( '#wampum_user_pass' ).val(),
-	                remember: LoginForm.find( '#wampum_rememberme' ).val(),
-	            };
+        $.ajax({
+            method: 'POST',
+            url: wampum_user_forms.root + 'wampum/v1/login/',
+            data: data,
+            beforeSend: function ( xhr ) {
+                xhr.setRequestHeader( 'X-WP-Nonce', wampum_user_forms.nonce );
+            },
+            success: function( response ) {
+                console.log(response);
+                if ( response.success == true ) {
+                    // Display success message
+                    LoginForm.hide().prepend('<div class="wampum-notice success">Success!</div>').fadeIn('fast', function() {
+                        // Refresh/redirect
+                        window.location.replace( LoginForm.find( 'input[name="redirect_to"]' ).val() );
+                    });
+                } else {
+                    // Display error message
+                    LoginForm.hide().prepend('<div class="wampum-notice error">' + response.message + '</div>').fadeIn('fast');
+                }
+            },
+            fail: function( response ) {
+                // Not sure when this would happen, but fallbacks!
+                LoginForm.hide().prepend('<div class="wampum-notice error">' + wampum_user_forms.failure + '</div>').fadeIn('fast');
+            },
+            complete: function( response ) {
+                // Re-enable the button
+                // button.html(button_html).attr( 'disabled', false );
+            }
+        });
 
-	        // Display an error if username and password fields are emmpty. Why is those fields not required in WP core?
-	        if ( ! ( data.user_login && data.user_password ) ) {
-	            LoginForm.hide().prepend('<div class="wampum-notice error">' + wampum_user_forms.login.empty + '</div>').fadeIn('fast');
-	            // Re-enable the button
-	            // button.attr( 'disabled', false );
-	            // Stop the submission!
-	            return false;
-	        }
-
-	        $.ajax({
-	            method: 'POST',
-	            url: wampum_user_forms.root + 'wampum/v1/login/',
-	            data: data,
-	            beforeSend: function ( xhr ) {
-	                xhr.setRequestHeader( 'X-WP-Nonce', wampum_user_forms.nonce );
-	            },
-	            success: function( response ) {
-	                console.log(response);
-	                if ( response.success == true ) {
-	                    // Display success message
-	                    LoginForm.hide().prepend('<div class="wampum-notice success">Success!</div>').fadeIn('fast', function() {
-	                        // Refresh/redirect
-	                        window.location.replace( LoginForm.find( 'input[name="redirect_to"]' ).val() );
-	                    });
-	                } else {
-	                    // Display error message
-	                    LoginForm.hide().prepend('<div class="wampum-notice error">' + response.message + '</div>').fadeIn('fast');
-	                }
-	            },
-	            fail: function( response ) {
-	                // Not sure when this would happen, but fallbacks!
-	                LoginForm.hide().prepend('<div class="wampum-notice error">' + wampum_user_forms.failure + '</div>').fadeIn('fast');
-	            },
-	            complete: function( response ) {
-	                // Re-enable the button
-	                // button.html(button_html).attr( 'disabled', false );
-	            }
-	        });
-
-	    });
-
-	// }
-
-})( jQuery );
-
-
-;(function( $ ) {
-    'use strict';
+    });
 
     var PasswordForm = $( '#wampum_user_password_form' );
 
@@ -116,72 +103,66 @@
 
 	}
 
-	    // PasswordForm.submit(function(e){
-    	$( '.wampum-form' ).on( 'submit', '#wampum_user_password_form', function(e) {
+    // PasswordForm.submit(function(e){
+	$( '.wampum-form' ).on( 'submit', '#wampum_user_password_form', function(e) {
 
-	    	var PasswordForm = $(this);
+    	var PasswordForm = $(this);
 
-	        e.preventDefault();
+        e.preventDefault();
 
-	        // Set button as a variable
-	        var button = PasswordForm.find( '#wampum_submit' );
-	        // Get the button text/value so we can add it back later
-	        var button_html = button.html();
-	        // Disable the button
-	        button.attr( 'disabled', true );
-	        // Set the button text/value to loading icons
-	        button.html( '<div class ="wampum-loading"><div class="wampum-loading-circle wampum-loading-circle1">&#8226;</div><div class="wampum-loading-circle wampum-loading-circle2">&#8226;</div><div class="wampum-loading-circle wampum-loading-circle3">&#8226;</div></div>' );
+        // Set button as a variable
+        var button = PasswordForm.find( '#wampum_submit' );
+        // Get the button text/value so we can add it back later
+        var button_html = button.html();
+        // Disable the button
+        button.attr( 'disabled', true );
+        // Set the button text/value to loading icons
+        button.html( '<div class ="wampum-loading"><div class="wampum-loading-circle wampum-loading-circle1">&#8226;</div><div class="wampum-loading-circle wampum-loading-circle2">&#8226;</div><div class="wampum-loading-circle wampum-loading-circle3">&#8226;</div></div>' );
 
-	        // Hide any notices
-	        PasswordForm.find('.wampum-notice').fadeOut('fast');
+        // Hide any notices
+        PasswordForm.find('.wampum-notice').fadeOut('fast');
 
-	        var password = PasswordForm.find( '#wampum_user_password' ).val();
-	        var confirm  = PasswordForm.find( '#wampum_user_password_confirm' ).val();
+        var password = PasswordForm.find( '#wampum_user_password' ).val();
+        var confirm  = PasswordForm.find( '#wampum_user_password_confirm' ).val();
 
-	        if ( password !== confirm ) {
-	            PasswordForm.hide().prepend('<div class="wampum-notice error">' + wampum_user_forms.mismatch + '</div>').fadeIn('fast');
-	            // Re-enable the button
-	            button.html(button_html).attr( 'disabled', false );
-	            // Stop the submission!
-	            return false;
-	        }
+        if ( password !== confirm ) {
+            PasswordForm.hide().prepend('<div class="wampum-notice error">' + wampum_user_forms.mismatch + '</div>').fadeIn('fast');
+            // Re-enable the button
+            button.html(button_html).attr( 'disabled', false );
+            // Stop the submission!
+            return false;
+        }
 
-	        // Setup our form data array
-	        var data = {
-	                password: PasswordForm.find( '#wampum_user_password' ).val(),
-	            };
+        // Setup our form data array
+        var data = {
+                password: PasswordForm.find( '#wampum_user_password' ).val(),
+            };
 
-	        $.ajax({
-	            method: 'POST',
-	            url: wampum_user_forms.root + 'wp/v2/users/' + wampum_user_forms.current_user_id,
-	            data: data,
-	            beforeSend: function ( xhr ) {
-	                xhr.setRequestHeader( 'X-WP-Nonce', wampum_user_forms.nonce );
-	            },
-	            success: function( response ) {
-	                // Display success message
-	                PasswordForm.hide().prepend('<div class="wampum-notice success">Success!</div>').fadeIn('fast', function() {
-	                    // Refresh/redirect
-	                    window.location.replace( PasswordForm.find( 'input[name="redirect_to"]' ).val() );
-	                });
-	            },
-	            fail: function( response ) {
-	                // Not sure when this would happen, but fallbacks!
-	                PasswordForm.hide().prepend('<div class="wampum-notice error">' + wampum_user_forms.failure + '</div>').fadeIn('fast');
-	            },
-	            complete: function( response ) {
-	                // Re-enable the button
-	                button.html(button_html).attr( 'disabled', false );
-	            }
-	        });
+        $.ajax({
+            method: 'POST',
+            url: wampum_user_forms.root + 'wp/v2/users/' + wampum_user_forms.current_user_id,
+            data: data,
+            beforeSend: function ( xhr ) {
+                xhr.setRequestHeader( 'X-WP-Nonce', wampum_user_forms.nonce );
+            },
+            success: function( response ) {
+                // Display success message
+                PasswordForm.hide().prepend('<div class="wampum-notice success">Success!</div>').fadeIn('fast', function() {
+                    // Refresh/redirect
+                    window.location.replace( PasswordForm.find( 'input[name="redirect_to"]' ).val() );
+                });
+            },
+            fail: function( response ) {
+                // Not sure when this would happen, but fallbacks!
+                PasswordForm.hide().prepend('<div class="wampum-notice error">' + wampum_user_forms.failure + '</div>').fadeIn('fast');
+            },
+            complete: function( response ) {
+                // Re-enable the button
+                button.html(button_html).attr( 'disabled', false );
+            }
+        });
 
-	    });
-
-})( jQuery );
-
-
-;(function( $ ) {
-    'use strict';
+    });
 
     // MembershipForm.submit(function(e){
     $( '.wampum-form' ).on( 'submit', '#wampum_user_membership_form', function(e) {
@@ -191,6 +172,10 @@
         e.preventDefault();
 
         var MembershipForm = $(this);
+
+		// var formdata = MembershipForm.serialize();
+		// console.log( MembershipForm.serialize() );
+		// console.log( $( '#wampum_membership_email' ).val() );
 
         // Set button as a variable
         var button = MembershipForm.find( '#wampum_submit' );
@@ -236,7 +221,6 @@
                 xhr.setRequestHeader( 'X-WP-Nonce', wampum_user_forms.nonce );
             },
             success: function( response ) {
-                console.log(response);
 
                 if ( response.success == true ) {
 
@@ -260,12 +244,37 @@
                     });
 
                 } else {
+
                     // Display error message
                     MembershipForm.hide().prepend('<div class="wampum-notice error">' + response.message + '</div>').fadeIn('fast');
+
+                    var submitted_email = $( '#wampum_membership_email' ).val();
+
 	                $(MembershipForm).on( 'click', '.login-link', function(click) {
+
 	                	click.preventDefault();
-						MembershipForm.parent('.wampum-form').html(wampum_user_forms.login.form);
-						var LoginForm = $( '#wampum_user_login_form' ); // Listener? Not working?
+
+					    $.ajax({
+					        method: 'GET',
+					        url: wampum_user_forms.root + 'wampum/v1/login/',
+					        data: data,
+					        beforeSend: function ( xhr ) {
+					            xhr.setRequestHeader( 'X-WP-Nonce', wampum_user_forms.nonce );
+					        },
+					        success: function( response ) {
+					        	// Show the login form
+					        	MembershipForm.parent('.wampum-form').hide().html(response).fadeIn('slow');
+					        	// Put the submitted email as the user login
+					        	$('#wampum_user_login').val(submitted_email);
+					        },
+					        fail: function( response ) {
+					        },
+					        complete: function( response ) {
+					        }
+					    });
+
+						// MembershipForm.parent('.wampum-form').html(wampum_user_forms.login.form);
+						// var LoginForm = $( '#wampum_user_login_form' ); // Listener? Not working?
 					});
                 }
             },
