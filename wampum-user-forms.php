@@ -327,7 +327,7 @@ final class Wampum_User_Forms {
 		    	}
 				return array(
 					'success' => false,
-					'message' => __( 'A user account already exists with that info.', 'wampum' ) . ' <a class="login-link" href="' . esc_url($login_url) . '" title="Log in">Log in?</a>',
+					'message' => __( 'This user account already exists.', 'wampum' ) . ' <a class="login-link" href="' . esc_url($login_url) . '" title="Log in">Log in?</a>',
 				);
 		    }
 
