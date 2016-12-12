@@ -181,8 +181,6 @@
         // Set the button text/value to loading icons
         button.html( '<div class ="wampum-loading"><div class="wampum-loading-circle wampum-loading-circle1">&#8226;</div><div class="wampum-loading-circle wampum-loading-circle2">&#8226;</div><div class="wampum-loading-circle wampum-loading-circle3">&#8226;</div></div>' );
 
-		// var formdata = MembershipForm.serialize();
-
         // Hide any notices
 		hideNotices(MembershipForm);
 
@@ -236,6 +234,7 @@
 
                     // Display success message
                     MembershipForm.hide().prepend('<div class="wampum-notice success">Success!</div>').fadeIn('fast', function() {
+                        // CHECK IF REDIRECT? MAYBE NO REFRESH/REDIRECT?!?!
                         // Refresh/redirect
                         window.location.replace( response.redirect );
                     });
@@ -249,39 +248,32 @@
 
 	                	e.preventDefault();
 
-					    $.ajax({
-					        method: 'GET',
-					        url: wampum_user_forms.root + 'wampum/v1/login/',
-					        data: data,
-					        beforeSend: function ( xhr ) {
-					            xhr.setRequestHeader( 'X-WP-Nonce', wampum_user_forms.nonce );
-					        },
-					        success: function( response ) {
-					        	// Hide notices so if user clicks the back button none show
-	       		        		hideNotices(MembershipForm);
-					        	// Get the full membership form markup into a variable
-					        	var MembershipFormWrap = $( '#wampum_user_membership_form' ).parent('.wampum-form');
-					        	// Show the login form
-					        	MembershipFormWrap.replaceWith(response);
-					        	// Get the full login form markup into a variable
-					        	var LoginFormWrap = $('#wampum_user_login_form').parent('.wampum-form');
-					        	// Put the submitted email as the user login
-					        	LoginFormWrap.find('#wampum_user_login').val(data.user_email);
-					        	// Add back button
-					        	LoginFormWrap.find('#wampum_submit').after('<a class="wampum-back" href="#">&nbsp;&nbsp;Go back</a>');
-								// On click of the back button
-								LoginFormWrap.on( 'click', '.wampum-back', function(e) {
-									e.preventDefault();
-									// Add back the membership form as we left it
-						        	LoginFormWrap.replaceWith( MembershipFormWrap );
-								});
-					        },
-					        fail: function( response ) {
-					        },
-					        complete: function( response ) {
-					        }
-					    });
+	                	hideNotices(MembershipForm);
 
+	                	var LoginForm = $('#wampum_user_login_form');
+
+	                	// Swap forms
+	                	MembershipForm.hide();
+	                	LoginForm.show();
+
+	                	// Set submitted email value as the login field
+			        	LoginForm.find('#wampum_user_login').val(data.user_email);
+
+			        	// If user goes to login, back to membership, then to login, we'd have duplicate back buttons
+			        	LoginForm.find('.wampum-back').remove();
+
+			        	// Add back button
+			        	LoginForm.find('#wampum_submit').after('<a class="wampum-back" href="#">&nbsp;&nbsp;Go back</a>');
+
+						// On click of the back button
+						LoginForm.on( 'click', '.wampum-back', function(e) {
+							e.preventDefault();
+		                	// Swap forms
+		                	LoginForm.hide();
+    	                	MembershipForm.show();
+    	                	// Clear the password field
+    	                	LoginForm.find('#wampum_user_pass').val('');
+						});
 					});
                 }
             },
