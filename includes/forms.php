@@ -113,8 +113,8 @@ function wampum_get_login_form( $args ) {
 			<?php } ?>
 
 			<p class="wampum-field wampum-submit login-submit">
-				<button id="wampum_submit" class="button" type="submit" form="wampum_user_login_form"><?php _e( 'Log In', 'wampum' ); ?></button>
-				<input type="hidden" name="wampum_redirect" id="wampum_redirect" value="<?php echo $args['redirect']; ?>">
+				<button class="wampum_submit button" type="submit" form="wampum_user_login_form"><?php _e( 'Log In', 'wampum' ); ?></button>
+				<input type="hidden" name="wampum_redirect" class="wampum_redirect" value="<?php echo $args['redirect']; ?>">
 			</p>
 
 		</form>
@@ -177,9 +177,9 @@ function wampum_get_password_form( $args ) {
 			</p>
 
 			<p class="wampum-field wampum-submit password-submit">
-				<button id="wampum_submit" class="button" type="submit" form="wampum_user_password_form"><?php _e( 'Save Password', 'wampum' ); ?></button>
+				<button class="wampum_submit button" type="submit" form="wampum_user_password_form"><?php _e( 'Save Password', 'wampum' ); ?></button>
 				<input type="hidden" name="wampum_user_id" id="wampum_user_id" value="<?php echo get_current_user_id(); ?>">
-				<input type="hidden" name="wampum_redirect" id="wampum_redirect" value="<?php echo $args['redirect']; ?>">
+				<input type="hidden" name="wampum_redirect" class="wampum_redirect" value="<?php echo $args['redirect']; ?>">
 			</p>
 
 		</form>
@@ -329,9 +329,9 @@ function wampum_get_membership_form( $args ) {
 				?>
 
 				<p class="wampum-field wampum-submit membership-submit">
-					<button id="wampum_submit" class="button" type="submit" form="wampum_user_membership_form"><?php echo $args['button']; ?></button>
+					<button class="wampum_submit button" type="submit" form="wampum_user_membership_form"><?php echo $args['button']; ?></button>
 					<input type="hidden" name="wampum_plan_id" id="wampum_plan_id" value="<?php echo $args['plan_id']; ?>">
-					<input type="hidden" name="wampum_redirect" id="wampum_redirect" value="<?php echo $args['redirect']; ?>">
+					<input type="hidden" name="wampum_redirect" class="wampum_redirect" value="<?php echo $args['redirect']; ?>">
 					<?php
 					// SharpSpring baseURI
 					if ( $args['ss_baseuri'] ) {

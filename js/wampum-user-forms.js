@@ -10,7 +10,7 @@
         // Set the form as a variable
         var LoginForm = $(this);
         // Set button as a variable
-        var button = LoginForm.find( '#wampum_submit' );
+        var button = LoginForm.find( '.wampum_submit' );
         // Get the button text/value so we can add it back later
         var button_html = button.html();
         // Disable the button
@@ -36,17 +36,24 @@
                 xhr.setRequestHeader( 'X-WP-Nonce', wampum_user_forms.nonce );
             },
             success: function( response ) {
-                console.log(response);
                 if ( response.success == true ) {
                     // Display success message
                     LoginForm.hide().prepend('<div class="wampum-notice success">Success!</div>').fadeIn('fast', function() {
-
-                        var redirect = LoginForm.find( '#wampum_redirect' ).val();
-                        // IF EMPTY IT REDIRECTS TO REST API!
+                    	// Only redirect if we have a value
+                        var redirect = LoginForm.find( '.wampum_redirect' ).val();
                         if ( redirect ) {
-	                        // Refresh/redirect
-	                        window.location.replace( redirect );
-                        }
+			                console.log(redirect);
+                        	if ( 'membership_form' == redirect ) {
+			                	// Swap forms
+			                	LoginForm.hide();
+			                	$('#wampum_user_membership_form').show();
+                        	} else {
+		                        // Refresh/redirect
+		                        window.location.replace( redirect );
+                        	}
+                        } else {
+	                    	LoginForm.fadeOut('fast');
+	                    }
                     });
                 } else {
                     // Display error message
@@ -110,7 +117,7 @@
         // Set the form as a variable
         var PasswordForm = $(this);
         // Set button as a variable
-        var button = PasswordForm.find( '#wampum_submit' );
+        var button = PasswordForm.find( '.wampum_submit' );
         // Get the button text/value so we can add it back later
         var button_html = button.html();
         // Disable the button
@@ -133,6 +140,8 @@
             return false;
         }
 
+        var user_id = PasswordForm.find('.wampum_user_id').val();
+
         // Setup our form data array
         var data = {
                 password: PasswordForm.find( '#wampum_user_password' ).val(),
@@ -140,7 +149,7 @@
 
         $.ajax({
             method: 'POST',
-            url: wampum_user_forms.root + 'wp/v2/users/' + wampum_user_forms.current_user_id,
+            url: wampum_user_forms.root + 'wp/v2/users/' + user_id,
             data: data,
             beforeSend: function ( xhr ) {
                 xhr.setRequestHeader( 'X-WP-Nonce', wampum_user_forms.nonce );
@@ -148,8 +157,14 @@
             success: function( response ) {
                 // Display success message
                 PasswordForm.hide().prepend('<div class="wampum-notice success">Success!</div>').fadeIn('fast', function() {
-                    // Refresh/redirect
-                    window.location.replace( PasswordForm.find( '#wampum_redirect' ).val() );
+                	// Only redirect if we have a value
+                    var redirect = PasswordForm.find( '.wampum_redirect' ).val();
+                    if ( redirect ) {
+                        // Refresh/redirect
+                        window.location.replace( redirect );
+                    } else {
+                    	PasswordForm.fadeOut('fast');
+                    }
                 });
             },
             fail: function( response ) {
@@ -173,7 +188,7 @@
         // Set the form as a variable
         var MembershipForm = $(this);
         // Set button as a variable
-        var button = MembershipForm.find( '#wampum_submit' );
+        var button = MembershipForm.find( '.wampum_submit' );
         // Get the button text/value so we can add it back later
         var button_html = button.html();
         // Disable the button
@@ -193,7 +208,6 @@
                 username: MembershipForm.find( '#wampum_membership_username' ).val(),
                 password: MembershipForm.find( '#wampum_membership_password' ).val(),
                 say_what: MembershipForm.find( '#wampum_say_what' ).val(), // honeypot
-                redirect: MembershipForm.find( '#wampum_redirect' ).val(),
             };
 
         // SharpSpring data, incase we need it later
@@ -217,7 +231,11 @@
             },
             success: function( response ) {
 
+            	console.log(response);
+
                 if ( response.success == true ) {
+
+                	var user_id = response.user;
 
                     // If this is a SharpSpring form, send that data!
                     if ( SharpSpringBaseURI && SharpSpringEndpoint ) {
@@ -234,10 +252,31 @@
 
                     // Display success message
                     MembershipForm.hide().prepend('<div class="wampum-notice success">Success!</div>').fadeIn('fast', function() {
-                        // CHECK IF REDIRECT? MAYBE NO REFRESH/REDIRECT?!?!
-                        // Refresh/redirect
-                        window.location.replace( response.redirect );
-                    });
+                    	// Get the redirect value
+	                    var redirect = MembershipForm.find( '.wampum_redirect' ).val();
+	                    // If a user was created during the process
+						if ( user_id ) {
+							var PasswordForm = $('#wampum_user_password_form');
+							PasswordForm.find( '.wampum_user_id' ).val(user_id);
+							PasswordForm.find( '.wampum_redirect' ).val(redirect);
+		                	// Swap forms
+		                	MembershipForm.hide();
+		                	PasswordForm.show();
+						} else {
+		                	// Only redirect if we have a value
+		                    if ( redirect ) {
+								setTimeout(function() {
+			                        // Refresh/redirect
+			                        window.location.replace( redirect );
+								}, 300 );
+		                    } else {
+								setTimeout(function() {
+									// Fade the form out
+			                    	MembershipForm.fadeOut('fast');
+								}, 300 );
+		                    }
+		                }
+					});
 
                 } else {
 
@@ -259,11 +298,13 @@
 	                	// Set submitted email value as the login field
 			        	LoginForm.find('#wampum_user_login').val(data.user_email);
 
+			        	// TODO: HOW THE HECK DO WE GET BACK TO THE MEMBERSHIP FORM!!!!!
+
 			        	// If user goes to login, back to membership, then to login, we'd have duplicate back buttons
 			        	LoginForm.find('.wampum-back').remove();
 
 			        	// Add back button
-			        	LoginForm.find('#wampum_submit').after('<a class="wampum-back" href="#">&nbsp;&nbsp;Go back</a>');
+			        	LoginForm.find('.wampum_submit').after('<a class="wampum-back" href="#">&nbsp;&nbsp;Go back</a>');
 
 						// On click of the back button
 						LoginForm.on( 'click', '.wampum-back', function(e) {
@@ -274,6 +315,7 @@
     	                	// Clear the password field
     	                	LoginForm.find('#wampum_user_pass').val('');
 						});
+
 					});
                 }
             },

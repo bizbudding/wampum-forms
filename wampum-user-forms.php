@@ -147,8 +147,6 @@ final class Wampum_User_Forms {
 		add_shortcode( 'wampum-login-form', array( $this, 'login_form_callback' ) );
 		add_shortcode( 'wampum-password-form', array( $this, 'password_form_callback' ) );
 		add_shortcode( 'wampum-membership-form', array( $this, 'membership_form_callback' ) );
-
-		// add_action( 'wp_footer', array( $this, 'query_var_forms' ) );
 	}
 
 	function activate() {
@@ -201,14 +199,6 @@ final class Wampum_User_Forms {
 	function status() {
 		return array( 'success' => 'All is well in the world of Wampum' );
 	}
-
-	// function get_login_form( $data = array() ) {
-	// 	return wampum_get_login_form( $data );
-	// }
-
-	// function get_membership_form( $data = array() ) {
-	// 	return wampum_get_membership_form( $data );
-	// }
 
 	/**
 	 * Login a user
@@ -264,7 +254,6 @@ final class Wampum_User_Forms {
 	 * 		@type  string   $first_name 	First name
 	 * 		@type  string   $last_name	 	Last name
 	 * 		@type  string   $note 		 	Note to add to membership during save
-	 * 		@type  string   $redirect 		URL to redirect after form submission
 	 * 		@type  string   $say_what 		Honeypot field
 	 * }
 	 *
@@ -335,6 +324,8 @@ final class Wampum_User_Forms {
 				);
 		    }
 
+	    	$user_created = false;
+
 	        /**
 	         * Start the new user data
 	         * Email is the only field required to exist in the form
@@ -388,16 +379,6 @@ final class Wampum_User_Forms {
 				);
 	        }
 
-			/**
-			 * If user was not logged in and there was no password field
-			 * If this were the case, a password was generated, so we should make them change it
-			 */
-			if ( function_exists('wampum_popup') ) {
-				if ( ! ( isset($data['password']) || $data['password'] ) ) {
-					$data['redirect'] = add_query_arg( 'user', 'password', $data['redirect'] );
-				}
-			}
-
 	    }
 
     	$plan_id = absint($data['plan_id']);
@@ -423,8 +404,8 @@ final class Wampum_User_Forms {
 
         // Success!
 		return array(
-			'success'  => true,
-			'redirect' => esc_url($data['redirect']),
+			'success' => true,
+			'user'	  => $user_id, // false|user_id If user was created in the process
 		);
 
 	}
@@ -462,6 +443,7 @@ final class Wampum_User_Forms {
 	 */
 	function register_scripts() {
 		// All Forms
+        wp_register_script( 'wampum-zxcvbn', WAMPUM_USER_FORMS_PLUGIN_URL . 'js/zxcvbn.js', array('jquery'), '4.4.1', true );
         wp_register_script( 'wampum-user-forms', WAMPUM_USER_FORMS_PLUGIN_URL . 'js/wampum-user-forms.js', array('jquery'), WAMPUM_USER_FORMS_VERSION, true );
         wp_localize_script( 'wampum-user-forms', 'wampum_user_forms', array(
 			'root'				=> esc_url_raw( rest_url() ),
@@ -524,6 +506,7 @@ final class Wampum_User_Forms {
 		// JS
 		wp_enqueue_script('wampum-zxcvbn');
 		wp_enqueue_script('wampum-user-forms');
+
 		$classes = 'wampum-form';
 		if ( filter_var( $args['inline'], FILTER_VALIDATE_BOOLEAN ) ) {
 			$classes .= ' wampum-form-inline';
@@ -578,7 +561,7 @@ final class Wampum_User_Forms {
 			'title'			 => __( 'Login', 'wampum' ),
 			'title_wrap'	 => 'h3',
 			'remember'       => true,
-			'redirect'       => ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'],
+			'redirect'       => ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], // a url or null
 			'value_username' => '',
 			'value_remember' => true,
 		), $args, 'wampum-login-form' );
@@ -611,8 +594,8 @@ final class Wampum_User_Forms {
 			<?php } ?>
 
 			<p class="wampum-field wampum-submit login-submit">
-				<button id="wampum_submit" class="button" type="submit" form="wampum_user_login_form"><?php _e( 'Log In', 'wampum' ); ?></button>
-				<input type="hidden" name="wampum_redirect" id="wampum_redirect" value="<?php echo $args['redirect']; ?>">
+				<button class="wampum_submit button" type="submit" form="wampum_user_login_form"><?php _e( 'Log In', 'wampum' ); ?></button>
+				<input type="hidden" name="wampum_redirect" class="wampum_redirect" value="<?php echo $args['redirect']; ?>">
 			</p>
 
 		</form>
@@ -628,7 +611,7 @@ final class Wampum_User_Forms {
 			'title'			=> __( 'Set A New Password', 'wampum' ),
 			'title_wrap'	=> 'h3',
 			'button'		=> __( 'Submit', 'wampum' ),
-			'redirect'		=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'],
+			'redirect'		=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], // a url or null
 		), $args, 'wampum-password-form' );
 
 		ob_start();
@@ -661,9 +644,9 @@ final class Wampum_User_Forms {
 			</p>
 
 			<p class="wampum-field wampum-submit password-submit">
-				<button id="wampum_submit" class="button" type="submit" form="wampum_user_password_form"><?php _e( 'Save Password', 'wampum' ); ?></button>
-				<input type="hidden" name="wampum_user_id" id="wampum_user_id" value="<?php echo get_current_user_id(); ?>">
-				<input type="hidden" name="wampum_redirect" id="wampum_redirect" value="<?php echo $args['redirect']; ?>">
+				<button class="wampum_submit button" type="submit" form="wampum_user_password_form"><?php _e( 'Save Password', 'wampum' ); ?></button>
+				<input type="hidden" name="wampum_user_id" class="wampum_user_id" value="<?php echo get_current_user_id(); ?>">
+				<input type="hidden" name="wampum_redirect" class="wampum_redirect" value="<?php echo $args['redirect']; ?>">
 			</p>
 
 		</form>
@@ -677,7 +660,7 @@ final class Wampum_User_Forms {
 		$args = shortcode_atts( array(
 			'hidden'		 	=> false,
 			'plan_id'			=> false, // required
-			'redirect'			=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'],
+			'redirect'			=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'],  // a url or null
 			'title'				=> false,
 			'title_wrap'		=> 'h3',
 			'first_name'		=> true,
@@ -793,9 +776,9 @@ final class Wampum_User_Forms {
 				?>
 
 				<p class="wampum-field wampum-submit membership-submit">
-					<button id="wampum_submit" class="button" type="submit" form="wampum_user_membership_form"><?php echo $args['button']; ?></button>
+					<button class="wampum_submit button" type="submit" form="wampum_user_membership_form"><?php echo $args['button']; ?></button>
 					<input type="hidden" name="wampum_plan_id" id="wampum_plan_id" value="<?php echo $args['plan_id']; ?>">
-					<input type="hidden" name="wampum_redirect" id="wampum_redirect" value="<?php echo $args['redirect']; ?>">
+					<input type="hidden" name="wampum_redirect" class="wampum_redirect" value="<?php echo $args['redirect']; ?>">
 					<?php
 					// SharpSpring baseURI
 					if ( $args['ss_baseuri'] ) {
