@@ -31,8 +31,13 @@
 	margin-left: 2px;
 }
 
+.wampum-form .wampum-field.readonly,
 .wampum-form .wampum-field.disabled {
 	opacity: 0.6;
+}
+
+.wampum-form form.processing {
+	opacity: 0.75;
 }
 
 /* Wampum Notices */
