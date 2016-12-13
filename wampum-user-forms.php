@@ -562,6 +562,14 @@ final class Wampum_User_Forms {
             $user_membership->add_note( sanitize_text_field($note) );
         }
 
+        // If email notifications set, let's send away!
+        if ( $data['notifications'] ) {
+			$to			= trim(sanitize_text_field($data['notifications']));
+			$subject	= get_bloginfo('name') . ' - ' . get_the_title($plan_id) . ' membership added';
+			$body		= get_bloginfo('name') . ' - ' . get_the_title($plan_id) . ' membership added via Wampum form at ' . esc_url($data['current_url']);
+			wp_mail( $to, $subject, $body );
+        }
+
         // Success!
 		return array(
 			'success' => true,
@@ -692,6 +700,16 @@ final class Wampum_User_Forms {
 			return;
 		}
 
+		/**
+		 * Bail if no membership form
+		 * This happens when a logged in user is already a member
+		 * and there is no notice to display for logged in  members ( via $args['member_message'] )
+		 */
+		$membership_form = $this->get_membership_form( $args );
+		if ( ! $membership_form ) {
+			return;
+		}
+
 		// CSS
 		wp_enqueue_style('wampum-user-forms');
 		// JS
@@ -705,7 +723,7 @@ final class Wampum_User_Forms {
 
 		return sprintf( '<div class="%s">%s%s</div>',
 			$classes,
-			$this->get_membership_form( $args ),
+			$membership_form,
 			$this->get_login_form( array( 'hidden' => true ) ) // If form used in membership on-boarding, this tells us to refresh to current page
 		);
 	}
@@ -839,12 +857,14 @@ final class Wampum_User_Forms {
 			return;
 		}
 
+		// trace( wc_memberships_is_user_member( get_current_user_id(), (int)$args['plan_id'] ) );
+		ob_start();
+
 		// Return (with an optional message) if user is a logged in member of the plan
-		if ( is_user_logged_in() && wc_memberships_is_user_member( get_current_user_id(), $args['plan_id'] ) ) {
+		if ( is_user_logged_in() && wc_memberships_is_user_member( get_current_user_id(), (int)$args['plan_id'] ) ) {
 			return $args['member_message'] ? wpautop($args['member_message']) : '';
 		}
 
-		ob_start();
 
 		$first_name = $last_name = $email = $readonly = '';
 		if ( is_user_logged_in() ) {
@@ -987,6 +1007,7 @@ final class Wampum_User_Forms {
 			<p class="wampum-field wampum-submit membership-submit">
 				<button class="wampum_submit button<?php echo is_user_logged_in() ? '' : ' paged'; ?>" type="submit" form="wampum_membership_form"><?php echo $args['button']; ?></button>
 				<input type="hidden" class="wampum_membership_success" name="wampum_membership_success" value="1">
+				<input type="hidden" class="wampum_notifications" name="wampum_notifications" value="<?php echo $args['notifications']; ?>">
 				<input type="hidden" class="wampum_plan_id" name="wampum_plan_id" value="<?php echo $args['plan_id']; ?>">
 				<input type="hidden" class="wampum_redirect" name="wampum_redirect" value="<?php echo $args['redirect']; ?>">
 				<?php

@@ -323,6 +323,7 @@
                 user_email: MembershipForm.find( '.wampum_email' ).val(),
                 username: MembershipForm.find( '.wampum_username' ).val(),
                 password: MembershipForm.find( '.wampum_password' ).val(),
+                notifications: MembershipForm.find( '.wampum_notifications').val(),
                 say_what: MembershipForm.find( '.wampum_say_what' ).val(), // honeypot
                 current_url: wampum_user_forms.current_url,
             };
