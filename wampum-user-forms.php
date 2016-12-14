@@ -446,7 +446,7 @@ final class Wampum_User_Forms {
 	    if ( is_user_logged_in() ) {
 	    	/**
 	    	 * Return error if they are trying to register another email
-	    	 * Email field should be readonly, but just incase...
+	    	 * Email field should be readonly, but a user may try to change this via dev tools
 	    	 */
 	    	$current_user = wp_get_current_user();
 	    	if ( $email != $current_user->user_email ) {
@@ -635,24 +635,12 @@ final class Wampum_User_Forms {
 		if ( is_user_logged_in() ) {
 			return;
 		}
-		// The full $args list is parsed in get_{name}_form() method
-		$defaults = array(
-			'inline' => false,
-		);
-		$args = wp_parse_args( $args, $defaults );
-
 		// CSS
 		wp_enqueue_style('wampum-user-forms');
 		// JS
 		wp_enqueue_script('wampum-user-forms');
-		$classes = 'wampum-form';
-		if ( filter_var( $args['inline'], FILTER_VALIDATE_BOOLEAN ) ) {
-			$classes .= ' wampum-form-inline';
-		}
-		return sprintf( '<div class="%s">%s</div>',
-			$classes,
-			$this->get_login_form( $args )
-		);
+
+		return sprintf( '<div class="wampum-form">%s</div>', $this->get_login_form( $args ) );
 	}
 
 	function password_form_callback( $args ) {
@@ -660,26 +648,13 @@ final class Wampum_User_Forms {
 		if ( ! is_user_logged_in() ) {
 			return;
 		}
-		// The full $args list is parsed in get_{name}_form() method
-		$defaults = array(
-			'inline' => false,
-		);
-		$args = wp_parse_args( $args, $defaults );
-
 		// CSS
 		wp_enqueue_style('wampum-user-forms');
 		// JS
 		wp_enqueue_script('wampum-zxcvbn');
 		wp_enqueue_script('wampum-user-forms');
 
-		$classes = 'wampum-form';
-		if ( filter_var( $args['inline'], FILTER_VALIDATE_BOOLEAN ) ) {
-			$classes .= ' wampum-form-inline';
-		}
-		return sprintf( '<div class="%s">%s</div>',
-			$classes,
-			$this->get_password_form( $args )
-		);
+		return sprintf( '<div class="wampum-form">%s</div>', $this->get_password_form( $args ) );
 	}
 
 	function membership_form_callback( $args ) {
@@ -691,7 +666,6 @@ final class Wampum_User_Forms {
 		// The full $args list is parsed in get_{name}_form() method
 		$defaults = array(
 			'plan_id' => false, // required
-			'inline'  => false,
 		);
 		$args = wp_parse_args( $args, $defaults );
 
@@ -716,13 +690,7 @@ final class Wampum_User_Forms {
 		wp_enqueue_script('wampum-zxcvbn');
 		wp_enqueue_script('wampum-user-forms');
 
-		$classes = 'wampum-form';
-		if ( filter_var( $args['inline'], FILTER_VALIDATE_BOOLEAN ) ) {
-			$classes .= ' wampum-form-inline';
-		}
-
-		return sprintf( '<div class="%s">%s%s</div>',
-			$classes,
+		return sprintf( '<div class="wampum-form">%s%s</div>',
 			$membership_form,
 			$this->get_login_form( array( 'hidden' => true ) ) // If form used in membership on-boarding, this tells us to refresh to current page
 		);
@@ -749,7 +717,7 @@ final class Wampum_User_Forms {
 		?>
 		<form<?php echo $hidden; ?> id="wampum_user_login_form" class="wampum-user-login-form" name="wampum_user_login_form" method="post">
 
-			<?php echo $args['title'] ? sprintf( '<%s>%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : ''; ?>
+			<?php echo $args['title'] ? sprintf( '<%s class="wampum-form-heading">%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : ''; ?>
 
 			<div style="display:none;" class="wampum-notice"></div>
 
@@ -800,7 +768,7 @@ final class Wampum_User_Forms {
 		?>
 		<form<?php echo $hidden; ?> id="wampum_user_password_form" class="wampum-user-password-form" name="wampum_user_password_form" method="post">
 
-			<?php echo $args['title'] ? sprintf( '<%s>%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : ''; ?>
+			<?php echo $args['title'] ? sprintf( '<%s class="wampum-form-heading">%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : ''; ?>
 
 			<div style="display:none;" class="wampum-notice"></div>
 
@@ -879,7 +847,7 @@ final class Wampum_User_Forms {
 		<?php if ( ! is_user_logged_in() ) { ?>
 			<form id="wampum_membership_form_verify" class="wampum-membership-form-verify" name="wampum_membership_form_verify" method="post">
 
-				<?php echo $args['title'] ? sprintf( '<%s>%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : ''; ?>
+				<?php echo $args['title'] ? sprintf( '<%s class="wampum-form-heading">%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : ''; ?>
 
 				<div style="display:none;" class="wampum-notice"></div>
 
@@ -942,7 +910,7 @@ final class Wampum_User_Forms {
 		<!-- TODO: Make form ID unique to each plan? -->
 		<form<?php echo $hidden; ?> id="wampum_membership_form" class="wampum-membership-form" name="wampum_membership_form" method="post">
 
-			<?php echo $args['title'] ? sprintf( '<%s>%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : ''; ?>
+			<?php echo $args['title'] ? sprintf( '<%s class="wampum-form-heading">%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : ''; ?>
 
 			<div style="display:none;" class="wampum-notice"></div>
 

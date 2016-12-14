@@ -1,26 +1,5 @@
 /* Layout */
 
-@media only screen and (min-width: 544px) {
-
-	.wampum-forms-inline form {
-	    box-sizing: border-box;
-	    display: -webkit-flex;display: -ms-flexbox;display: flex;
-	    -webkit-flex: 0 1 auto;-ms-flex: 0 1 auto;flex: 0 1 auto;
-	    -webkit-flex-direction: row;-ms-flex-direction: row;flex-direction: row;
-	    -webkit-justify-content: space-between;-ms-flex-pack: justify;justify-content: space-between;
-	    -webkit-align-items: flex-end;-ms-flex-align: end;align-items: flex-end;
-		margin: 0 -5px;
-	}
-
-	.wampum-forms-inline .wampum-field {
-		-webkit-flex: 0 1 auto;-ms-flex: 0 1 auto;flex: 0 1 auto;
-	    max-width: 100%;
-	    margin-left: 5px;
-	    margin-right: 5px;
-	}
-
-}
-
 .wampum-form .wampum-field,
 .entry-content .wampum-form .wampum-field {
     margin-bottom: 15px;
