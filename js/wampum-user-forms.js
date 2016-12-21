@@ -82,8 +82,8 @@
 
                 	// Only redirect if we have a value
                     var redirect = LoginForm.find( '.wampum_redirect' ).val();
+                    // SHOULD THIS BE redirect.length > 0 ?????
                     if ( redirect ) {
-		                console.log(redirect);
                     	if ( 'membership_form' == redirect ) {
 		                	// Refresh the page
 		                	window.location.reload();

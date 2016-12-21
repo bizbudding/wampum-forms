@@ -8,7 +8,7 @@
  *
  * @wordpress-plugin
  * Plugin Name:        Wampum - User Forms
- * Description: 	   Add login and password forms that use the WP-API form processing
+ * Description: 	   Create login, password, and free membership (w/ user registration) forms that use the WP-API form processing
  * Plugin URI:         https://github.com/JiveDig/wampum-user-forms
  * Author:             Mike Hemberger
  * Author URI:         https://bizbudding.com
