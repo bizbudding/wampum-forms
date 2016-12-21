@@ -24,6 +24,39 @@
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) exit;
 
+/**
+ * Get a login form
+ *
+ * @param  array   $args	 Args to configure form
+ *
+ * @return string  The form
+ */
+function wampum_get_login_form( $args = array() ) {
+	return Wampum_User_Forms()->login_form_callback( $args );
+}
+
+/**
+ * Get a password form
+ *
+ * @param  array   $args	 Args to configure form
+ *
+ * @return string  The form
+ */
+function wampum_get_password_form( $args = array() ) {
+	return Wampum_User_Forms()->password_form_callback( $args );
+}
+
+/**
+ * Get a membership form
+ *
+ * @param  array   $args	 Args to configure form
+ *
+ * @return string  The form
+ */
+function wampum_get_membership_form( $args = array() ) {
+	return Wampum_User_Forms()->membership_form_callback( $args );
+}
+
 if ( ! class_exists( 'Wampum_User_Forms' ) ) :
 /**
  * Main Wampum_User_Forms Class.
@@ -37,6 +70,12 @@ final class Wampum_User_Forms {
 	 * @since 1.0.0
 	 */
 	private static $instance;
+
+	// Set form counter
+	private $form_counter = 0;
+
+	// Whether to load password script or not
+	private $password_meter = false;
 
 	/**
 	 * Main Wampum_User_Forms Instance.
@@ -58,7 +97,6 @@ final class Wampum_User_Forms {
 			self::$instance = new Wampum_User_Forms;
 			// Methods
 			self::$instance->setup_constants();
-			self::$instance->includes();
 			self::$instance->setup();
 		}
 		return self::$instance;
@@ -121,21 +159,15 @@ final class Wampum_User_Forms {
 			define( 'WAMPUM_USER_FORMS_BASENAME', dirname( plugin_basename( __FILE__ ) ) );
 		}
 	}
+
 	/**
-	 * Include required files.
+	 * Plugin hooks, filters, and shortcode
 	 *
-	 * @access private
-	 * @since 1.0.0
+	 * @since  1.0.0
+	 *
 	 * @return void
 	 */
-	private function includes() {
-		// Vendor
-		// require_once WAMPUM_USER_FORMS_INCLUDES_DIR . '/forms.php';
-	}
-
 	function setup() {
-		register_activation_hook( __FILE__,   array( $this, 'activate' ) );
-		register_deactivation_hook( __FILE__, array( $this, 'deactivate' ) );
 
 		// Register WP-API endpoint
 		add_action( 'rest_api_init', 	  array( $this, 'register_rest_endpoints' ) );
@@ -147,11 +179,6 @@ final class Wampum_User_Forms {
 		add_shortcode( 'wampum_login_form', array( $this, 'login_form_callback' ) );
 		add_shortcode( 'wampum_password_form', array( $this, 'password_form_callback' ) );
 		add_shortcode( 'wampum_membership_form', array( $this, 'membership_form_callback' ) );
-	}
-
-	function activate() {
-	}
-	function deactivate() {
 	}
 
 	/**
@@ -410,6 +437,7 @@ final class Wampum_User_Forms {
 	 * 		@type  string   $first_name 	First name
 	 * 		@type  string   $last_name	 	Last name
 	 * 		@type  string   $note 		 	Note to add to membership during save
+	 * 		@type  string   $notifications 	Comma-separated list of emails to notify upons successful submission
 	 * 		@type  string   $say_what 		Honeypot field
 	 * }
 	 *
@@ -535,6 +563,7 @@ final class Wampum_User_Forms {
 				);
 	        }
 
+	        // Set user as logged in
 			wp_set_current_user( $user->ID );
 			if ( wp_validate_auth_cookie( '', 'logged_in' ) != $user->ID ) {
 			    wp_set_auth_cookie( $user->ID, true );
@@ -622,7 +651,7 @@ final class Wampum_User_Forms {
 			'failure'			=> __( 'Something went wrong, please try again.', 'wampum' ),
 			'current_url'		=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], // For login URL if email/username exists
 			'login'	=> array(
-				'empty'	=> __( 'Username and password fields are empty', 'wampum' ), // Why are these fields not required in WP?!?!
+				'empty'	=> __( 'Username and password fields are empty', 'wampum' ),
 			),
 			'password' => array(
 				'mismatch'	=> __( 'Passwords do not match', 'wampum' ),
@@ -630,16 +659,23 @@ final class Wampum_User_Forms {
         ) );
 	}
 
+	function enqueue_scripts() {
+		if ( ( $this->form_counter > 0 ) ) {
+			// CSS
+			wp_enqueue_style('wampum-user-forms');
+			// JS
+			if ( $this->password_meter ) {
+				wp_enqueue_script('wampum-zxcvbn');
+			}
+			wp_enqueue_script('wampum-user-forms');
+		}
+	}
+
 	function login_form_callback( $args ) {
 		// Bail if already logged in
 		if ( is_user_logged_in() ) {
 			return;
 		}
-		// CSS
-		wp_enqueue_style('wampum-user-forms');
-		// JS
-		wp_enqueue_script('wampum-user-forms');
-
 		return sprintf( '<div class="wampum-form">%s</div>', $this->get_login_form( $args ) );
 	}
 
@@ -648,12 +684,11 @@ final class Wampum_User_Forms {
 		if ( ! is_user_logged_in() ) {
 			return;
 		}
-		// CSS
-		wp_enqueue_style('wampum-user-forms');
-		// JS
-		wp_enqueue_script('wampum-zxcvbn');
-		wp_enqueue_script('wampum-user-forms');
 
+		// Set password meter to true, so that script is loaded
+		$this->password_meter = true;
+
+		// Send it!
 		return sprintf( '<div class="wampum-form">%s</div>', $this->get_password_form( $args ) );
 	}
 
@@ -684,12 +719,10 @@ final class Wampum_User_Forms {
 			return;
 		}
 
-		// CSS
-		wp_enqueue_style('wampum-user-forms');
-		// JS
-		wp_enqueue_script('wampum-zxcvbn');
-		wp_enqueue_script('wampum-user-forms');
+		// Set password meter to true, so that script is loaded
+		$this->password_meter = true;
 
+		// Send it!
 		return sprintf( '<div class="wampum-form">%s%s</div>',
 			$membership_form,
 			$this->get_login_form( array( 'hidden' => true ) ) // If form used in membership on-boarding, this tells us to refresh to current page
@@ -698,12 +731,18 @@ final class Wampum_User_Forms {
 
 	function get_login_form( $args ) {
 
+		// Increment the counter
+		$this->form_counter++;
+
+		$this->enqueue_scripts();
+
 		$args = shortcode_atts( array(
 			'hidden'		 => false,
 			'title'			 => __( 'Login', 'wampum' ),
 			'title_wrap'	 => 'h3',
-			'remember'       => true,
+			'button'		 => __( 'Log In', 'wampum' ),
 			'redirect'       => ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], // a url or null
+			'remember'       => true,
 			'value_username' => '',
 			'value_remember' => true,
 		), $args, 'wampum_login_form' );
@@ -715,7 +754,7 @@ final class Wampum_User_Forms {
 			$hidden = ' style="display:none;"';
 		}
 		?>
-		<form<?php echo $hidden; ?> id="wampum_user_login_form" class="wampum-user-login-form" name="wampum_user_login_form" method="post">
+		<form<?php echo $hidden; ?> id="wampum_user_form_<?php echo $this->form_counter; ?>" class="wampum-user-login-form" name="wampum_user_form_<?php echo $this->form_counter; ?>" method="post">
 
 			<?php echo $args['title'] ? sprintf( '<%s class="wampum-form-heading">%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : ''; ?>
 
@@ -738,7 +777,7 @@ final class Wampum_User_Forms {
 			<?php } ?>
 
 			<p class="wampum-field wampum-submit login-submit">
-				<button class="wampum_submit button" type="submit" form="wampum_user_login_form"><?php _e( 'Log In', 'wampum' ); ?></button>
+				<button class="wampum_submit button" type="submit" form="wampum_user_form_<?php echo $this->form_counter; ?>"><?php echo $args['button']; ?></button>
 				<input type="hidden" name="wampum_redirect" class="wampum_redirect" value="<?php echo $args['redirect']; ?>">
 			</p>
 
@@ -750,13 +789,17 @@ final class Wampum_User_Forms {
 
 	function get_password_form( $args ) {
 
+		// Increment the counter
+		$this->form_counter++;
+
+		$this->enqueue_scripts();
+
 		$args = shortcode_atts( array(
 			'hidden'		=> false,
 			'title'			=> __( 'Set A New Password', 'wampum' ),
 			'title_wrap'	=> 'h3',
-			'button'		=> __( 'Submit', 'wampum' ),
-			'redirect'		=> null,
-			// 'redirect'		=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], // a url or null
+			'button'		=> __( 'Save Password', 'wampum' ),
+			'redirect'		=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], // a url or null
 		), $args, 'wampum_password_form' );
 
 		ob_start();
@@ -766,7 +809,7 @@ final class Wampum_User_Forms {
 			$hidden = ' style="display:none;"';
 		}
 		?>
-		<form<?php echo $hidden; ?> id="wampum_user_password_form" class="wampum-user-password-form" name="wampum_user_password_form" method="post">
+		<form<?php echo $hidden; ?> id="wampum_user_form_<?php echo $this->form_counter; ?>" class="wampum-user-password-form" name="wampum_user_form_<?php echo $this->form_counter; ?>" method="post">
 
 			<?php echo $args['title'] ? sprintf( '<%s class="wampum-form-heading">%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : ''; ?>
 
@@ -791,7 +834,7 @@ final class Wampum_User_Forms {
 			</p>
 
 			<p class="wampum-field wampum-submit password-submit">
-				<button class="wampum_submit button" type="submit" form="wampum_user_password_form"><?php _e( 'Save Password', 'wampum' ); ?></button>
+				<button class="wampum_submit button" type="submit" form="wampum_user_form_<?php echo $this->form_counter; ?>"><?php echo $args['button']; ?></button>
 				<input type="hidden" name="wampum_user_id" class="wampum_user_id" value="<?php echo get_current_user_id(); ?>">
 				<input type="hidden" name="wampum_redirect" class="wampum_redirect" value="<?php echo $args['redirect']; ?>">
 			</p>
@@ -805,17 +848,16 @@ final class Wampum_User_Forms {
 	function get_membership_form( $args ) {
 
 		$args = shortcode_atts( array(
-			// 'hidden'		 	=> false,
-			'plan_id'			=> false, // required
-			'redirect'			=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'],  // a url or null
-			'title'				=> false,
+			'plan_id'			=> null, // required
+			'title'				=> null,
 			'title_wrap'		=> 'h3',
+			'button'			=> __( 'Submit', 'wampum' ),
+			'redirect'			=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'],  // a url or null
 			'first_name'		=> true,
 			'last_name'			=> false,
-			'notifications'		=> null, // mike@bizbudding.com, dave@bizbudding.com
 			'username'			=> false,
-			'button'			=> __( 'Submit', 'wampum' ),
 			'member_message'	=> '',
+			'notifications'		=> null, // mike@bizbudding.com, dave@bizbudding.com
 			'ss_baseuri'		=> '', // 'https://app-3QMU9AFX44.marketingautomation.services/webforms/receivePostback/MzawMDE2MjCwAAA/'
 			'ss_endpoint'		=> '', // 'b19a2e43-3904-4b80-b587-353767f56849'
 		), $args, 'wampum_membership_form' );
@@ -825,14 +867,10 @@ final class Wampum_User_Forms {
 			return;
 		}
 
-		// trace( wc_memberships_is_user_member( get_current_user_id(), (int)$args['plan_id'] ) );
-		ob_start();
-
 		// Return (with an optional message) if user is a logged in member of the plan
 		if ( is_user_logged_in() && wc_memberships_is_user_member( get_current_user_id(), (int)$args['plan_id'] ) ) {
 			return $args['member_message'] ? wpautop($args['member_message']) : '';
 		}
-
 
 		$first_name = $last_name = $email = $readonly = '';
 		if ( is_user_logged_in() ) {
@@ -844,20 +882,26 @@ final class Wampum_User_Forms {
 		}
 		?>
 
+		<?php ob_start(); ?>
+
 		<?php if ( ! is_user_logged_in() ) { ?>
-			<form id="wampum_membership_form_verify" class="wampum-membership-form-verify" name="wampum_membership_form_verify" method="post">
+
+			<?php
+			// Increment the counter
+			$this->form_counter++;
+			?>
+
+			<form id="wampum_user_form_<?php echo $this->form_counter; ?>" class="wampum-user-membership-form-verify" name="wampum_user_form_<?php echo $this->form_counter; ?>" method="post">
 
 				<?php echo $args['title'] ? sprintf( '<%s class="wampum-form-heading">%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : ''; ?>
 
 				<div style="display:none;" class="wampum-notice"></div>
 
-				<!-- Honeypot -->
 				<p class="wampum-field wampum-say-what">
 					<label for="wampum_say_what">Say What?</label>
 					<input type="text" class="wampum_say_what" name="wampum_say_what" value="">
 				</p>
 
-				<!-- First Name -->
 				<?php if ( filter_var( $args['first_name'], FILTER_VALIDATE_BOOLEAN ) ) { ?>
 
 					<p class="wampum-field membership-name membership-first-name">
@@ -867,7 +911,6 @@ final class Wampum_User_Forms {
 
 				<?php } ?>
 
-				<!-- Last Name -->
 				<?php if ( filter_var( $args['last_name'], FILTER_VALIDATE_BOOLEAN ) ) { ?>
 
 					<p class="wampum-field membership-name membership-last-name">
@@ -877,14 +920,13 @@ final class Wampum_User_Forms {
 
 				<?php } ?>
 
-				<!-- Email -->
 				<p class="wampum-field<?php echo $readonly; ?> membership-email">
 					<label for="wampum_membership_email"><?php _e( 'Email', 'wampum' ); ?><span class="required">*</span></label>
 					<input type="email" class="wampum_email" name="wampum_membership_email" value="<?php echo $email; ?>" required<?php echo $readonly; ?>>
 				</p>
 
 				<p class="wampum-field wampum-submit membership-submit">
-					<button class="wampum_submit button<?php echo is_user_logged_in() ? '' : ' paged'; ?>" type="submit" form="wampum_membership_form_verify"><?php echo $args['button']; ?></button>
+					<button class="wampum_submit button<?php echo is_user_logged_in() ? '' : ' paged'; ?>" type="submit" form="wampum_user_form_<?php echo $this->form_counter; ?>"><?php echo $args['button']; ?></button>
 					<input type="hidden" class="wampum_membership_success" name="wampum_membership_success" value="0">
 					<?php
 					// SharpSpring baseURI
@@ -902,25 +944,27 @@ final class Wampum_User_Forms {
 		<?php } ?>
 
 		<?php
+		// Increment the counter
+		$this->form_counter++;
+
+		$this->enqueue_scripts();
+
 		$hidden  = '';
 		if ( ! is_user_logged_in() ) {
 			$hidden = ' style="display:none;"';
 		}
 		?>
-		<!-- TODO: Make form ID unique to each plan? -->
-		<form<?php echo $hidden; ?> id="wampum_membership_form" class="wampum-membership-form" name="wampum_membership_form" method="post">
+		<form<?php echo $hidden; ?> id="wampum_user_form_<?php echo $this->form_counter; ?>" class="wampum-user-membership-form" name="wampum_user_form_<?php echo $this->form_counter; ?>" method="post">
 
 			<?php echo $args['title'] ? sprintf( '<%s class="wampum-form-heading">%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : ''; ?>
 
 			<div style="display:none;" class="wampum-notice"></div>
 
-			<!-- Honeypot -->
 			<p class="wampum-field wampum-say-what">
 				<label for="wampum_say_what">Say What?</label>
 				<input type="text" class="wampum_say_what" name="wampum_say_what" value="">
 			</p>
 
-			<!-- First Name -->
 			<?php if ( filter_var( $args['first_name'], FILTER_VALIDATE_BOOLEAN ) ) { ?>
 
 				<p class="wampum-field membership-name membership-first-name">
@@ -930,7 +974,6 @@ final class Wampum_User_Forms {
 
 			<?php } ?>
 
-			<!-- Last Name -->
 			<?php if ( filter_var( $args['last_name'], FILTER_VALIDATE_BOOLEAN ) ) { ?>
 
 				<p class="wampum-field membership-name membership-last-name">
@@ -940,7 +983,6 @@ final class Wampum_User_Forms {
 
 			<?php } ?>
 
-			<!-- Email -->
 			<p class="wampum-field<?php echo $readonly; ?> membership-email">
 				<label for="wampum_membership_email"><?php _e( 'Email', 'wampum' ); ?><span class="required">*</span></label>
 				<input type="email" class="wampum_email" name="wampum_membership_email" value="<?php echo $email; ?>" required<?php echo $readonly; ?>>
@@ -973,7 +1015,7 @@ final class Wampum_User_Forms {
 			<?php }	?>
 
 			<p class="wampum-field wampum-submit membership-submit">
-				<button class="wampum_submit button<?php echo is_user_logged_in() ? '' : ' paged'; ?>" type="submit" form="wampum_membership_form"><?php echo $args['button']; ?></button>
+				<button class="wampum_submit button<?php echo is_user_logged_in() ? '' : ' paged'; ?>" type="submit" form="wampum_user_form_<?php echo $this->form_counter; ?>"><?php echo $args['button']; ?></button>
 				<input type="hidden" class="wampum_membership_success" name="wampum_membership_success" value="1">
 				<input type="hidden" class="wampum_notifications" name="wampum_notifications" value="<?php echo $args['notifications']; ?>">
 				<input type="hidden" class="wampum_plan_id" name="wampum_plan_id" value="<?php echo $args['plan_id']; ?>">

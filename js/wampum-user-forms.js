@@ -1,7 +1,7 @@
 ;(function( $ ) {
     'use strict';
 
-
+    // Show password strength meter when focusing on password field
 	$('.wampum-form').on('focus', '.wampum_password', function(ev){
     	$(this).closest('form').find('.password-strength').slideDown('fast');
     });
@@ -38,7 +38,7 @@
     });
 
     // Login form submit
-    $( 'body' ).on( 'submit', '#wampum_user_login_form', function(e) {
+    $( 'body' ).on( 'submit', '.wampum-user-login-form', function(e) {
 
     	console.log('Login form submitted');
 
@@ -82,8 +82,7 @@
 
                 	// Only redirect if we have a value
                     var redirect = LoginForm.find( '.wampum_redirect' ).val();
-                    // SHOULD THIS BE redirect.length > 0 ?????
-                    if ( redirect ) {
+                    if ( redirect !== "" ) {
                     	if ( 'membership_form' == redirect ) {
 		                	// Refresh the page
 		                	window.location.reload();
@@ -112,7 +111,7 @@
 
 
     // Password form submit
-	$( 'body' ).on( 'submit', '#wampum_user_password_form', function(e) {
+	$( 'body' ).on( 'submit', '.wampum-user-password-form', function(e) {
 
 		console.log('Password form submitted');
 
@@ -141,8 +140,6 @@
                 say_what: PasswordForm.find( '.wampum_say_what' ).val(), // honeypot
             };
 
-        // console.log(wampum_user_forms.nonce);
-
         $.ajax({
             method: 'POST',
             url: wampum_user_forms.root + 'wampum/v1/password/',
@@ -156,7 +153,7 @@
                 	PasswordForm.find( 'input:password' ).val('');
                 	// Display success notice
 					displayNotice( PasswordForm, 'success', 'Success!' );
-                	// Only redirect if we have a value
+                	// Get redirect URL
                     var redirect = PasswordForm.find( '.wampum_redirect' ).val();
                     // Force refresh/redirect (trying to submit password form again was giving 403 forbidden, not worth dealing with)
                     window.location.replace( redirect );
@@ -184,7 +181,7 @@
     });
 
 	// Membership verify submit
-	$( 'body' ).on( 'submit', '#wampum_membership_form_verify', function(e) {
+	$( 'body' ).on( 'submit', '.wampum-user-membership-form-verify', function(e) {
 
 		e.preventDefault();
 
@@ -292,7 +289,7 @@
 	});
 
 	// Membership add submit
-    $( 'body' ).on( 'submit', '#wampum_membership_form', function(e) {
+    $( 'body' ).on( 'submit', '.wampum-user-membership-form', function(e) {
 
     	console.log('Membership form submitted');
 
@@ -371,7 +368,7 @@
                     var redirect = MembershipForm.find( '.wampum_redirect' ).val();
 
                 	// Only redirect if we have a value
-                    if ( redirect ) {
+                    if ( redirect !== "" ) {
 						setTimeout(function() {
 	                        // Refresh/redirect
 	                        window.location.replace( redirect );
@@ -417,7 +414,7 @@
 
     	hideNotices(form);
 
-    	var LoginForm = form.siblings('#wampum_user_login_form');
+    	var LoginForm = form.siblings('.wampum-user-login-form');
 
     	// Swap forms
     	form.hide();
@@ -454,11 +451,13 @@
 	 * @return void
 	 */
 	function displayNotice( form, type, text ) {
-		form.find('.wampum-notice').addClass(type).html(text).fadeIn('fast');
+		form.find('.wampum-notice').removeClass('success, error').addClass(type).html(text).fadeIn('fast');
 	}
 
 	function hideNotices( form ) {
-		form.find('.wampum-notice').removeClass('success, error').slideUp('fast');
+		form.find('.wampum-notice').slideUp('fast' , function(){
+            $(this).removeClass('success, error');
+        });
 	}
 
 	function getLoadingHTML() {

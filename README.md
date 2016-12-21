@@ -81,7 +81,13 @@ Creates a clean and efficient onboarding flow for adding users to a membership.
 ####Shortcode####
 
 ```
-[wampum_membership_form title="Join Now!" plan_id="26180" redirect="https://bizbudding.com/my-account/" ss_baseuri="https://app-3QMU9AFX44.marketingautomation.services/webforms/receivePostback/MzawMDE2MjCwAAA/" ss_endpoint="b19a2e43-3904-4b80-b587-353767f56849"]
+[wampum_membership_form plan_id="26180" title="Join Now!" redirect="https://bizbudding.com/my-account/" ss_baseuri="https://app-3QMU9AFX44.marketingautomation.services/webforms/receivePostback/MzawMDE2MjCwAAA/" ss_endpoint="b19a2e43-3904-4b80-b587-353767f56849"]
+```
+
+**Shortcode with all options**
+
+```
+[wampum_membership_form plan_id="26180" title="Join Now!" title_wrap="h2" first_name=true last_name=false username=false member_message="Woot! You are already a member!" button="Join Now" notifications="mike@bizbudding.com, david@bizbudding.com" redirect="https://bizbudding.com/my-account/" ss_baseuri="https://app-3QMU9AFX44.marketingautomation.services/webforms/receivePostback/MzawMDE2MjCwAAA/" ss_endpoint="b19a2e43-3904-4b80-b587-353767f56849"]
 ```
 
 ####PHP####
@@ -91,6 +97,26 @@ $args = array(
 	'plan_id'	=> '1234', // required
 	'title'		=> 'Join This Membership!',
 	'redirect'	=> 'https://bizbudding.com/',
+);
+echo wampum_get_membership_form( $args );
+```
+
+**PHP function with all options**
+
+```
+$args = array(
+	'plan_id'			=> '1234', // required
+	'title'				=> 'Join This Membership!',
+	'title_wrap'		=> 'h3',
+	'redirect'			=> 'https://bizbudding.com/',
+	'button'			=> __( 'Join Now!', 'wampum' ),
+	'first_name'		=> true,
+	'last_name'			=> false,
+	'username'			=> false,
+	'member_message'	=> 'Woot! You are already a member!',
+	'notifications'		=> 'mike@bizbudding.com, dave@bizbudding.com',
+	'ss_baseuri'		=> 'https://app-3QMU9AFX44.marketingautomation.services/webforms/receivePostback/MzawMDE2MjCwAAA/',
+	'ss_endpoint'		=> 'b19a2e43-3904-4b80-b587-353767f56849',
 );
 echo wampum_get_membership_form( $args );
 ```
@@ -112,6 +138,18 @@ The user must change their password (password was auto-generated) then they are 
 ##Shortcode parameters & PHP args##
 
 ###Login Form###
+
+####hidden####
+
+(boolean) true|false
+
+**Default** `false`
+
+Whether to hide (adds display:none;) the form
+
+Mostly used internally for membership form
+
+---
 
 ####title####
 
@@ -184,6 +222,18 @@ Default "Remember Me" checked or unchecked
 ---
 
 ###Password Form###
+
+####hidden####
+
+(boolean) true|false
+
+**Default** `false`
+
+Whether to hide (adds display:none;) the form
+
+Mostly used internally for membership form
+
+---
 
 ####title####
 
@@ -307,16 +357,6 @@ Show the username field (required field)
 
 ---
 
-####password####
-
-(boolean) true|false
-
-**Default** `false`
-
-Show the password field (required field)
-
----
-
 ####member_message####
 
 (string) true|false
@@ -324,6 +364,16 @@ Show the password field (required field)
 **Default** `{empty}`
 
 Display a message in place of the form if a logged in user is already a member
+
+---
+
+####notifications####
+
+(string) 'mike@bizbudding.com, david@bizbudding.com'
+
+**Default** `null`
+
+Comma separated email addresses to send submission notifications to
 
 ---
 
