@@ -245,7 +245,7 @@
                         });
                     }
 
-                	var MembershipForm = $('#wampum_membership_form');
+                	var MembershipForm = MembershipVerify.siblings('.wampum-user-membership-form');
                 	// Pass values and make fields read only
                 	MembershipForm.find('.wampum_first_name').val(MembershipVerify.find('.wampum_first_name').val()).attr('readonly',true);
                 	MembershipForm.find('.wampum_last_name').val(MembershipVerify.find('.wampum_last_name').val()).attr('readonly',true);
@@ -410,6 +410,7 @@
 
     });
 
+    // Swap a form for it's neighboring login form
 	function swapLoginForm( form ) {
 
     	hideNotices(form);

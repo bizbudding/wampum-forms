@@ -176,6 +176,7 @@ final class Wampum_User_Forms {
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_stylesheets' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
 
+		// Shortcodes
 		add_shortcode( 'wampum_login_form', array( $this, 'login_form_callback' ) );
 		add_shortcode( 'wampum_password_form', array( $this, 'password_form_callback' ) );
 		add_shortcode( 'wampum_membership_form', array( $this, 'membership_form_callback' ) );
@@ -607,6 +608,15 @@ final class Wampum_User_Forms {
 
 	}
 
+	/**
+	 * Honeypot validation
+	 * This field should be empty
+	 * If it has a value, that means a bot probably tried to submit the form
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return  array  The response
+	 */
 	function validate_say_what( $data ) {
 		if ( ! empty($data['say_what']) ) {
 			return array(
@@ -629,7 +639,7 @@ final class Wampum_User_Forms {
 	 * @return null
 	 */
 	function register_stylesheets() {
-	    wp_register_style( 'wampum-user-forms', WAMPUM_USER_FORMS_PLUGIN_URL . 'css/wampum-user-forms.css', array(), WAMPUM_USER_FORMS_VERSION );
+	    wp_register_style( 'wampum-user-forms', WAMPUM_USER_FORMS_PLUGIN_URL . 'css/wampum-user-forms.min.css', array(), WAMPUM_USER_FORMS_VERSION );
 	}
 
 	/**
@@ -644,7 +654,7 @@ final class Wampum_User_Forms {
 	function register_scripts() {
 		// All Forms
         wp_register_script( 'wampum-zxcvbn', WAMPUM_USER_FORMS_PLUGIN_URL . 'js/zxcvbn.js', array('jquery'), '4.4.1', true );
-        wp_register_script( 'wampum-user-forms', WAMPUM_USER_FORMS_PLUGIN_URL . 'js/wampum-user-forms.js', array('jquery'), WAMPUM_USER_FORMS_VERSION, true );
+        wp_register_script( 'wampum-user-forms', WAMPUM_USER_FORMS_PLUGIN_URL . 'js/wampum-user-forms.min.js', array('jquery'), WAMPUM_USER_FORMS_VERSION, true );
         wp_localize_script( 'wampum-user-forms', 'wampum_user_forms', array(
 			'root'				=> esc_url_raw( rest_url() ),
 			'nonce'				=> wp_create_nonce( 'wp_rest' ),
@@ -659,6 +669,15 @@ final class Wampum_User_Forms {
         ) );
 	}
 
+	/**
+	 * Enqueue scripts if there are forms present
+	 * This needs to be called right in the form method
+	 * Since it will be too early on 'wp_enqueue_scripts' hook
+	 *
+	 * @since  1.0.0
+	 *
+	 * @return null
+	 */
 	function enqueue_scripts() {
 		if ( ( $this->form_counter > 0 ) ) {
 			// CSS
@@ -671,6 +690,13 @@ final class Wampum_User_Forms {
 		}
 	}
 
+	/**
+	 * Get a login form, with the wrapper
+	 *
+	 * @since  1.0.0
+	 *
+	 * @return string  the form
+	 */
 	function login_form_callback( $args ) {
 		// Bail if already logged in
 		if ( is_user_logged_in() ) {
@@ -679,6 +705,13 @@ final class Wampum_User_Forms {
 		return sprintf( '<div class="wampum-form">%s</div>', $this->get_login_form( $args ) );
 	}
 
+	/**
+	 * Get a password form, with the wrapper
+	 *
+	 * @since  1.0.0
+	 *
+	 * @return string  the form
+	 */
 	function password_form_callback( $args ) {
 		// Bail if user is not logged in
 		if ( ! is_user_logged_in() ) {
@@ -692,6 +725,13 @@ final class Wampum_User_Forms {
 		return sprintf( '<div class="wampum-form">%s</div>', $this->get_password_form( $args ) );
 	}
 
+	/**
+	 * Get a membership form, with the wrapper
+	 *
+	 * @since  1.0.0
+	 *
+	 * @return string  the form
+	 */
 	function membership_form_callback( $args ) {
 		// Bail if WooCommerce Memberships is not active
 		if ( ! function_exists( 'wc_memberships' ) ) {
@@ -729,6 +769,15 @@ final class Wampum_User_Forms {
 		);
 	}
 
+	/**
+	 * Get a login form
+	 * Increment the internal counter
+	 * Enqueue scripts
+	 *
+	 * @since  1.0.0
+	 *
+	 * @return string  the form
+	 */
 	function get_login_form( $args ) {
 
 		// Increment the counter
@@ -787,6 +836,15 @@ final class Wampum_User_Forms {
 
 	}
 
+	/**
+	 * Get a password form
+	 * Increment the internal counter
+	 * Enqueue scripts
+	 *
+	 * @since  1.0.0
+	 *
+	 * @return string  the form
+	 */
 	function get_password_form( $args ) {
 
 		// Increment the counter
@@ -845,6 +903,15 @@ final class Wampum_User_Forms {
 
 	}
 
+	/**
+	 * Get a membership form
+	 * Increment the internal counter
+	 * Enqueue scripts
+	 *
+	 * @since  1.0.0
+	 *
+	 * @return string  the form
+	 */
 	function get_membership_form( $args ) {
 
 		$args = shortcode_atts( array(
