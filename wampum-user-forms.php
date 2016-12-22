@@ -914,12 +914,14 @@ final class Wampum_User_Forms {
 	 */
 	function get_membership_form( $args ) {
 
+		$current_url = ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+
 		$args = shortcode_atts( array(
 			'plan_id'			=> null, // required
 			'title'				=> null,
 			'title_wrap'		=> 'h3',
 			'button'			=> __( 'Submit', 'wampum' ),
-			'redirect'			=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'],  // a url or null
+			'redirect'			=> $current_url,  // a url or null
 			'first_name'		=> true,
 			'last_name'			=> false,
 			'username'			=> false,
@@ -1004,6 +1006,7 @@ final class Wampum_User_Forms {
 				<p class="wampum-field wampum-submit membership-submit">
 					<button class="wampum_submit button<?php echo is_user_logged_in() ? '' : ' paged'; ?>" type="submit" form="wampum_user_form_<?php echo $this->form_counter; ?>"><?php echo $args['button']; ?></button>
 					<input type="hidden" class="wampum_membership_success" name="wampum_membership_success" value="0">
+					<input type="hidden" class="wampum_current_url" name="wampum_current_url" value="<?php echo $current_url; ?>">
 					<?php
 					if ( $args['ss_baseuri'] && $args['ss_endpoint'] ) {
 						// SharpSpring baseURI
@@ -1093,6 +1096,7 @@ final class Wampum_User_Forms {
 				<input type="hidden" class="wampum_membership_success" name="wampum_membership_success" value="1">
 				<input type="hidden" class="wampum_notifications" name="wampum_notifications" value="<?php echo $args['notifications']; ?>">
 				<input type="hidden" class="wampum_plan_id" name="wampum_plan_id" value="<?php echo $args['plan_id']; ?>">
+				<input type="hidden" class="wampum_current_url" name="wampum_current_url" value="<?php echo $current_url; ?>">
 				<input type="hidden" class="wampum_redirect" name="wampum_redirect" value="<?php echo $args['redirect']; ?>">
 				<?php
 				if ( $args['ss_baseuri'] && $args['ss_endpoint'] ) {
