@@ -594,9 +594,20 @@ final class Wampum_User_Forms {
 
         // If email notifications set, let's send away!
         if ( $data['notifications'] ) {
-			$to			= trim(sanitize_text_field($data['notifications']));
-			$subject	= get_bloginfo('name') . ' - ' . get_the_title($plan_id) . ' membership added';
-			$body		= get_bloginfo('name') . ' - ' . get_the_title($plan_id) . ' membership added via Wampum form at ' . esc_url($data['current_url']);
+
+			$to		 = trim(sanitize_text_field($data['notifications']));
+			$subject = get_bloginfo('name') . ' - ' . get_the_title($plan_id) . ' membership added';
+
+			// Build the body
+			$body = get_bloginfo('name') . ' - ' . get_the_title($plan_id) . ' membership added via Wampum form at ' . esc_url($data['current_url']);
+	        if ( $data['first_name'] ) {
+	            $body .= ' - ' . $data['first_name'];
+	        }
+	        if ( $data['last_name'] ) {
+	            $body .= ' - ' . $data['last_name'];
+	        }
+	        $body .= ' - ' .  $email;
+	        // Send it
 			wp_mail( $to, $subject, $body );
         }
 
@@ -789,6 +800,7 @@ final class Wampum_User_Forms {
 			'hidden'		 => false,
 			'title'			 => __( 'Login', 'wampum' ),
 			'title_wrap'	 => 'h3',
+			'desc'			 => '',
 			'button'		 => __( 'Log In', 'wampum' ),
 			'redirect'       => ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], // a url or null
 			'remember'       => true,
@@ -806,6 +818,8 @@ final class Wampum_User_Forms {
 		<form<?php echo $hidden; ?> id="wampum_user_form_<?php echo $this->form_counter; ?>" class="wampum-user-login-form" name="wampum_user_form_<?php echo $this->form_counter; ?>" method="post">
 
 			<?php echo $args['title'] ? sprintf( '<%s class="wampum-form-heading">%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : ''; ?>
+			<?php echo $args['desc'] ? sprintf( '<p class="wampum-form-desc">%s</p>', $args['desc'] ) : ''; ?>
+			<?php echo $args['desc'] ? sprintf( '<p class="wampum-form-desc">%s</p>', $args['desc'] ) : ''; ?>
 
 			<div style="display:none;" class="wampum-notice"></div>
 
@@ -856,6 +870,7 @@ final class Wampum_User_Forms {
 			'hidden'		=> false,
 			'title'			=> __( 'Set A New Password', 'wampum' ),
 			'title_wrap'	=> 'h3',
+			'desc'			=> '',
 			'button'		=> __( 'Save Password', 'wampum' ),
 			'redirect'		=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], // a url or null
 		), $args, 'wampum_password_form' );
@@ -870,6 +885,8 @@ final class Wampum_User_Forms {
 		<form<?php echo $hidden; ?> id="wampum_user_form_<?php echo $this->form_counter; ?>" class="wampum-user-password-form" name="wampum_user_form_<?php echo $this->form_counter; ?>" method="post">
 
 			<?php echo $args['title'] ? sprintf( '<%s class="wampum-form-heading">%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : ''; ?>
+			<?php echo $args['desc'] ? sprintf( '<p class="wampum-form-desc">%s</p>', $args['desc'] ) : ''; ?>
+			<?php echo $args['desc'] ? sprintf( '<p class="wampum-form-desc">%s</p>', $args['desc'] ) : ''; ?>
 
 			<div style="display:none;" class="wampum-notice"></div>
 
@@ -920,6 +937,7 @@ final class Wampum_User_Forms {
 			'plan_id'			=> null, // required
 			'title'				=> null,
 			'title_wrap'		=> 'h3',
+			'desc'				=> '',
 			'button'			=> __( 'Submit', 'wampum' ),
 			'redirect'			=> $current_url,  // a url or null
 			'first_name'		=> true,
@@ -963,6 +981,7 @@ final class Wampum_User_Forms {
 			<form id="wampum_user_form_<?php echo $this->form_counter; ?>" class="wampum-user-membership-form-verify" name="wampum_user_form_<?php echo $this->form_counter; ?>" method="post">
 
 				<?php echo $args['title'] ? sprintf( '<%s class="wampum-form-heading">%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : ''; ?>
+				<?php echo $args['desc'] ? sprintf( '<p class="wampum-form-desc">%s</p>', $args['desc'] ) : ''; ?>
 
 				<div style="display:none;" class="wampum-notice"></div>
 
@@ -1034,6 +1053,7 @@ final class Wampum_User_Forms {
 		<form<?php echo $hidden; ?> id="wampum_user_form_<?php echo $this->form_counter; ?>" class="wampum-user-membership-form" name="wampum_user_form_<?php echo $this->form_counter; ?>" method="post">
 
 			<?php echo $args['title'] ? sprintf( '<%s class="wampum-form-heading">%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : ''; ?>
+			<?php echo $args['desc'] ? sprintf( '<p class="wampum-form-desc">%s</p>', $args['desc'] ) : ''; ?>
 
 			<div style="display:none;" class="wampum-notice"></div>
 

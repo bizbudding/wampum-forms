@@ -87,7 +87,7 @@ Creates a clean and efficient onboarding flow for adding users to a membership.
 **Shortcode with all options**
 
 ```
-[wampum_membership_form plan_id="26180" title="Join Now!" title_wrap="h2" first_name=true last_name=false username=false member_message="Woot! You are already a member!" button="Join Now" notifications="mike@bizbudding.com, david@bizbudding.com" redirect="https://bizbudding.com/my-account/" ss_baseuri="https://app-3QMU9AFX44.marketingautomation.services/webforms/receivePostback/MzawMDE2MjCwAAA/" ss_endpoint="b19a2e43-3904-4b80-b587-353767f56849"]
+[wampum_membership_form plan_id="26180" title="Join Now!" title_wrap="h2" desc="Fill out this form to get instant access." first_name=true last_name=false username=false member_message="Woot! You are already a member!" button="Join Now" notifications="mike@bizbudding.com, david@bizbudding.com" redirect="https://bizbudding.com/my-account/" ss_baseuri="https://app-3QMU9AFX44.marketingautomation.services/webforms/receivePostback/MzawMDE2MjCwAAA/" ss_endpoint="b19a2e43-3904-4b80-b587-353767f56849"]
 ```
 
 ####PHP####
@@ -108,6 +108,7 @@ $args = array(
 	'plan_id'			=> '1234', // required
 	'title'				=> 'Join This Membership!',
 	'title_wrap'		=> 'h3',
+	'desc'				=> 'Fill out this form to get instant access.',
 	'redirect'			=> 'https://bizbudding.com/',
 	'button'			=> __( 'Join Now!', 'wampum' ),
 	'first_name'		=> true,
@@ -168,6 +169,35 @@ Change the heading of the form
 **Default** `'h3'`
 
 Change title wrapping element
+
+---
+
+####title_wrap####
+
+(string) 'h4'
+
+**Default** `'h3'`
+
+Change title wrapping element
+
+---
+####title_wrap####
+
+(string) 'h4'
+
+**Default** `'h3'`
+
+Change title wrapping element
+
+---
+
+####desc####
+
+(string) 'Fill out the form below'
+
+**Default** `{empty}`
+
+Add a description below the form title
 
 ---
 
@@ -255,6 +285,35 @@ Change title wrapping element
 
 ---
 
+####title_wrap####
+
+(string) 'h4'
+
+**Default** `'h3'`
+
+Change title wrapping element
+
+---
+####title_wrap####
+
+(string) 'h4'
+
+**Default** `'h3'`
+
+Change title wrapping element
+
+---
+
+####desc####
+
+(string) 'Fill out the form below'
+
+**Default** `{empty}`
+
+Add a description below the form title
+
+---
+
 ####button####
 
 (string) 'Submit'
@@ -304,6 +363,35 @@ Change the heading of the form
 **Default** `'h3'`
 
 Change title wrapping element
+
+---
+
+####title_wrap####
+
+(string) 'h4'
+
+**Default** `'h3'`
+
+Change title wrapping element
+
+---
+####title_wrap####
+
+(string) 'h4'
+
+**Default** `'h3'`
+
+Change title wrapping element
+
+---
+
+####desc####
+
+(string) 'Fill out the form below'
+
+**Default** `{empty}`
+
+Add a description below the form title
 
 ---
 
