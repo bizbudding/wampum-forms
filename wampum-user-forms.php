@@ -659,7 +659,7 @@ final class Wampum_User_Forms {
 			'root'				=> esc_url_raw( rest_url() ),
 			'nonce'				=> wp_create_nonce( 'wp_rest' ),
 			'failure'			=> __( 'Something went wrong, please try again.', 'wampum' ),
-			'current_url'		=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], // For login URL if email/username exists
+			'current_url'		=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], // For login URL if email/username exists and SharpSpring
 			'login'	=> array(
 				'empty'	=> __( 'Username and password fields are empty', 'wampum' ),
 			),
@@ -925,8 +925,8 @@ final class Wampum_User_Forms {
 			'username'			=> false,
 			'member_message'	=> '',
 			'notifications'		=> null, // mike@bizbudding.com, dave@bizbudding.com
-			'ss_baseuri'		=> '', // 'https://app-3QMU9AFX44.marketingautomation.services/webforms/receivePostback/MzawMDE2MjCwAAA/'
-			'ss_endpoint'		=> '', // 'b19a2e43-3904-4b80-b587-353767f56849'
+			'ss_baseuri'		=> '', 	 // 'https://app-3QMU9AFX44.marketingautomation.services/webforms/receivePostback/MzawMDE2MjCwAAA/'
+			'ss_endpoint'		=> '', 	 // 'b19a2e43-3904-4b80-b587-353767f56849'
 		), $args, 'wampum_membership_form' );
 
 		// Bail if no plan ID
@@ -992,16 +992,23 @@ final class Wampum_User_Forms {
 					<input type="email" class="wampum_email" name="wampum_membership_email" value="<?php echo $email; ?>" required<?php echo $readonly; ?>>
 				</p>
 
+				<?php if ( ! is_user_logged_in() && filter_var( $args['username'], FILTER_VALIDATE_BOOLEAN ) ) { ?>
+
+					<p class="wampum-field membership-username">
+						<label for="wampum_membership_username"><?php _e( 'Username', 'wampum' ); ?><span class="required">*</span></label>
+						<input type="text" class="wampum_username" name="wampum_membership_username" value="" required>
+					</p>
+
+				<?php }	?>
+
 				<p class="wampum-field wampum-submit membership-submit">
 					<button class="wampum_submit button<?php echo is_user_logged_in() ? '' : ' paged'; ?>" type="submit" form="wampum_user_form_<?php echo $this->form_counter; ?>"><?php echo $args['button']; ?></button>
 					<input type="hidden" class="wampum_membership_success" name="wampum_membership_success" value="0">
 					<?php
-					// SharpSpring baseURI
-					if ( $args['ss_baseuri'] ) {
+					if ( $args['ss_baseuri'] && $args['ss_endpoint'] ) {
+						// SharpSpring baseURI
 						echo '<input type="hidden" class="wampum_ss_baseuri" name="wampum_ss_baseuri" value="' . sanitize_text_field($args['ss_baseuri']) . '">';
-					}
-					// SharpSpring endpoint
-					if ( $args['ss_endpoint'] ) {
+						// SharpSpring endpoint
 						echo '<input type="hidden" class="wampum_ss_endpoint" name="wampum_ss_endpoint" value="' . sanitize_text_field($args['ss_endpoint']) . '">';
 					}
 					?>
@@ -1074,7 +1081,7 @@ final class Wampum_User_Forms {
 				<p style="display:none;" class="wampum-field password-strength">
 					<span class="password-strength-meter" data-strength="">
 						<span class="password-strength-color">
-							<span class="password-strength-text"></span>
+							<span class="password-strength-text"><?php _e( 'Strength', 'wampum' ); ?></span>
 						</span>
 					</span>
 				</p>
@@ -1088,12 +1095,10 @@ final class Wampum_User_Forms {
 				<input type="hidden" class="wampum_plan_id" name="wampum_plan_id" value="<?php echo $args['plan_id']; ?>">
 				<input type="hidden" class="wampum_redirect" name="wampum_redirect" value="<?php echo $args['redirect']; ?>">
 				<?php
-				// SharpSpring baseURI
-				if ( $args['ss_baseuri'] ) {
+				if ( $args['ss_baseuri'] && $args['ss_endpoint'] ) {
+					// SharpSpring baseURI
 					echo '<input type="hidden" class="wampum_ss_baseuri" name="wampum_ss_baseuri" value="' . sanitize_text_field($args['ss_baseuri']) . '">';
-				}
-				// SharpSpring endpoint
-				if ( $args['ss_endpoint'] ) {
+					// SharpSpring endpoint
 					echo '<input type="hidden" class="wampum_ss_endpoint" name="wampum_ss_endpoint" value="' . sanitize_text_field($args['ss_endpoint']) . '">';
 				}
 				?>

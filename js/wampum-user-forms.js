@@ -249,16 +249,20 @@
                 	// Pass values and make fields read only
                 	MembershipForm.find('.wampum_first_name').val(MembershipVerify.find('.wampum_first_name').val()).attr('readonly',true);
                 	MembershipForm.find('.wampum_last_name').val(MembershipVerify.find('.wampum_last_name').val()).attr('readonly',true);
-                	MembershipForm.find('.wampum_email').val(MembershipVerify.find('.wampum_email').val()).attr('readonly',true);
+                    MembershipForm.find('.wampum_email').val(MembershipVerify.find('.wampum_email').val()).attr('readonly',true);
+                	MembershipForm.find('.wampum_username').val(MembershipVerify.find('.wampum_username').val()).attr('readonly',true);
                 	// Hide already filled out fields
                 	MembershipForm.find('.membership-first-name').hide();
                 	MembershipForm.find('.membership-last-name').hide();
-                	MembershipForm.find('.membership-email').hide();
-                	// Add description to next form
-                	displayNotice( MembershipForm, 'success', 'Almost there! This is the last step.' );
-                	// Swap forms
-                	MembershipVerify.hide();
-                	MembershipForm.show();
+                    MembershipForm.find('.membership-email').hide();
+                	MembershipForm.find('.membership-username').hide();
+                    // Add description to next form
+                    displayNotice( MembershipForm, 'success', 'Almost there! This is the last step.' );
+                    // Swap forms
+                    MembershipVerify.hide();
+                    MembershipForm.show();
+                    // Focus on password field (should be the only one left?)
+                    MembershipForm.find('.wampum_password').focus();
                 } else {
                     // Display error message
                     displayNotice( MembershipVerify, 'error', response.message );

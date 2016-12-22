@@ -94,6 +94,7 @@
 }
 
 .wampum-form .password-strength-text {
+	font-size: smaller;
 	padding: 0 12px;
 }
 
