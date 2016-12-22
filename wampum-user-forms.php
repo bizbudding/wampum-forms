@@ -604,7 +604,7 @@ final class Wampum_User_Forms {
 	            $body .= ' - ' . $data['first_name'];
 	        }
 	        if ( $data['last_name'] ) {
-	            $body .= ' - ' . $data['last_name'];
+	            $body .= ' ' . $data['last_name'];
 	        }
 	        $body .= ' - ' .  $email;
 	        // Send it
