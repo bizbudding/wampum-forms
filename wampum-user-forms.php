@@ -143,8 +143,8 @@ final class Wampum_User_Forms {
 			define( 'WAMPUM_USER_FORMS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 		}
 		// Plugin Includes Path
-		if ( ! defined( 'WAMPUM_USER_FORMS_INCLUDES_DIR' ) ) {
-			define( 'WAMPUM_USER_FORMS_INCLUDES_DIR', WAMPUM_USER_FORMS_PLUGIN_DIR . 'includes/' );
+		if ( ! defined( 'WAMPUM_USER_FORMS_VENDOR_DIR' ) ) {
+			define( 'WAMPUM_USER_FORMS_VENDOR_DIR', WAMPUM_USER_FORMS_PLUGIN_DIR . 'vendor/' );
 		}
 		// Plugin Folder URL.
 		if ( ! defined( 'WAMPUM_USER_FORMS_PLUGIN_URL' ) ) {
@@ -412,6 +412,8 @@ final class Wampum_User_Forms {
 			);
 	    }
 
+	    // We should add a hook here so custom code can fire upon successful membership verify
+
         // Success!
 		return array(
 			'success' => true,
@@ -609,6 +611,51 @@ final class Wampum_User_Forms {
 	        $body .= ' - ' .  $email;
 	        // Send it
 			wp_mail( $to, $subject, $body );
+        }
+
+        $active_campaign = true;
+
+        if ( $active_campaign ) {
+
+	        /**
+	         * ActiveCampain data.
+	         * This should be admin only settings.
+	         * Do not expose publicly!
+	         */
+	        $ac_url = 'https://bizbudding.api-us1.com';
+	        $ac_key = '4bd29871bc566dfe7dccdf819cdc0001c59bec88d5270ad85905b341bb70b2d861928fa0';
+
+	        // If we have a URL and a key
+	        if ( $ac_url && $ac_key ) {
+
+	        	// Load the AC PHP library
+	        	require_once( WAMPUM_USER_FORMS_VENDOR_DIR . 'activecampaign-api-php/includes/ActiveCampaign.class.php' );
+
+				// Setup AC
+				$ac = new ActiveCampaign( esc_url($ac_url), sanitize_text_field($ac_key) );
+
+				// Test API creds
+				if ( (int) $ac->credentials_test() ) {
+
+					// Start the contact array, email is required in our form
+					$contact = array( 'email' => $email );
+
+					// Add first name if we have one
+					if ( $data['first_name'] ) {
+						$contact['first_name'] = sanitize_text_field( $data['first_name'] );
+					}
+					// Add last name if we have one
+					if ( $data['last_name'] ) {
+						$contact['last_name'] = sanitize_text_field( $data['last_name'] );
+					}
+					// "p[{$list_id}]"      => $list_id,
+					// "status[{$list_id}]" => 1, // "Active" status
+					$contact_sync = $ac->api( 'contact/sync', $contact );
+
+				}
+
+	        }
+
         }
 
         // Success!
