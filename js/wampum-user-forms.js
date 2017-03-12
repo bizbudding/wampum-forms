@@ -109,6 +109,76 @@
 
     });
 
+    // Register form submit
+    $( 'body' ).on( 'submit', '.wampum-user-register-form', function(e) {
+
+        console.log('Register form submitted');
+
+        e.preventDefault();
+
+        // Set the form as a variable
+        var RegisterForm = $(this);
+        // Show the form as processing
+        RegisterForm.addClass('processing');
+        // Set button as a variable
+        var button = RegisterForm.find( '.wampum_submit' );
+        // Get the button text/value so we can add it back later
+        var button_html = button.html();
+        // Disable the button
+        button.attr( 'disabled', true );
+        // Set the button text/value to loading icons
+        button.html( getLoadingHTML() );
+
+        // Hide any notices
+        hideNotices(RegisterForm);
+
+        // Setup our form data array
+        var data = {
+                user_email: RegisterForm.find( '.wampum_user_email' ).val(),
+                username: RegisterForm.find( '.wampum_user_login' ).val(),
+                first_name: RegisterForm.find( '.wampum_first_name' ).val(),
+                last_name: RegisterForm.find( '.wampum_last_name' ).val(),
+                password: RegisterForm.find( '.wampum_user_pass' ).val(),
+                log_in: RegisterForm.find( '.wampum_log_in' ).val(),
+                list_id: RegisterForm.find( '.wampum_ac_list_id' ).val(),
+                say_what: RegisterForm.find( '.wampum_say_what' ).val(), // honeypot
+            };
+
+        $.ajax({
+            method: 'POST',
+            url: wampum_user_forms.root + 'wampum/v1/register/',
+            data: data,
+            beforeSend: function ( xhr ) {
+                xhr.setRequestHeader( 'X-WP-Nonce', wampum_user_forms.nonce );
+            },
+            success: function( response ) {
+                if ( response.success == true ) {
+                    // Display success message
+                    displayNotice( RegisterForm, 'success', 'Success!' );
+
+                    // Only redirect if we have a value
+                    var redirect = RegisterForm.find( '.wampum_redirect' ).val();
+                    if ( redirect !== "" ) {
+                        // Refresh/redirect
+                        window.location.replace( redirect );
+                    }
+                } else {
+                    // Display error message
+                    displayNotice( RegisterForm, 'error', response.message );
+                }
+            },
+            fail: function( response ) {
+                // Not sure when this would happen, but fallbacks!
+                displayNotice( RegisterForm, 'error', response.failure );
+            }
+        }).done( function( response )  {
+            // Remove form processing CSS
+            RegisterForm.removeClass('processing');
+            // Re-enable the button
+            button.html(button_html).attr( 'disabled', false );
+        });
+
+    });
 
     // Password form submit
 	$( 'body' ).on( 'submit', '.wampum-user-password-form', function(e) {

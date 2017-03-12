@@ -36,6 +36,17 @@ function wampum_get_login_form( $args = array() ) {
 }
 
 /**
+ * Get a registration form
+ *
+ * @param  array   $args	 Args to configure form
+ *
+ * @return string  The form
+ */
+function wampum_get_register_form( $args = array() ) {
+	return Wampum_User_Forms()->register_form_callback( $args );
+}
+
+/**
  * Get a password form
  *
  * @param  array   $args	 Args to configure form
@@ -178,6 +189,7 @@ final class Wampum_User_Forms {
 
 		// Shortcodes
 		add_shortcode( 'wampum_login_form', array( $this, 'login_form_callback' ) );
+		add_shortcode( 'wampum_register_form', array( $this, 'register_form_callback' ) );
 		add_shortcode( 'wampum_password_form', array( $this, 'password_form_callback' ) );
 		add_shortcode( 'wampum_membership_form', array( $this, 'membership_form_callback' ) );
 	}
@@ -196,6 +208,11 @@ final class Wampum_User_Forms {
 		 * *** */
 
 	    register_rest_route( 'wampum/v1', '/login/', array(
+			'methods'  => 'GET',
+			'callback' => array( $this, 'status' ),
+		));
+
+	    register_rest_route( 'wampum/v1', '/register/', array(
 			'methods'  => 'GET',
 			'callback' => array( $this, 'status' ),
 		));
@@ -224,14 +241,19 @@ final class Wampum_User_Forms {
 			'callback' => array( $this, 'login' ),
 		));
 
+	    register_rest_route( 'wampum/v1', '/register/', array(
+			'methods'  => 'POST',
+			'callback' => array( $this, 'register' ),
+		));
+
 	    register_rest_route( 'wampum/v1', '/password/', array(
 			'methods'  => 'POST',
 			'callback' => array( $this, 'save_password' ),
 		));
 
-	    register_rest_route( 'wampum/v1', '/membership-verify/', array(
+	    register_rest_route( 'wampum/v1', '/verify-user/', array(
 			'methods'  => 'POST',
-			'callback' => array( $this, 'membership_verify' ),
+			'callback' => array( $this, 'verify_user_doesnt_exist' ),
 	    ));
 
 	    register_rest_route( 'wampum/v1', '/membership-add/', array(
@@ -292,6 +314,102 @@ final class Wampum_User_Forms {
 				'success' => true,
 			);
 		}
+	}
+
+	/**
+	 * Register a user
+	 *
+	 * @since   1.0.0
+	 *
+	 * @param 	array  $data  {
+	 *
+	 *      Associative array of data to process
+	 *
+	 * 		@type  string  		$user_email 		Email (required)
+	 * 		@type  string  		$username 	 		Username
+	 * 		@type  string  		$first_name 		First Name
+	 * 		@type  string  		$last_name 			Last Name
+	 * 		@type  string  		$password 	 		Password
+	 * 		@type  bool    		$log_in 			Whether to auto log user in after registration
+	 * 		@type  stringint 	$ac_list_id 		The list ID to add
+	 * }
+	 *
+	 * @return  array
+	 */
+	function register( $data = array() ) {
+
+	    // Honeypot
+		$spam = $this->validate_say_what($data);
+		if ( false == $spam['success'] ) {
+			return $spam;
+		}
+
+		// Bail and return error if no email
+		if ( isset( $data['user_email'] ) && empty( $data['user_email'] ) ) {
+			$email = $data['user_email'];
+		} else {
+			return array(
+				'success' => false,
+				'message' => __( 'Email is missing', 'wampum' ),
+			);
+		}
+
+        /**
+         * Start the new user data
+         * Email is the only field required to exist in the form
+         */
+        $userdata = array(
+            'user_email' => $email,
+        );
+
+        // If we have a first name, set it
+        if ( $data['first_name'] ) {
+            $userdata['first_name'] = $data['first_name'];
+        }
+
+        // If we have a last name, set it
+        if ( $data['last_name'] ) {
+            $userdata['last_name'] = $data['last_name'];
+        }
+
+        // Set username. Set as variable first, cause we may need it later for wp_signon()
+        $username = ( isset($data['username']) && $data['username'] ) ? $data['username'] : $email;
+        $userdata['user_login'] = $username;
+
+        // Set password. Set as variable first, cause we may need it later for wp_signon()
+        $password = isset($data['password']) ? $data['password'] : wp_generate_password( $length = 12, $include_standard_special_chars = true );
+        $userdata['user_pass'] = $password;
+
+        // Create a new user
+        $user_id = wp_insert_user( $userdata );
+
+        // If it's an error, return it
+        if ( is_wp_error( $user_id ) ) {
+			return array(
+				'success' => false,
+				'message' => $user_id->get_error_message(),
+			);
+        }
+
+        // If log_in is true
+		if ( filter_var( $data['log_in'], FILTER_VALIDATE_BOOLEAN ) ) {
+	        // Log them in!
+	        $signon_data = array(
+				'user_login'	=> $username,
+				'user_password'	=> $password,
+				'remember'		=> true,
+	    	);
+			$user = wp_signon( $signon_data );
+        }
+
+        // ActiveCampaign
+        $this->maybe_do_active_campaign( $data );
+
+		// Success
+		return array(
+			'success' => true,
+		);
+
 	}
 
 	/**
@@ -379,7 +497,7 @@ final class Wampum_User_Forms {
 	 *
 	 * @return  bool|WP_Error  Whether a new user was created during the process
 	 */
-	function membership_verify( $data ) {
+	function verify_user_doesnt_exist( $data ) {
 
 	    // Honeypot
 		$spam = $this->validate_say_what($data);
@@ -411,8 +529,6 @@ final class Wampum_User_Forms {
 				'message' => __( 'This user account already exists.', 'wampum' ) . ' <a class="login-link" href="' . wp_login_url( $current_url ) . '" title="Log in">Log in?</a>',
 			);
 	    }
-
-	    // We should add a hook here so custom code can fire upon successful membership verify
 
         // Success!
 		return array(
@@ -471,6 +587,8 @@ final class Wampum_User_Forms {
 			);
 	    }
 
+	    // TODO: Check and set all variables here. Sanitize too?
+
 	    $email = sanitize_email($data['user_email']);
 
 	    // If user is logged in
@@ -511,66 +629,13 @@ final class Wampum_User_Forms {
 				);
 		    }
 
-	    	$user_created = false;
+		    // Register a user, maybe logging them in.
+	        $register = $this->register( $data );
 
-	        /**
-	         * Start the new user data
-	         * Email is the only field required to exist in the form
-	         */
-	        $userdata = array(
-	            'user_email' => $email,
-	        );
-
-	        // If we have a first name, set it
-	        if ( $data['first_name'] ) {
-	            $userdata['first_name'] = $data['first_name'];
+	        // Bail if unsuccessful
+	        if ( false == $register['success'] ) {
+	        	return $register;
 	        }
-
-	        // If we have a last name, set it
-	        if ( $data['last_name'] ) {
-	            $userdata['last_name'] = $data['last_name'];
-	        }
-
-	        // Set username. Set as variable first, cause we need it later for wp_signon()
-            $username = ( isset($data['username']) && $data['username'] ) ? $data['username'] : $email;
-            $userdata['user_login'] = $username;
-
-	        // Set password. Set as variable first, cause we need it later for wp_signon()
-	        $password = isset($data['password']) ? $data['password'] : wp_generate_password( $length = 12, $include_standard_special_chars = true );
-	        $userdata['user_pass'] = $password;
-
-	        // Create a new user
-	        $user_id = wp_insert_user( $userdata );
-
-	        // If it's an error, return it
-	        if ( is_wp_error( $user_id ) ) {
-				return array(
-					'success' => false,
-					'message' => $user_id->get_error_message(),
-				);
-	        }
-
-	        // Log them in!
-	        $signon_data = array(
-				'user_login'	=> $username,
-				'user_password'	=> $password,
-				'remember'		=> true,
-	    	);
-			$user = wp_signon( $signon_data );
-
-	        // If it's an error, return it
-	        if ( is_wp_error( $user ) ) {
-				return array(
-					'success' => false,
-					'message' => $user->get_error_message(),
-				);
-	        }
-
-	        // Set user as logged in
-			wp_set_current_user( $user->ID );
-			if ( wp_validate_auth_cookie( '', 'logged_in' ) != $user->ID ) {
-			    wp_set_auth_cookie( $user->ID, true );
-			}
 
 	    }
 
@@ -613,56 +678,75 @@ final class Wampum_User_Forms {
 			wp_mail( $to, $subject, $body );
         }
 
-        $active_campaign = true;
-
-        if ( $active_campaign ) {
-
-	        /**
-	         * ActiveCampain data.
-	         * This should be admin only settings.
-	         * Do not expose publicly!
-	         */
-	        $ac_url = 'https://bizbudding.api-us1.com';
-	        $ac_key = '4bd29871bc566dfe7dccdf819cdc0001c59bec88d5270ad85905b341bb70b2d861928fa0';
-
-	        // If we have a URL and a key
-	        if ( $ac_url && $ac_key ) {
-
-	        	// Load the AC PHP library
-	        	require_once( WAMPUM_USER_FORMS_VENDOR_DIR . 'activecampaign-api-php/includes/ActiveCampaign.class.php' );
-
-				// Setup AC
-				$ac = new ActiveCampaign( esc_url($ac_url), sanitize_text_field($ac_key) );
-
-				// Test API creds
-				if ( (int) $ac->credentials_test() ) {
-
-					// Start the contact array, email is required in our form
-					$contact = array( 'email' => $email );
-
-					// Add first name if we have one
-					if ( $data['first_name'] ) {
-						$contact['first_name'] = sanitize_text_field( $data['first_name'] );
-					}
-					// Add last name if we have one
-					if ( $data['last_name'] ) {
-						$contact['last_name'] = sanitize_text_field( $data['last_name'] );
-					}
-					// "p[{$list_id}]"      => $list_id,
-					// "status[{$list_id}]" => 1, // "Active" status
-					$contact_sync = $ac->api( 'contact/sync', $contact );
-
-				}
-
-	        }
-
-        }
+        // ActiveCampaign
+        $this->maybe_do_active_campaign( $data );
 
         // Success!
 		return array(
 			'success' => true,
 			'user'	  => $user_id, // false|user_id If user was created in the process
 		);
+
+	}
+
+	/**
+	 * Maybe send data to ActiveCampaign
+	 *
+	 * @since  1.1.0
+	 */
+	function maybe_do_active_campaign( $data ) {
+
+        // Bail if we have no email or list ID
+        if ( ! ( $data['user_email'] || $data['ac_list_id'] ) ) {
+        	return;
+        }
+
+    	$list_ids = explode( ',', $data['ac_list_id'] );
+
+        /**
+         * ActiveCampain data.
+         * This should be admin only settings.
+         * Do not expose publicly!
+         */
+		$ac_base_url	= 'https://bizbudding.api-us1.com';
+		$ac_key			= '4bd29871bc566dfe7dccdf819cdc0001c59bec88d5270ad85905b341bb70b2d861928fa0';
+
+        // If we have a URL and a key
+        if ( $ac_base_url && $ac_key ) {
+
+        	// Load the AC PHP library
+        	require_once( WAMPUM_USER_FORMS_VENDOR_DIR . 'activecampaign-api-php/includes/ActiveCampaign.class.php' );
+
+			// Setup AC
+			$ac = new ActiveCampaign( esc_url($ac_base_url), sanitize_text_field($ac_key) );
+
+			// Test API creds
+			if ( (int) $ac->credentials_test() ) {
+
+				// Start the contact array, email is required in our form
+				$contact = array( 'email' => sanitize_email( $data['user_email'] ) );
+
+				// Add first name if we have one
+				if ( $data['first_name'] ) {
+					$contact['first_name'] = sanitize_text_field( $data['first_name'] );
+				}
+				// Add last name if we have one
+				if ( $data['last_name'] ) {
+					$contact['last_name'] = sanitize_text_field( $data['last_name'] );
+				}
+
+				// Add user to existing ActiveCampaign lists
+				foreach( $list_ids as $list_id ) {
+					$contact["p[{$list_id}]"]	   = $list_id;
+					$contact["status[{$list_id}]"] = 1; // "Active" status
+				}
+
+				// Do the thang
+				$contact_sync = $ac->api( 'contact/sync', $contact );
+
+			}
+
+        }
 
 	}
 
@@ -761,6 +845,21 @@ final class Wampum_User_Forms {
 			return;
 		}
 		return sprintf( '<div class="wampum-form">%s</div>', $this->get_login_form( $args ) );
+	}
+
+	/**
+	 * Get a registration form, with the wrapper
+	 *
+	 * @since  1.1.0
+	 *
+	 * @return string  the form
+	 */
+	function register_form_callback( $args ) {
+		// Bail if already logged in
+		if ( is_user_logged_in() ) {
+			return;
+		}
+		return sprintf( '<div class="wampum-form">%s</div>', $this->get_register_form( $args ) );
 	}
 
 	/**
@@ -866,7 +965,6 @@ final class Wampum_User_Forms {
 
 			<?php echo $args['title'] ? sprintf( '<%s class="wampum-form-heading">%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : ''; ?>
 			<?php echo $args['desc'] ? sprintf( '<p class="wampum-form-desc">%s</p>', $args['desc'] ) : ''; ?>
-			<?php echo $args['desc'] ? sprintf( '<p class="wampum-form-desc">%s</p>', $args['desc'] ) : ''; ?>
 
 			<div style="display:none;" class="wampum-notice"></div>
 
@@ -892,6 +990,115 @@ final class Wampum_User_Forms {
 			</p>
 
 		</form>
+		<?php
+		return ob_get_clean();
+
+	}
+
+	/**
+	 * Get a registration form
+	 * Increment the internal counter
+	 * Enqueue scripts
+	 *
+	 * @since  1.1.0
+	 *
+	 * @return string  the form
+	 */
+	function get_register_form( $args ) {
+
+		// Increment the counter
+		$this->form_counter++;
+
+		$this->enqueue_scripts();
+
+		$args = shortcode_atts( array(
+			'hidden'		=> false,
+			'title'			=> __( 'Register', 'wampum' ),
+			'title_wrap'	=> 'h3',
+			'desc'			=> '',
+			'button'		=> __( 'Submit', 'wampum' ),
+			'redirect'		=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], // a url or null
+			'first_name'	=> false,
+			'last_name'		=> false,
+			'username'		=> false,
+			'password'		=> false,
+			'log_in'		=> false, // Whether to log user in after register
+			'ac_list_id' 	=> false, // Comma separated list of IDs
+		), $args, 'wampum_register_form' );
+
+		ob_start();
+
+		$hidden  = '';
+		if ( filter_var( $args['hidden'], FILTER_VALIDATE_BOOLEAN ) ) {
+			$hidden = ' style="display:none;"';
+		}
+		?>
+		<form<?php echo $hidden; ?> id="wampum_user_form_<?php echo $this->form_counter; ?>" class="wampum-user-register-form" name="wampum_user_form_<?php echo $this->form_counter; ?>" method="post">
+
+			<?php echo $args['title'] ? sprintf( '<%s class="wampum-form-heading">%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : ''; ?>
+			<?php echo $args['desc'] ? sprintf( '<p class="wampum-form-desc">%s</p>', $args['desc'] ) : ''; ?>
+
+			<div style="display:none;" class="wampum-notice"></div>
+
+			<p class="wampum-field wampum-say-what">
+				<label for="wampum_say_what">Say What?</label>
+				<input type="text" class="wampum_say_what" name="wampum_say_what" value="">
+			</p>
+
+			<?php if ( filter_var( $args['first_name'], FILTER_VALIDATE_BOOLEAN ) ) { ?>
+
+				<p class="wampum-field register-name register-first-name">
+					<label for="wampum_register_first_name"><?php _e( 'First Name', 'wampum' ); ?></label>
+					<input type="text" class="wampum_first_name" name="wampum_register_first_name" value="">
+				</p>
+
+			<?php } ?>
+
+			<?php if ( filter_var( $args['last_name'], FILTER_VALIDATE_BOOLEAN ) ) { ?>
+
+				<p class="wampum-field register-name register-last-name">
+					<label for="wampum_register_last_name"><?php _e( 'Last Name', 'wampum' ); ?></label>
+					<input type="text" class="wampum_last_name" name="wampum_register_last_name" value="">
+				</p>
+
+			<?php } ?>
+
+			<p class="wampum-field register-email">
+				<label for="wampum_user_email"><?php _e( 'Email', 'wampum' ); ?><span class="required">*</span></label>
+				<input type="text" name="wampum_user_email" class="wampum_user_email" value="" required>
+			</p>
+
+			<?php if ( filter_var( $args['username'], FILTER_VALIDATE_BOOLEAN ) ) { ?>
+
+				<p class="wampum-field register-username">
+					<label for="wampum_register_user_login"><?php _e( 'Username', 'wampum' ); ?></label>
+					<input type="text" class="wampum_user_login" name="wampum_register_user_login" value="">
+				</p>
+
+			<?php } ?>
+
+			<?php if ( filter_var( $args['password'], FILTER_VALIDATE_BOOLEAN ) ) { ?>
+
+				<p class="wampum-field register-password">
+					<label for="wampum_user_pass"><?php _e( 'Password', 'wampum' ); ?><span class="required">*</span></label>
+					<input type="password" name="wampum_user_pass" class="wampum_user_pass" value="" required>
+				</p>
+
+			<?php } ?>
+
+			<p class="wampum-field wampum-submit login-submit">
+				<button class="wampum_submit button" type="submit" form="wampum_user_form_<?php echo $this->form_counter; ?>"><?php echo $args['button']; ?></button>
+				<?php if ( $args['log_in'] ) { ?>
+					<input type="hidden" name="wampum_log_in" class="wampum_log_in" value="<?php echo filter_var( $args['log_in'], FILTER_VALIDATE_BOOLEAN ); ?>">
+				<?php } ?>
+				<?php if ( $args['ac_list_id'] ) { ?>
+					<input type="hidden" name="wampum_ac_list_id" class="wampum_ac_list_id" value="<?php echo absint( $args['ac_list_id'] ); ?>">
+				<?php } ?>
+				<input type="hidden" name="wampum_redirect" class="wampum_redirect" value="<?php echo $args['redirect']; ?>">
+			</p>
+
+		</form>
+		<style media="screen" type="text/css">.wampum-say-what { display: none; visibility: hidden; }</style>
 		<?php
 		return ob_get_clean();
 
@@ -932,7 +1139,6 @@ final class Wampum_User_Forms {
 		<form<?php echo $hidden; ?> id="wampum_user_form_<?php echo $this->form_counter; ?>" class="wampum-user-password-form" name="wampum_user_form_<?php echo $this->form_counter; ?>" method="post">
 
 			<?php echo $args['title'] ? sprintf( '<%s class="wampum-form-heading">%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : ''; ?>
-			<?php echo $args['desc'] ? sprintf( '<p class="wampum-form-desc">%s</p>', $args['desc'] ) : ''; ?>
 			<?php echo $args['desc'] ? sprintf( '<p class="wampum-form-desc">%s</p>', $args['desc'] ) : ''; ?>
 
 			<div style="display:none;" class="wampum-notice"></div>
