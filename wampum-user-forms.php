@@ -761,9 +761,9 @@ final class Wampum_User_Forms {
 		}
 
 		/**
-		 * Bail if no membership form
+		 * Bail if no membership form.
 		 * This happens when a logged in user is already a member
-		 * and there is no notice to display for logged in  members ( via $args['member_message'] )
+		 * and there is no notice to display for logged in members ( via $args['member_message'] ).
 		 */
 		$membership_form = $this->get_membership_form( $args );
 		if ( ! $membership_form ) {
