@@ -1,18 +1,15 @@
-( function ( document, $, undefined ) {
-
+;(function( $ ) {
     'use strict';
 
-    var $forms = $('.wampum-form');
-
     // Show password strength meter when focusing on password field
-	$forms.on( 'focus', '.wampum_user_password', function(e) {
+	$('.wampum-form').on('focus', '.wampum_password', function(ev){
     	$(this).closest('form').find('.password-strength').slideDown('fast');
     });
 
     // Password strength meter
-    $forms.on( 'keyup', '.wampum_user_password', function(e) {
+    $('.wampum-form').on('keyup', '.wampum_password', function(e){
 
-    	var $form = $(this).closest('form');
+    	var form = $(this).closest('form');
 
 	    var strength = {
 	        0: "Weak",
@@ -22,8 +19,8 @@
 	        4: "Great",
 	    }
 
-	    var meter = $form.find('.password-strength-meter');
-	    var text  = $form.find('.password-strength-text');
+	    var meter = form.find('.password-strength-meter');
+	    var text  = form.find('.password-strength-text');
 
         var val    = $(this).val();
         var result = zxcvbn(val);
@@ -41,37 +38,34 @@
     });
 
     // Login form submit
-    $forms.on( 'submit', 'form[data-form="login"]', function(e) {
+    $( 'body' ).on( 'submit', '.wampum-user-login-form', function(e) {
 
     	console.log('Login form submitted');
 
         e.preventDefault();
 
         // Set the form as a variable
-        var $loginForm = $(this),
-            $button    = $loginForm.find( '.wampum_submit' );
-
-        // Get the button text/value so we can add it back later
-        var buttonHTML = $button.html();
-
+        var LoginForm = $(this);
         // Show the form as processing
-        $loginForm.addClass('processing');
-
-        // Disable the $button
-        $button.attr( 'disabled', true );
-
-        // Set the $button text/value to loading icons
-        $button.html( getLoadingHTML() );
+        LoginForm.addClass('processing');
+        // Set button as a variable
+        var button = LoginForm.find( '.wampum_submit' );
+        // Get the button text/value so we can add it back later
+        var button_html = button.html();
+        // Disable the button
+        button.attr( 'disabled', true );
+        // Set the button text/value to loading icons
+        button.html( getLoadingHTML() );
 
         // Hide any notices
-        hideNotices( $loginForm );
+        hideNotices(LoginForm);
 
         // Setup our form data array
         var data = {
-                user_login: $loginForm.find( '.wampum_username' ).val(),
-                user_password: $loginForm.find( '.wampum_user_password' ).val(),
-                remember: $loginForm.find( '.wampum_rememberme' ).val(),
-                say_what: $loginForm.find( '.wampum_say_what' ).val(), // honeypot
+                user_login: LoginForm.find( '.wampum_user_login' ).val(),
+                user_password: LoginForm.find( '.wampum_user_pass' ).val(),
+                remember: LoginForm.find( '.wampum_rememberme' ).val(),
+                say_what: LoginForm.find( '.wampum_say_what' ).val(), // honeypot
             };
 
         $.ajax({
@@ -84,10 +78,10 @@
             success: function( response ) {
                 if ( response.success == true ) {
                     // Display success message
-                	displayNotice( $loginForm, 'success', 'Success!' );
+                	displayNotice( LoginForm, 'success', 'Success!' );
 
                 	// Only redirect if we have a value
-                    var redirect = $loginForm.find( '.wampum_redirect' ).val();
+                    var redirect = LoginForm.find( '.wampum_redirect' ).val();
                     if ( redirect !== "" ) {
                     	if ( 'membership_form' == redirect ) {
 		                	// Refresh the page
@@ -99,25 +93,24 @@
                     }
                 } else {
                     // Display error message
-                    displayNotice( $loginForm, 'error', response.message );
+                    displayNotice( LoginForm, 'error', response.message );
                 }
             },
             fail: function( response ) {
                 // Not sure when this would happen, but fallbacks!
-                displayNotice( $loginForm, 'error', response.failure );
+                displayNotice( LoginForm, 'error', response.failure );
             }
         }).done( function( response )  {
         	// Remove form processing CSS
-	        $loginForm.removeClass('processing');
-
-                    // Re-enable the $butto// Get the button text/value so we can add it back latern
-        	$button.html(buttonHTML).attr( 'disabled', false );
+	        LoginForm.removeClass('processing');
+			// Re-enable the button
+        	button.html(button_html).attr( 'disabled', false );
         });
 
     });
 
     // Register form submit
-    $forms.on( 'submit', 'form[data-form="register"]', function(e) {
+    $( 'body' ).on( 'submit', '.wampum-user-register-form', function(e) {
 
         console.log('Register form submitted');
 
@@ -129,9 +122,8 @@
         RegisterForm.addClass('processing');
         // Set button as a variable
         var button = RegisterForm.find( '.wampum_submit' );
-
-                // Get the but// Get the button text/value so we can add it back laterton text/value so we can add it back later
-        var buttonHTML = button.html();
+        // Get the button text/value so we can add it back later
+        var button_html = button.html();
         // Disable the button
         button.attr( 'disabled', true );
         // Set the button text/value to loading icons
@@ -143,12 +135,12 @@
         // Setup our form data array
         var data = {
                 user_email: RegisterForm.find( '.wampum_user_email' ).val(),
-                username: RegisterForm.find( '.wampum_username' ).val(),
+                username: RegisterForm.find( '.wampum_user_login' ).val(),
                 first_name: RegisterForm.find( '.wampum_first_name' ).val(),
                 last_name: RegisterForm.find( '.wampum_last_name' ).val(),
-                password: RegisterForm.find( '.wampum_user_password' ).val(),
+                password: RegisterForm.find( '.wampum_user_pass' ).val(),
                 log_in: RegisterForm.find( '.wampum_log_in' ).val(),
-                list_id: RegisterForm.find( '.wampum_ac_list_ids' ).val(),
+                list_id: RegisterForm.find( '.wampum_ac_list_id' ).val(),
                 say_what: RegisterForm.find( '.wampum_say_what' ).val(), // honeypot
             };
 
@@ -182,15 +174,14 @@
         }).done( function( response )  {
             // Remove form processing CSS
             RegisterForm.removeClass('processing');
-
-                    // Re-enable the butto// Get the button text/value so we can add it back latern
-            button.html(buttonHTML).attr( 'disabled', false );
+            // Re-enable the button
+            button.html(button_html).attr( 'disabled', false );
         });
 
     });
 
     // Password form submit
-    $forms.on( 'submit', 'form[data-form="password"]', function(e) {
+	$( 'body' ).on( 'submit', '.wampum-user-password-form', function(e) {
 
 		console.log('Password form submitted');
 
@@ -202,9 +193,8 @@
         PasswordForm.addClass('processing');
         // Set button as a variable
         var button = PasswordForm.find( '.wampum_submit' );
-
-                // Get the but// Get the button text/value so we can add it back laterton text/value so we can add it back later
-        var buttonHTML = button.html();
+        // Get the button text/value so we can add it back later
+        var button_html = button.html();
         // Disable the button
         button.attr( 'disabled', true );
         // Set the button text/value to loading icons
@@ -215,8 +205,8 @@
 
         // Setup our form data array
         var data = {
-                password: PasswordForm.find( '.wampum_user_password' ).val(),
-                password_confirm: PasswordForm.find( '.wampum_user_password_confirm' ).val(),
+                password: PasswordForm.find( '.wampum_password' ).val(),
+                password_confirm: PasswordForm.find( '.wampum_password_confirm' ).val(),
                 say_what: PasswordForm.find( '.wampum_say_what' ).val(), // honeypot
             };
 
@@ -254,17 +244,14 @@
 	        PasswordForm.find('.password-strength-meter').attr('data-strength', '');
 	        // Clear the password strength text
 	        PasswordForm.find('.password-strength-text').html('');
-
-                    // Re-enable the butto// Get the button text/value so we can add it back latern
-        	button.html(buttonHTML).attr( 'disabled', false );
+			// Re-enable the button
+        	button.html(button_html).attr( 'disabled', false );
         });
 
     });
 
 	// Membership verify submit
-    $forms.on( 'submit', 'form[data-form="user-available"]', function(e) {
-
-        console.log( 'User available form submitted' );
+	$( 'body' ).on( 'submit', '.wampum-user-membership-form-verify', function(e) {
 
 		e.preventDefault();
 
@@ -275,9 +262,8 @@
         MembershipVerify.addClass('processing');
         // Set button as a variable
         var button = MembershipVerify.find( '.wampum_submit' );
-
-                // Get the but// Get the button text/value so we can add it back laterton text/value so we can add it back later
-        var buttonHTML = button.html();
+        // Get the button text/value so we can add it back later
+        var button_html = button.html();
         // Disable the button
         button.attr( 'disabled', true );
         // Set the button text/value to loading icons
@@ -289,8 +275,8 @@
         // Setup our form data array
         var data = {
         		say_what: MembershipVerify.find( '[name="wampum_say_what"]' ).val(),
-                user_email: MembershipVerify.find( '[name="wampum_user_email"]' ).val(),
-                username: MembershipVerify.find( '[name="wampum_username"]' ).val(),
+                user_email: MembershipVerify.find( '[name="wampum_membership_email"]' ).val(),
+                username: MembershipVerify.find( '[name="wampum_membership_username"]' ).val(),
                 current_url: wampum_user_forms.current_url,
             };
 
@@ -346,7 +332,7 @@
                     MembershipVerify.hide();
                     MembershipForm.show();
                     // Focus on password field (should be the only one left?)
-                    MembershipForm.find('.wampum_user_password').focus();
+                    MembershipForm.find('.wampum_password').focus();
                 } else {
                     // Display error message
                     displayNotice( MembershipVerify, 'error', response.message );
@@ -370,15 +356,14 @@
         }).done( function( response )  {
         	// Remove form processing CSS
 	        MembershipVerify.removeClass('processing');
-
-                    // Re-enable the butto// Get the button text/value so we can add it back latern
-			button.html(buttonHTML).attr( 'disabled', false );
+			// Re-enable the button
+			button.html(button_html).attr( 'disabled', false );
         });
 
 	});
 
 	// Membership add submit
-    $forms.on( 'submit', 'form[data-form="join-membership"]', function(e) {
+    $( 'body' ).on( 'submit', '.wampum-user-membership-form', function(e) {
 
     	console.log('Membership form submitted');
 
@@ -391,9 +376,8 @@
         MembershipForm.addClass('processing');
         // Set button as a variable
         var button = MembershipForm.find( '.wampum_submit' );
-
-                // Get the but// Get the button text/value so we can add it back laterton text/value so we can add it back later
-        var buttonHTML = button.html();
+        // Get the button text/value so we can add it back later
+        var button_html = button.html();
         // Disable the button
         button.attr( 'disabled', true );
         // Set the button text/value to loading icons
@@ -409,7 +393,7 @@
                 last_name: MembershipForm.find( '.wampum_last_name' ).val(),
                 user_email: MembershipForm.find( '.wampum_email' ).val(),
                 username: MembershipForm.find( '.wampum_username' ).val(),
-                password: MembershipForm.find( '.wampum_user_password' ).val(),
+                password: MembershipForm.find( '.wampum_password' ).val(),
                 notifications: MembershipForm.find( '.wampum_notifications').val(),
                 say_what: MembershipForm.find( '.wampum_say_what' ).val(), // honeypot
                 current_url: wampum_user_forms.current_url,
@@ -494,47 +478,40 @@
         }).done( function( response )  {
         	// Remove form processing CSS
 	        MembershipForm.removeClass('processing');
-
-                    // Re-enable the butto// Get the button text/value so we can add it back latern
-        	button.html(buttonHTML).attr( 'disabled', false );
+			// Re-enable the button
+        	button.html(button_html).attr( 'disabled', false );
         });
 
     });
 
     // Swap a form for it's neighboring login form
-	function swapLoginForm( $form ) {
+	function swapLoginForm( form ) {
 
-    	hideNotices($form);
+    	hideNotices(form);
 
-    	var $loginForm = $form.siblings('form[data-form="login"]');
+    	var LoginForm = form.siblings('.wampum-user-login-form');
 
-    	/**
-         * Swap forms
-         * TODO: Make smoother?
-         */
-    	// $form.hide();
-    	// $loginForm.show();
-        $form.fadeOut( 300, function() {
-            $loginForm.fadeIn( 600 );
-        });
+    	// Swap forms
+    	form.hide();
+    	LoginForm.show();
 
     	// Set submitted email value as the login field
-    	$loginForm.find('.wampum_username').val( $form.find('.wampum_email').val() );
+    	LoginForm.find('.wampum_user_login').val(form.find('.wampum_email').val());
 
     	// If user goes to login, back to membership, then to login, we'd have duplicate back buttons
-    	$loginForm.find('.wampum-back').remove();
+    	LoginForm.find('.wampum-back').remove();
 
     	// Add back button
-    	$loginForm.find('.wampum_submit').after('<a class="wampum-back" href="#">&nbsp;&nbsp;Go back</a>');
+    	LoginForm.find('.wampum_submit').after('<a class="wampum-back" href="#">&nbsp;&nbsp;Go back</a>');
 
 		// On click of the back button
-		$loginForm.on( 'click', '.wampum-back', function(e) {
+		LoginForm.on( 'click', '.wampum-back', function(e) {
 			e.preventDefault();
         	// Swap forms
-        	$loginForm.hide();
-        	$form.show();
+        	LoginForm.hide();
+        	form.show();
         	// Clear the password field
-        	$loginForm.find('.wampum_user_password').val('');
+        	LoginForm.find('.wampum_user_pass').val('');
 		});
 
 	}
@@ -562,4 +539,4 @@
 		return '<div class="wampum-loading"><div class="wampum-loading-circle wampum-loading-circle1">&#8226;</div><div class="wampum-loading-circle wampum-loading-circle2">&#8226;</div><div class="wampum-loading-circle wampum-loading-circle3">&#8226;</div></div>';
 	}
 
-})( document, jQuery );
+})( jQuery );
