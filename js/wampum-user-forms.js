@@ -293,7 +293,7 @@
 
         $.ajax({
             method: 'POST',
-            url: wampum_user_forms.root + 'wampum/v1/membership-verify/',
+            url: wampum_user_forms.root + 'wampum/v1/user-available/',
             data: data,
             beforeSend: function ( xhr ) {
                 xhr.setRequestHeader( 'X-WP-Nonce', wampum_user_forms.nonce );

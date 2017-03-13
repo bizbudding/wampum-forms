@@ -251,9 +251,9 @@ final class Wampum_User_Forms {
 			'callback' => array( $this, 'save_password' ),
 		));
 
-	    register_rest_route( 'wampum/v1', '/verify-user/', array(
+	    register_rest_route( 'wampum/v1', '/user-available/', array(
 			'methods'  => 'POST',
-			'callback' => array( $this, 'verify_user_doesnt_exist' ),
+			'callback' => array( $this, 'user_available' ),
 	    ));
 
 	    register_rest_route( 'wampum/v1', '/membership-add/', array(
@@ -497,7 +497,7 @@ final class Wampum_User_Forms {
 	 *
 	 * @return  bool|WP_Error  Whether a new user was created during the process
 	 */
-	function verify_user_doesnt_exist( $data ) {
+	function user_available( $data ) {
 
 	    // Honeypot
 		$spam = $this->validate_say_what($data);
