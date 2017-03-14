@@ -183,7 +183,7 @@
             // Remove form processing CSS
             RegisterForm.removeClass('processing');
 
-                    // Re-enable the butto// Get the button text/value so we can add it back latern
+            // Re-enable the button
             button.html(buttonHTML).attr( 'disabled', false );
         });
 
@@ -255,7 +255,7 @@
 	        // Clear the password strength text
 	        PasswordForm.find('.password-strength-text').html('');
 
-                    // Re-enable the butto// Get the button text/value so we can add it back latern
+            // Re-enable the button
         	button.html(buttonHTML).attr( 'disabled', false );
         });
 
@@ -269,40 +269,41 @@
 		e.preventDefault();
 
 	    // Set the form as a variable
-        var MembershipVerify = $(this);
+        var $userAvailableForm  = $(this),
+            $button             = $userAvailableForm.find( '.wampum_submit' );
 
         // Show the form as processing
-        MembershipVerify.addClass('processing');
-        // Set button as a variable
-        var button = MembershipVerify.find( '.wampum_submit' );
+        $userAvailableForm.addClass('processing');
 
-                // Get the but// Get the button text/value so we can add it back laterton text/value so we can add it back later
-        var buttonHTML = button.html();
+        // Get the button text/value so we can add it back laterton text/value so we can add it back later
+        var buttonHTML = $button.html();
+
         // Disable the button
-        button.attr( 'disabled', true );
+        $button.attr( 'disabled', true );
+
         // Set the button text/value to loading icons
-        button.html( getLoadingHTML() );
+        $button.html( getLoadingHTML() );
 
         // Hide any notices
-		hideNotices(MembershipVerify);
+		hideNotices($userAvailableForm);
 
         // Setup our form data array
         var data = {
-        		say_what: MembershipVerify.find( '[name="wampum_say_what"]' ).val(),
-                user_email: MembershipVerify.find( '[name="wampum_user_email"]' ).val(),
-                username: MembershipVerify.find( '[name="wampum_username"]' ).val(),
+        		say_what: $userAvailableForm.find( '[name="wampum_say_what"]' ).val(),
+                user_email: $userAvailableForm.find( '[name="wampum_user_email"]' ).val(),
+                username: $userAvailableForm.find( '[name="wampum_username"]' ).val(),
                 current_url: wampum_user_forms.current_url,
             };
 
         // SharpSpring data, incase we need it later
-        var SharpSpringBaseURI  = MembershipVerify.find( '.wampum_ss_baseuri' ).val();
-        var SharpSpringEndpoint = MembershipVerify.find( '.wampum_ss_endpoint' ).val();
-        var urlParams = MembershipVerify.serialize();
+        var SharpSpringBaseURI  = $userAvailableForm.find( '.wampum_ss_baseuri' ).val();
+        var SharpSpringEndpoint = $userAvailableForm.find( '.wampum_ss_endpoint' ).val();
+        var urlParams = $userAvailableForm.serialize();
 
         // If we have SharpSpring data, add the main __ss_noform code right after the form
         if ( SharpSpringBaseURI && SharpSpringEndpoint ) {
             // This fixes the error missing __ss_noform push
-            MembershipVerify.after( '<script type="text/javascript">var __ss_noform = __ss_noform || [];</script>' );
+            $userAvailableForm.after( '<script type="text/javascript">var __ss_noform = __ss_noform || [];</script>' );
         }
 
         $.ajax({
@@ -329,34 +330,40 @@
                         });
                     }
 
-                	var MembershipForm = MembershipVerify.siblings('.wampum-user-membership-form');
-                	// Pass values and make fields read only
-                	MembershipForm.find('.wampum_first_name').val(MembershipVerify.find('.wampum_first_name').val()).attr('readonly',true);
-                	MembershipForm.find('.wampum_last_name').val(MembershipVerify.find('.wampum_last_name').val()).attr('readonly',true);
-                    MembershipForm.find('.wampum_email').val(MembershipVerify.find('.wampum_email').val()).attr('readonly',true);
-                	MembershipForm.find('.wampum_username').val(MembershipVerify.find('.wampum_username').val()).attr('readonly',true);
-                	// Hide already filled out fields
-                	MembershipForm.find('.membership-first-name').hide();
-                	MembershipForm.find('.membership-last-name').hide();
-                    MembershipForm.find('.membership-email').hide();
-                	MembershipForm.find('.membership-username').hide();
+                	var $membershipForm = $userAvailableForm.siblings( 'form[data-form="join-membership"]' );
+
+                    // Pass values and make fields read only
+                	$membershipForm.find( '.wampum_first_name' ).val( $userAvailableForm.find( '.wampum_first_name' ).val() ).attr( 'readonly', true );
+                	$membershipForm.find( '.wampum_last_name' ).val( $userAvailableForm.find( '.wampum_last_name' ).val() ).attr( 'readonly', true );
+                    $membershipForm.find( '.wampum_user_email' ).val( $userAvailableForm.find( '.wampum_user_email' ).val() ).attr( 'readonly', true );
+                	$membershipForm.find( '.wampum_username' ).val( $userAvailableForm.find( '.wampum_username' ).val() ).attr( 'readonly', true );
+
+                    // Hide already filled out fields
+                	$membershipForm.find( '.wampum-first-name' ).hide();
+                	$membershipForm.find( '.wampum-last-name' ).hide();
+                    $membershipForm.find( '.wampum-email' ).hide();
+                	$membershipForm.find( '.wampum-username' ).hide();
+
                     // Add description to next form
-                    displayNotice( MembershipForm, 'success', 'Almost there! This is the last step.' );
+                    displayNotice( $membershipForm, 'success', 'Almost there! This is the last step.' );
+
                     // Swap forms
-                    MembershipVerify.hide();
-                    MembershipForm.show();
+                    $userAvailableForm.hide();
+                    $membershipForm.show();
+
                     // Focus on password field (should be the only one left?)
-                    MembershipForm.find('.wampum_user_password').focus();
+                    $membershipForm.find( '.wampum_user_password').focus();
+
                 } else {
                     // Display error message
-                    displayNotice( MembershipVerify, 'error', response.message );
+                    displayNotice( $userAvailableForm, 'error', response.message );
 
 					// Show login form if clicking the "Log in?" link
-	                MembershipVerify.on( 'click', '.login-link', function(e) {
+	                $userAvailableForm.on( 'click', '.login-link', function(e) {
 	                	e.preventDefault();
 	                	// Do the login stuff
 						setTimeout(function() {
-		                	swapLoginForm(MembershipVerify);
+		                	swapLoginForm( $userAvailableForm );
 						}, 300 );
 	                });
 
@@ -365,14 +372,14 @@
             },
             fail: function( response ) {
                 // Not sure when this would happen, but fallbacks!
-                displayNotice( MembershipVerify, 'error', wampum_user_forms.failure );
+                displayNotice( $userAvailableForm, 'error', wampum_user_forms.failure );
             }
         }).done( function( response )  {
         	// Remove form processing CSS
-	        MembershipVerify.removeClass('processing');
+	        $userAvailableForm.removeClass('processing');
 
-                    // Re-enable the butto// Get the button text/value so we can add it back latern
-			button.html(buttonHTML).attr( 'disabled', false );
+            // Re-enable the butto
+			$button.html( buttonHTML ).attr( 'disabled', false );
         });
 
 	});
@@ -385,46 +392,47 @@
         e.preventDefault();
 
         // Set the form as a variable
-        var MembershipForm = $(this);
+        var $membershipForm = $(this),
+            $button         = $membershipForm.find( '.wampum_submit' );
 
         // Show the form as processing
-        MembershipForm.addClass('processing');
-        // Set button as a variable
-        var button = MembershipForm.find( '.wampum_submit' );
+        $membershipForm.addClass('processing');
 
-                // Get the but// Get the button text/value so we can add it back laterton text/value so we can add it back later
-        var buttonHTML = button.html();
+        // Get the button text/value so we can add it back laterton text/value so we can add it back later
+        var buttonHTML = $button.html();
+
         // Disable the button
-        button.attr( 'disabled', true );
+        $button.attr( 'disabled', true );
+
         // Set the button text/value to loading icons
-        button.html( getLoadingHTML() );
+        $button.html( getLoadingHTML() );
 
         // Hide any notices
-		hideNotices(MembershipForm);
+		hideNotices( $membershipForm );
 
         // Setup our form data array
         var data = {
-                plan_id: MembershipForm.find( '.wampum_plan_id' ).val(),
-                first_name: MembershipForm.find( '.wampum_first_name' ).val(),
-                last_name: MembershipForm.find( '.wampum_last_name' ).val(),
-                user_email: MembershipForm.find( '.wampum_email' ).val(),
-                username: MembershipForm.find( '.wampum_username' ).val(),
-                password: MembershipForm.find( '.wampum_user_password' ).val(),
-                notifications: MembershipForm.find( '.wampum_notifications').val(),
-                say_what: MembershipForm.find( '.wampum_say_what' ).val(), // honeypot
+                plan_id: $membershipForm.find( '.wampum_plan_id' ).val(),
+                first_name: $membershipForm.find( '.wampum_first_name' ).val(),
+                last_name: $membershipForm.find( '.wampum_last_name' ).val(),
+                user_email: $membershipForm.find( '.wampum_user_email' ).val(),
+                username: $membershipForm.find( '.wampum_username' ).val(),
+                password: $membershipForm.find( '.wampum_user_password' ).val(),
+                notifications: $membershipForm.find( '.wampum_notifications').val(),
+                say_what: $membershipForm.find( '.wampum_say_what' ).val(), // honeypot
                 current_url: wampum_user_forms.current_url,
             };
 
         // SharpSpring data, incase we need it later
-        var SharpSpringBaseURI  = MembershipForm.find( '.wampum_ss_baseuri' ).val();
-        var SharpSpringEndpoint = MembershipForm.find( '.wampum_ss_endpoint' ).val();
-        // var urlParams = MembershipForm.serialize();
-        var urlParams = $('input[type!=password]', MembershipForm).serialize();
+        var SharpSpringBaseURI  = $membershipForm.find( '.wampum_ss_baseuri' ).val();
+        var SharpSpringEndpoint = $membershipForm.find( '.wampum_ss_endpoint' ).val();
+        // var urlParams = $membershipForm.serialize();
+        var urlParams = $('input[type!=password]', $membershipForm).serialize();
 
         // If we have SharpSpring data, add the main __ss_noform code right after the form
         if ( SharpSpringBaseURI && SharpSpringEndpoint ) {
             // This fixes the error missing __ss_noform push
-            MembershipForm.after( '<script type="text/javascript">var __ss_noform = __ss_noform || [];</script>' );
+            $membershipForm.after( '<script type="text/javascript">var __ss_noform = __ss_noform || [];</script>' );
         }
 
         $.ajax({
@@ -452,10 +460,10 @@
                     }
 
                     // Display success message
-                	displayNotice( MembershipForm, 'success', 'Success!' );
+                	displayNotice( $membershipForm, 'success', 'Success!' );
 
                 	// Get the redirect value
-                    var redirect = MembershipForm.find( '.wampum_redirect' ).val();
+                    var redirect = $membershipForm.find( '.wampum_redirect' ).val();
 
                 	// Only redirect if we have a value
                     if ( redirect !== "" ) {
@@ -466,21 +474,21 @@
                     } else {
 						setTimeout(function() {
 							// Fade the form out
-	                    	MembershipForm.fadeOut('fast');
+	                    	$membershipForm.fadeOut('fast');
 						}, 300 );
                     }
 
                 } else {
 
                     // Display error message
-					displayNotice( MembershipForm, 'error', response.message );
+					displayNotice( $membershipForm, 'error', response.message );
 
 					// Show login form if clicking the "Log in?" link
-	                MembershipForm.on( 'click', '.login-link', function(e) {
+	                $membershipForm.on( 'click', '.login-link', function(e) {
 	                	e.preventDefault();
 	                	// Do the login stuff
 						setTimeout(function() {
-		                	swapLoginForm(MembershipVerify);
+		                	swapLoginForm($userAvailableForm);
 						}, 300 );
 	                });
 
@@ -489,14 +497,14 @@
             fail: function( response ) {
                 // console.log(response);
                 // Not sure when this would happen, but fallbacks!
-                displayNotice( MembershipForm, 'error', wampum_user_forms.failure );
+                displayNotice( $membershipForm, 'error', wampum_user_forms.failure );
             }
         }).done( function( response )  {
         	// Remove form processing CSS
-	        MembershipForm.removeClass('processing');
+	        $membershipForm.removeClass('processing');
 
-                    // Re-enable the butto// Get the button text/value so we can add it back latern
-        	button.html(buttonHTML).attr( 'disabled', false );
+            // Re-enable the button
+        	$button.html(buttonHTML).attr( 'disabled', false );
         });
 
     });
@@ -519,7 +527,7 @@
         });
 
     	// Set submitted email value as the login field
-    	$loginForm.find('.wampum_username').val( $form.find('.wampum_email').val() );
+    	$loginForm.find('.wampum_username').val( $form.find('.wampum_user_email').val() );
 
     	// If user goes to login, back to membership, then to login, we'd have duplicate back buttons
     	$loginForm.find('.wampum-back').remove();

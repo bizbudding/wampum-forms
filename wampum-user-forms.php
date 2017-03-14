@@ -357,7 +357,7 @@ final class Wampum_User_Forms {
 		}
 
 		// Bail and return error if no email
-		if ( isset( $data['user_email'] ) && empty( $data['user_email'] ) ) {
+		if ( isset( $data['user_email'] ) && ! empty( $data['user_email'] ) ) {
 			$email = $data['user_email'];
 		} else {
 			return array(
@@ -948,7 +948,7 @@ final class Wampum_User_Forms {
 		$type  = sanitize_text_field( $args['type'] );
 
 		// Available form types
-		$types = array( 'login', 'password', 'register', 'subscribe', 'user-available', 'join-membership', 'membership' );
+		$types = array( 'login', 'password', 'register', 'subscribe', 'membership' );
 
 		// Bail if we don't have a valid form type
 		if ( ! in_array( $args['type'], $types ) ) {
@@ -1078,58 +1078,58 @@ final class Wampum_User_Forms {
 		}
 
 		// User available
-		if ( 'user-available' == $args['type'] ) {
+		// if ( 'user-available' == $args['type'] ) {
 
-			// Force show
-			$args['email']	  = true;
-			$args['username'] = ( ! is_user_logged_in() && filter_var( $args['username'], FILTER_VALIDATE_BOOLEAN ) ) ? true : false;
+		// 	// Force show
+		// 	$args['email']	  = true;
+		// 	$args['username'] = ( ! is_user_logged_in() && filter_var( $args['username'], FILTER_VALIDATE_BOOLEAN ) ) ? true : false;
 
-			// Force hide
-			$args['password']			= false;
-			$args['password_confirm']	= false;
-			$args['remember']			= false;
+		// 	// Force hide
+		// 	$args['password']			= false;
+		// 	$args['password_confirm']	= false;
+		// 	$args['remember']			= false;
 
-			if ( is_user_logged_in() ) {
-				$current_user			= wp_get_current_user();
-				$args['first_name']		= $current_user->first_name;
-				$args['last_name']		= $current_user->last_name;
-				$args['value_email']	= $current_user->user_email;
-			}
+		// 	if ( is_user_logged_in() ) {
+		// 		$current_user			= wp_get_current_user();
+		// 		$args['first_name']		= $current_user->first_name;
+		// 		$args['last_name']		= $current_user->last_name;
+		// 		$args['value_email']	= $current_user->user_email;
+		// 	}
 
-			// Increment the counter
-			$this->form_counter++;
+		// 	// Increment the counter
+		// 	$this->form_counter++;
 
-			// Get the form
-			$form .= $this->get_form_html( $args );
+		// 	// Get the form
+		// 	$form .= $this->get_form_html( $args );
 
-		}
+		// }
 
 		// Join Membership
-		if ( 'join-membership' == $args['type'] ) {
+		// if ( 'join-membership' == $args['type'] ) {
 
-			// Force show
-			$args['email'] = true;
+		// 	// Force show
+		// 	$args['email'] = true;
 
-			if ( is_user_logged_in() ) {
-				$current_user			= wp_get_current_user();
-				$args['first_name']		= $current_user->first_name;
-				$args['last_name']		= $current_user->last_name;
-				$args['value_email']	= $current_user->user_email;
-				$args['readonly_email']	= true;
-			} else {
-				$args['hidden']		= true;
-				$args['password']	= true;
-			}
+		// 	if ( is_user_logged_in() ) {
+		// 		$current_user			= wp_get_current_user();
+		// 		$args['first_name']		= $current_user->first_name;
+		// 		$args['last_name']		= $current_user->last_name;
+		// 		$args['value_email']	= $current_user->user_email;
+		// 		$args['readonly_email']	= true;
+		// 	} else {
+		// 		$args['hidden']		= true;
+		// 		$args['password']	= true;
+		// 	}
 
-			$args['username'] = ( ! is_user_logged_in() && filter_var( $args['username'], FILTER_VALIDATE_BOOLEAN ) ) ? true : false;
+		// 	$args['username'] = ( ! is_user_logged_in() && filter_var( $args['username'], FILTER_VALIDATE_BOOLEAN ) ) ? true : false;
 
-			// Increment the counter
-			$this->form_counter++;
+		// 	// Increment the counter
+		// 	$this->form_counter++;
 
-			// Get the form
-			$form .= $this->get_form_html( $args );
+		// 	// Get the form
+		// 	$form .= $this->get_form_html( $args );
 
-		}
+		// }
 
 		// Membership form, includes User Available, Login, and Join Membership
 		if ( 'membership' == $args['type'] ) {
@@ -1155,50 +1155,109 @@ final class Wampum_User_Forms {
 				 * and load them all in the same wrap.
 				 */
 
-				$args['remember'] = false;
-
-				/* ************** *
-				 * User Available *
-				 * ************** */
-
+				// If not logged in we'll need to make sure a user(name/email) is available
 				if ( ! is_user_logged_in() ) {
+
+					/**
+					 * User Available form
+					 *
+					 * first_name 				(optional)
+					 * last_name 				(optional)
+					 * email 					(required)
+					 * username 				(optional if logged out)
+					 * password 				(hidden)
+					 * password_confirm 		(hidden)
+					 * password_strength 		(hidden)
+					 * remember 				(hidden)
+					 */
+					$args['email']				= true;
+					$args['username']			= ( ! is_user_logged_in() && filter_var( $args['username'], FILTER_VALIDATE_BOOLEAN ) ) ? true : false;
+					$args['password']			= false;
+					$args['password_confirm']	= false;
+					$args['password_strength']	= false;
+					$args['remember']			= false;
 
 					// Increment the counter
 					$this->form_counter++;
 
 					// Get the form
-					$args['type']	= 'user-available';
-					$args['email']	= true;
+					$args['type'] = 'user-available';
 					$form .= $this->get_form_html( $args );
 
 				}
 
-				/* *************** *
-				 * Join Membership *
-				 * *************** */
+				/**
+				 * Join Membership form
+				 *
+				 * first_name 				(optional)
+				 * last_name 				(optional)
+				 * email 					(required)
+				 * username 				(optional if logged out)
+				 * password 				(required if logged in)
+				 * password_confirm 		(hidden)
+				 * password_strength 		(required if logged in)
+				 * remember 				(hidden)
+				 */
+				$args['email']	  = true;
+				$args['username'] = ( ! is_user_logged_in() && filter_var( $args['username'], FILTER_VALIDATE_BOOLEAN ) ) ? true : false;
+				if ( ! is_user_logged_in() ) {
+					$args['password']			= true;
+					$args['password_strength']	= true;
+				}
+				$args['password_confirm'] = false;
+				$args['remember']		  = false;
+
+				// If logged in, fill some values
+				if ( is_user_logged_in() ) {
+					$current_user			= wp_get_current_user();
+					$args['first_name']		= $current_user->first_name;
+					$args['last_name']		= $current_user->last_name;
+					$args['value_email']	= $current_user->user_email;
+					$args['readonly_email']	= true;
+				}
+
+				// Maybe hide form
+				$args['hidden']	= false;
+				if ( ! is_user_logged_in() ) {
+					$args['hidden'] = true;
+				}
 
 				// Increment the counter
 				$this->form_counter++;
 
 				// Get the form
-				$args['type']	= 'join-membership';
-				$args['hidden']	= false;
-				if ( ! is_user_logged_in() ) {
-					$args['hidden'] = true;
-				}
+				$args['type'] = 'join-membership';
 				$form .= $this->get_form_html( $args );
 
-				/* ***** *
-				 * Login *
-				 * ***** */
+				/**
+				 * Login form
+				 *
+				 * first_name 				(hidden)
+				 * last_name 				(hidden)
+				 * email 					(hidden)
+				 * username 				(required)
+				 * password 				(required)
+				 * password_confirm 		(hidden)
+				 * password_strength 		(hidden)
+				 * remember 				(hidden)
+				 */
+				$args['email']				= false;
+				$args['username']			= true;
+				$args['password']			= true;
+				$args['password_confirm']	= false;
+				$args['password_strength']	= false;
+				$args['remember']			= false;
+
+				// Login defaults when used in membership form
+				$args['title']	  = __( 'Log In', 'wampum' );
+				$args['hidden']	  = true;
+				$args['redirect'] = 'membership_form'; // Forces page reload via JS
 
 				// Increment the counter
 				$this->form_counter++;
 
-				$args['type']		= 'login';
-				$args['title']		= __( 'Log In', 'wampum' );
-				$args['hidden']		= true;
-				$args['redirect']	= 'membership_form'; // Forces page reload via JS
+				// Get the form
+				$args['type'] = 'login';
 				$form .= $this->get_form_html( $args );
 
 			}
@@ -1430,8 +1489,11 @@ final class Wampum_User_Forms {
 
 		$output .= '</form>';
 
-		// Hide the honeypot field
-		if ( $this->form_counter > 0 ) {
+		/**
+		 * Hide the honeypot field.
+		 * Only show once, on first form.
+		 */
+		if ( 1 == $this->form_counter ) {
 			$output .= '<style media="screen" type="text/css">.wampum-say-what { display: none; visibility: hidden; }</style>';
 		}
 
