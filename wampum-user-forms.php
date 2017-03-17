@@ -165,8 +165,8 @@ final class Wampum_User_Forms {
 			define( 'WAMPUM_USER_FORMS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 		}
 		// Plugin Includes Path
-		if ( ! defined( 'WAMPUM_USER_FORMS_VENDOR_DIR' ) ) {
-			define( 'WAMPUM_USER_FORMS_VENDOR_DIR', WAMPUM_USER_FORMS_PLUGIN_DIR . 'vendor/' );
+		if ( ! defined( 'WAMPUM_USER_FORMS_INCLUDES_DIR' ) ) {
+			define( 'WAMPUM_USER_FORMS_INCLUDES_DIR', WAMPUM_USER_FORMS_PLUGIN_DIR . 'includes/' );
 		}
 		// Plugin Folder URL.
 		if ( ! defined( 'WAMPUM_USER_FORMS_PLUGIN_URL' ) ) {
@@ -674,7 +674,13 @@ final class Wampum_User_Forms {
         // If email notifications set, let's send away!
         if ( $data['notifications'] ) {
 
-			$to		 = trim(sanitize_text_field($data['notifications']));
+			// Make an array and trim spaces around each email
+			$notifications = array_map( 'trim', ( explode( ',', $data['notifications'] ) ) );
+			// Sanitize each email
+			$notifications = array_map( 'sanitize_email', $notifications );
+
+			// $to		 = trim(sanitize_text_field($data['notifications']));
+			$to		 = $notifications;
 			$subject = get_bloginfo('name') . ' - ' . get_the_title($plan_id) . ' membership added';
 
 			// Build the body
@@ -727,7 +733,7 @@ final class Wampum_User_Forms {
         if ( $ac_base_url && $ac_key ) {
 
         	// Load the AC PHP library
-        	require_once( WAMPUM_USER_FORMS_VENDOR_DIR . 'activecampaign-api-php/includes/ActiveCampaign.class.php' );
+        	require_once( WAMPUM_USER_FORMS_INCLUDES_DIR . 'vendor/activecampaign-api-php/includes/ActiveCampaign.class.php' );
 
 			// Setup AC
 			$ac = new ActiveCampaign( esc_url($ac_base_url), sanitize_text_field($ac_key) );
@@ -1241,6 +1247,8 @@ final class Wampum_User_Forms {
 				 * password_strength 		(hidden)
 				 * remember 				(hidden)
 				 */
+				$args['first_name']			= false;
+				$args['last_name']			= false;
 				$args['email']				= false;
 				$args['username']			= true;
 				$args['password']			= true;
@@ -1307,8 +1315,9 @@ final class Wampum_User_Forms {
 		$label_email		= sanitize_text_field( $args['label_email'] );
 		$readonly_email		= filter_var( $args['readonly_email'], FILTER_VALIDATE_BOOLEAN );
 		$button				= sanitize_text_field( $args['button'] );
-		$notifications		= array_map( 'trim', ( explode( ',', $args['notifications'] ) ) ); // Trim spaces around each email
-		$notifications		= array_map( 'sanitize_email', $notifications ); // Sanitize the email
+		$notifications 		= sanitize_text_field( $args['notifications'] );
+		// $notifications		= array_map( 'trim', ( explode( ',', $args['notifications'] ) ) ); // Trim spaces around each email
+		// $notifications		= array_map( 'sanitize_email', $notifications ); // Sanitize the email
 		$redirect			= sanitize_text_field( $args['redirect'] ); // Can't esc_url() cause we may allow strings to check against?
 		$ac_list_ids		= sanitize_text_field( $args['ac_list_ids'] );
 		$ac_tags			= sanitize_text_field( $args['ac_tags'] );
@@ -1479,7 +1488,19 @@ final class Wampum_User_Forms {
 			// Submit
 			$output .= sprintf( '<p class="wampum-field wampum-submit%s">', $col );
 				$output .= sprintf( '<button class="wampum_submit button" type="submit" form="wampum_user_form_%s">%s</button>', $this->form_counter, $button );
+
+				// Hidden fields
 				$output .= sprintf( '<input type="hidden" name="wampum_redirect" class="wampum_redirect" value="%s">', $redirect );
+				if ( ( 'membership' == $type ) && $plan_id ) {
+					$output .= '<input type="hidden" class="wampum_membership_success" name="wampum_membership_success" value="1">'; // Sharpspring only?
+					$output .= '<input type="hidden" class="wampum_plan_id" name="wampum_plan_id" value="' . $args['plan_id'] . '">';
+					$output .= '<input type="hidden" class="wampum_current_url" name="wampum_current_url" value="' . $current_url . '">';
+					$output .= sprintf( '<input type="hidden" name="wampum_redirect" class="wampum_redirect" value="%s">', $redirect );
+				}
+				if ( $notifications ) {
+					$output .= sprintf( '<input type="hidden" class="wampum_notifications" name="wampum_notifications" value="%s">', $notifications );
+				}
+
 			$output .= '</p>';
 
 			// Maybe end the row

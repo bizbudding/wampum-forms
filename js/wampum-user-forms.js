@@ -539,8 +539,12 @@
 		$loginForm.on( 'click', '.wampum-back', function(e) {
 			e.preventDefault();
         	// Swap forms
-        	$loginForm.hide();
-        	$form.show();
+        	// $loginForm.hide();
+        	// $form.show();
+            $loginForm.fadeOut( 300, function() {
+                $form.fadeIn( 600 );
+            });
+
         	// Clear the password field
         	$loginForm.find('.wampum_user_password').val('');
 		});
