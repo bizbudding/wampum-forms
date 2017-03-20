@@ -119,6 +119,7 @@ final class Wampum_User_Forms {
 			self::$instance = new Wampum_User_Forms;
 			// Methods
 			self::$instance->setup_constants();
+			self::$instance->includes();
 			self::$instance->setup();
 		}
 		return self::$instance;
@@ -152,7 +153,7 @@ final class Wampum_User_Forms {
 	 * Setup plugin constants.
 	 *
 	 * @access private
-	 * @since 1.0.0
+	 * @since  1.0.0
 	 * @return void
 	 */
 	private function setup_constants() {
@@ -180,6 +181,18 @@ final class Wampum_User_Forms {
 		if ( ! defined( 'WAMPUM_USER_FORMS_BASENAME' ) ) {
 			define( 'WAMPUM_USER_FORMS_BASENAME', dirname( plugin_basename( __FILE__ ) ) );
 		}
+	}
+
+	/**
+	 * Include required files.
+	 *
+	 * @access private
+	 * @since  1.0.0
+	 * @return void
+	 */
+	private function includes() {
+		require_once WAMPUM_USER_FORMS_INCLUDES_DIR . 'class-wampum-form.php';
+		require_once WAMPUM_USER_FORMS_INCLUDES_DIR . 'helpers.php';
 	}
 
 	/**
@@ -851,6 +864,192 @@ final class Wampum_User_Forms {
 		}
 	}
 
+	function get_form( $args ) {
+
+		/**
+		 * Set all the default args.
+		 * Some args are specific to a form type.
+		 * Some args will be forced depending on form type.
+		 */
+		$args = shortcode_atts( array(
+			'type'					=> '',
+			'hidden'				=> false,
+			'inline'				=> false,
+			'title'					=> '',
+			'title_wrap'			=> 'h3',
+			'desc'					=> '',
+			'first_name'			=> false,
+			'last_name'				=> false,
+			'email'					=> false,
+			'username'				=> false,
+			'password'				=> false,
+			'password_confirm'		=> false,
+			'password_strength'		=> false,
+			'require_first_name'	=> false,
+			'require_last_name'		=> false,
+			'require_email'			=> true,
+			'require_username'		=> false,
+			// 'require_password'		=> false,
+			'label_email'			=> __( 'Email', 'wampum' ),
+			'value_email'			=> '',
+			'readonly_email'		=> false,
+			'button'				=> __( 'Submit', 'wampum' ),
+			'notifications'			=> '',
+			'redirect'				=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], // a url or null
+			'ac_list_ids'			=> '',
+			'ac_tags'				=> '',
+			// Login-specific form params
+			'label_username'		=> '',
+			'value_username'		=> '',
+			'remember'				=> true,
+			'value_remember'		=> true,
+			// Register-specific form params
+			'log_in'				=> false,
+			// Membership-specific form params
+			'plan_id'				=> '',
+			'member_message'		=> '',
+		), $args, 'wampum_form' );
+
+		// Sanitize the form type
+		$type = sanitize_text_field( $args['type'] );
+
+		// Available form types
+		$types = array( 'login', 'password', 'register', 'subscribe', 'membership' );
+
+		// Bail if we don't have a valid form type
+		if ( ! in_array( $type, $types ) ) {
+			return;
+		}
+
+		/**
+		 * Set default username field label.
+		 * We do this late to give the registration form
+		 * a chance to set it differently than the rest.
+		 */
+		if ( ! $args['label_username'] ) {
+			if ( 'login' == $args['type'] ) {
+				$args['label_username'] = __( 'Username/Email', 'wampum' );
+			} else {
+				$args['label_username'] = __( 'Username', 'wampum' );
+			}
+		}
+
+		// Start the output
+		$form = '';
+
+		/**
+		 * Force some form defaults
+		 * foreach form type.
+		 */
+
+		// Login form
+		if ( 'login' == $type ) {
+			return $this->get_login_form( $args );
+		}
+
+		// Login form
+		if ( 'password' == $type ) {
+			return $this->get_password_form( $args );
+		}
+
+	}
+
+	function get_login_form( $args ) {
+
+		// Labels
+		if ( empty( $args['title'] ) ) {
+			$args['title'] = __( 'Log In', 'wampum' );
+		}
+
+		// Get the form
+		$form = new WampumForm();
+
+		$form->open();
+
+		// Username
+		$form->add_field( 'text', array(
+			'name'		=> 'wampum_username',
+			'class'		=> 'wampum-username',
+			'required'	=> true,
+		), array(
+			'label'	=> $args['label_username'],
+			'value'	=> '',
+		) );
+
+		// Password
+		$form->add_field( 'password', array(
+			'name'		=> 'wampum_password',
+			'class'		=> 'wampum-password',
+			'required'	=> true,
+		), array(
+			'label'	=> __( 'Password', 'wampum' ),
+			'value'	=> '',
+		) );
+
+		$form->add_field( 'submit', array(
+			'name'		=> 'wampum_submit',
+			'class'		=> 'wampum-submit',
+		), array(
+			'label'	=> $args['button'],
+		) );
+
+		$form->close();
+
+		// Increment the counter
+		$this->form_counter++;
+
+		return sprintf( '<div class="wampum-form">%s</div>', $form->form );
+		// return $form->render( false );
+
+	}
+
+	function get_password_form( $args ) {
+
+		// Password form
+		if ( 'password' == $args['type'] ) {
+
+			// Labels
+			if ( empty( $args['title'] ) ) {
+				$args['title'] = __( 'Set A New Password', 'wampum' );
+			}
+			if ( empty( $args['button'] ) ) {
+				$args['button'] = __( 'Save Password', 'wampum' );
+			}
+
+			// Force show
+			$args['password']			= true;
+			$args['password_confirm']	= true;
+			$args['password_strength']	= true;
+
+			// Get the form
+			$form = new WampumForm();
+
+			// Password
+			$form->add_field( 'password', array(
+				'name'		=> 'wampum_password',
+				'class'		=> 'wampum-password',
+				'required'	=> true,
+			), array(
+				'label'	=> __( 'Password', 'wampum' ),
+				'value'	=> '',
+			) );
+
+			// Password confirm
+			$form->add_field( 'password', array(
+				'name'		=> 'wampum_password_confirm',
+				'class'		=> 'wampum-password-confirm',
+				'required'	=> true,
+			), array(
+				'label'	=> __( 'Confirm Password', 'wampum' ),
+				'value'	=> '',
+			) );
+
+			return $form->render( false );
+
+		}
+
+	}
+
 	/**
 	 * Get a form, by type.
 	 *
@@ -904,7 +1103,7 @@ final class Wampum_User_Forms {
 	 *
 	 * @return  bool|WP_Error  Whether a new user was created during the process
 	 */
-	function get_form( $args ) {
+	function get_form_og( $args ) {
 
 		/**
 		 * Set all the default args.
@@ -951,7 +1150,7 @@ final class Wampum_User_Forms {
 		), $args, 'wampum_form' );
 
 		// Sanitize the form type
-		$type  = sanitize_text_field( $args['type'] );
+		$type = sanitize_text_field( $args['type'] );
 
 		// Available form types
 		$types = array( 'login', 'password', 'register', 'subscribe', 'membership' );
@@ -1640,7 +1839,7 @@ final class Wampum_User_Forms {
 	 *
 	 * @return string  the form
 	 */
-	function get_login_form( $args ) {
+	function get_login_form_og( $args ) {
 
 		ob_start();
 
@@ -1692,7 +1891,7 @@ final class Wampum_User_Forms {
 	 *
 	 * @return string  the form
 	 */
-	function get_register_form( $args ) {
+	function get_register_form_og( $args ) {
 
 		// Increment the counter
 		$this->form_counter++;
@@ -1792,7 +1991,7 @@ final class Wampum_User_Forms {
 
 	}
 
-	function get_subscribe_form( $args ) {
+	function get_subscribe_form_og( $args ) {
 		// TODO: All the things
 		return;
 	}
@@ -1806,7 +2005,7 @@ final class Wampum_User_Forms {
 	 *
 	 * @return string  the form
 	 */
-	function get_password_form( $args ) {
+	function get_password_form_og( $args ) {
 
 		// Increment the counter
 		$this->form_counter++;
@@ -1875,7 +2074,7 @@ final class Wampum_User_Forms {
 	 *
 	 * @return string  the form
 	 */
-	function get_membership_form( $args ) {
+	function get_membership_form_og( $args ) {
 
 		$current_url = ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 
