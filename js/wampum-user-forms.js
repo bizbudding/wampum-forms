@@ -5,12 +5,12 @@
     var $forms = $('.wampum-form');
 
     // Show password strength meter when focusing on password field
-	$forms.on( 'focus', '.wampum_user_password', function(e) {
+	$forms.on( 'focus', '.wampum_password', function(e) {
     	$(this).closest('form').find('.password-strength').slideDown('fast');
     });
 
     // Password strength meter
-    $forms.on( 'keyup', '.wampum_user_password', function(e) {
+    $forms.on( 'keyup', '.wampum_password', function(e) {
 
     	var $form = $(this).closest('form');
 
@@ -49,7 +49,7 @@
 
         // Set the form as a variable
         var $loginForm = $(this),
-            $button    = $loginForm.find( '.wampum_submit' );
+            $button    = $loginForm.find( 'button.submit' );
 
         // Get the button text/value so we can add it back later
         var buttonHTML = $button.html();
@@ -58,7 +58,8 @@
         $loginForm.addClass('processing');
 
         // Disable the $button
-        $button.attr( 'disabled', true );
+        // $button.attr( 'disabled', true );
+        $button.prop( 'disabled', true );
 
         // Set the $button text/value to loading icons
         $button.html( getLoadingHTML() );
@@ -68,20 +69,25 @@
 
         // Setup our form data array
         var data = {
-                user_login: $loginForm.find( '.wampum_username' ).val(),
-                user_password: $loginForm.find( '.wampum_user_password' ).val(),
-                remember: $loginForm.find( '.wampum_rememberme' ).val(),
-                say_what: $loginForm.find( '.wampum_say_what' ).val(), // honeypot
+                user_login: $loginForm.find( 'input[name="username"]' ).val(),
+                user_password: $loginForm.find( 'input[name="password"]' ).val(),
+                remember: $loginForm.find( 'input[name="rememberme"]' ).val(),
+                say_what: $loginForm.find( 'input[name="say_what"]' ).val(), // honeypot
             };
+
+        console.log(data);
 
         $.ajax({
             method: 'POST',
-            url: wampum_user_forms.root + 'wampum/v1/login/',
+            url: wampumFormVars.root + 'wampum/v1/login/',
             data: data,
             beforeSend: function ( xhr ) {
-                xhr.setRequestHeader( 'X-WP-Nonce', wampum_user_forms.nonce );
+                xhr.setRequestHeader( 'X-WP-Nonce', wampumFormVars.nonce );
             },
             success: function( response ) {
+
+                console.log( response );
+
                 if ( response.success == true ) {
                     // Display success message
                 	displayNotice( $loginForm, 'success', 'Success!' );
@@ -128,7 +134,7 @@
         // Show the form as processing
         RegisterForm.addClass('processing');
         // Set button as a variable
-        var button = RegisterForm.find( '.wampum_submit' );
+        var button = RegisterForm.find( '.wampum-submit' );
 
                 // Get the but// Get the button text/value so we can add it back laterton text/value so we can add it back later
         var buttonHTML = button.html();
@@ -154,10 +160,10 @@
 
         $.ajax({
             method: 'POST',
-            url: wampum_user_forms.root + 'wampum/v1/register/',
+            url: wampumFormVars.root + 'wampum/v1/register/',
             data: data,
             beforeSend: function ( xhr ) {
-                xhr.setRequestHeader( 'X-WP-Nonce', wampum_user_forms.nonce );
+                xhr.setRequestHeader( 'X-WP-Nonce', wampumFormVars.nonce );
             },
             success: function( response ) {
                 if ( response.success == true ) {
@@ -201,7 +207,7 @@
         // Show the form as processing
         PasswordForm.addClass('processing');
         // Set button as a variable
-        var button = PasswordForm.find( '.wampum_submit' );
+        var button = PasswordForm.find( '.wampum-submit' );
 
                 // Get the but// Get the button text/value so we can add it back laterton text/value so we can add it back later
         var buttonHTML = button.html();
@@ -222,10 +228,10 @@
 
         $.ajax({
             method: 'POST',
-            url: wampum_user_forms.root + 'wampum/v1/password/',
+            url: wampumFormVars.root + 'wampum/v1/password/',
             data: data,
             beforeSend: function ( xhr ) {
-                xhr.setRequestHeader( 'X-WP-Nonce', wampum_user_forms.nonce );
+                xhr.setRequestHeader( 'X-WP-Nonce', wampumFormVars.nonce );
             },
             success: function( response ) {
                 if ( response.success == true ) {
@@ -245,7 +251,7 @@
             },
             fail: function( response ) {
                 // Not sure when this would happen, but fallbacks!
-                displayNotice( PasswordForm, 'error', wampum_user_forms.failure );
+                displayNotice( PasswordForm, 'error', wampumFormVars.failure );
             }
         }).done( function( response )  {
         	// Remove form processing CSS
@@ -270,7 +276,7 @@
 
 	    // Set the form as a variable
         var $userAvailableForm  = $(this),
-            $button             = $userAvailableForm.find( '.wampum_submit' );
+            $button             = $userAvailableForm.find( '.wampum-submit' );
 
         // Show the form as processing
         $userAvailableForm.addClass('processing');
@@ -292,7 +298,7 @@
         		say_what: $userAvailableForm.find( '[name="wampum_say_what"]' ).val(),
                 user_email: $userAvailableForm.find( '[name="wampum_user_email"]' ).val(),
                 username: $userAvailableForm.find( '[name="wampum_username"]' ).val(),
-                current_url: wampum_user_forms.current_url,
+                current_url: wampumFormVars.current_url,
             };
 
         // SharpSpring data, incase we need it later
@@ -308,10 +314,10 @@
 
         $.ajax({
             method: 'POST',
-            url: wampum_user_forms.root + 'wampum/v1/user-available/',
+            url: wampumFormVars.root + 'wampum/v1/user-available/',
             data: data,
             beforeSend: function ( xhr ) {
-                xhr.setRequestHeader( 'X-WP-Nonce', wampum_user_forms.nonce );
+                xhr.setRequestHeader( 'X-WP-Nonce', wampumFormVars.nonce );
             },
             success: function( response ) {
 
@@ -372,7 +378,7 @@
             },
             fail: function( response ) {
                 // Not sure when this would happen, but fallbacks!
-                displayNotice( $userAvailableForm, 'error', wampum_user_forms.failure );
+                displayNotice( $userAvailableForm, 'error', wampumFormVars.failure );
             }
         }).done( function( response )  {
         	// Remove form processing CSS
@@ -393,7 +399,7 @@
 
         // Set the form as a variable
         var $membershipForm = $(this),
-            $button         = $membershipForm.find( '.wampum_submit' );
+            $button         = $membershipForm.find( '.wampum-submit' );
 
         // Show the form as processing
         $membershipForm.addClass('processing');
@@ -420,7 +426,7 @@
                 password: $membershipForm.find( '.wampum_user_password' ).val(),
                 notifications: $membershipForm.find( '.wampum_notifications').val(),
                 say_what: $membershipForm.find( '.wampum_say_what' ).val(), // honeypot
-                current_url: wampum_user_forms.current_url,
+                current_url: wampumFormVars.current_url,
             };
 
         // SharpSpring data, incase we need it later
@@ -437,10 +443,10 @@
 
         $.ajax({
             method: 'POST',
-            url: wampum_user_forms.root + 'wampum/v1/membership-add/',
+            url: wampumFormVars.root + 'wampum/v1/membership-add/',
             data: data,
             beforeSend: function ( xhr ) {
-                xhr.setRequestHeader( 'X-WP-Nonce', wampum_user_forms.nonce );
+                xhr.setRequestHeader( 'X-WP-Nonce', wampumFormVars.nonce );
             },
             success: function( response ) {
 
@@ -497,7 +503,7 @@
             fail: function( response ) {
                 // console.log(response);
                 // Not sure when this would happen, but fallbacks!
-                displayNotice( $membershipForm, 'error', wampum_user_forms.failure );
+                displayNotice( $membershipForm, 'error', wampumFormVars.failure );
             }
         }).done( function( response )  {
         	// Remove form processing CSS
@@ -533,7 +539,7 @@
     	$loginForm.find('.wampum-back').remove();
 
     	// Add back button
-    	$loginForm.find('.wampum_submit').after('<a class="wampum-back" href="#">&nbsp;&nbsp;Go back</a>');
+    	$loginForm.find('.wampum-submit').after('<a class="wampum-back" href="#">&nbsp;&nbsp;Go back</a>');
 
 		// On click of the back button
 		$loginForm.on( 'click', '.wampum-back', function(e) {
@@ -554,24 +560,24 @@
 	/**
 	 * Display a notice in the form
 	 *
-	 * @param  object  form  The form variable
-	 * @param  string  type  success|error
-	 * @param  string  text  The notice text
+	 * @param  object  $form  The form variable
+	 * @param  string  type   success|error
+	 * @param  string  text   The notice text
 	 *
 	 * @return void
 	 */
-	function displayNotice( form, type, text ) {
-		form.find('.wampum-notice').removeClass('success, error').addClass(type).html(text).fadeIn('fast');
+	function displayNotice( $form, type, text ) {
+		$form.find('.wampum-notice').removeClass('success error').addClass(type).html(text).fadeIn('fast');
 	}
 
 	function hideNotices( form ) {
 		form.find('.wampum-notice').slideUp('fast' , function(){
-            $(this).removeClass('success, error');
+            $(this).removeClass('success error');
         });
 	}
 
 	function getLoadingHTML() {
-		return '<div class="wampum-loading"><div class="wampum-loading-circle wampum-loading-circle1">&#8226;</div><div class="wampum-loading-circle wampum-loading-circle2">&#8226;</div><div class="wampum-loading-circle wampum-loading-circle3">&#8226;</div></div>';
+		return '<span class="wampum-loading"><span class="wampum-loading-circle wampum-loading-circle1">&#8226;</span><span class="wampum-loading-circle wampum-loading-circle2">&#8226;</span><span class="wampum-loading-circle wampum-loading-circle3">&#8226;</span></span>';
 	}
 
 })( document, jQuery );

@@ -14,6 +14,8 @@ class WampumForm {
 	// Stores all form inputs
 	protected $fields = array();
 
+	protected $hidden_fields = '';
+
 	protected $has_fields = false;
 
 	protected $has_password_confirm = false;
@@ -34,23 +36,21 @@ class WampumForm {
 		return $this->has_password_confirm;
 	}
 
-	function render( $echo = true ) {
-
-		// trace( 'render' );
-		trace( $this->form );
+	/**
+	 * Render the full form HTML
+	 *
+	 * @param  array   $args  Form args from shortcode or helper function/method
+	 * @param  boolean $echo  Whether to echo or return
+	 *
+	 * @return string|HTML
+	 */
+	function render( $args, $echo = true ) {
 
 		$output = '';
 
-		$form_fields = $this->fields;
-
-		// Bail if no form fields
-		if ( empty( $form_fields ) ) {
-			return $output;
-		}
-
-		// $output .= $this->open();
+		$output .= $args['title'] ? sprintf( '<%s class="wampum-form-heading">%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : '';
+		$output .= $args['desc'] ? sprintf( '<p class="wampum-form-desc">%s</p>', $args['desc'] ) : '';
 		$output .= $this->form;
-		// $output .= $this->close();
 
 		if ( $echo ) {
 			echo $output;
@@ -81,7 +81,7 @@ class WampumForm {
 	 *
 	 * @return  string  The form opening HTML
 	 */
-	function open( $atts ) {
+	function open( $atts, $args ) {
 
 		// Default form attributes
 		$defaults = array(
@@ -95,6 +95,9 @@ class WampumForm {
 
 		// Opening form HTML
 		$this->form .= sprintf( '<form %s>', wampum_attr( $atts ) );
+
+		// Add empty notice div before row, so it displays above all columns if inline
+		$this->form .= '<div style="display:none;" class="wampum-notice"></div>';
 
 		// Maybe add Flexington row classes
 		if ( $this->settings['inline'] ) {
@@ -122,6 +125,7 @@ class WampumForm {
 	 * 		'name'			=> 'wampum_field_name',
 	 * 		'id'			=> '',
 	 * 		'class'			=> 'wampum-field',
+	 * 		'style'			=> '',
 	 * 		'placeholder'	=> false,
 	 * 		'autofocus'		=> false,
 	 * 		'checked'		=> false,
@@ -148,6 +152,7 @@ class WampumForm {
 			'name'			=> '',
 			'id'			=> '',
 			'class'			=> '',
+			'style'			=> '',
 			'placeholder'	=> false, // false or string
 			'autofocus'		=> false, // bool
 			'checked'		=> false, // bool
@@ -160,6 +165,9 @@ class WampumForm {
 		if ( empty( $atts['name'] ) ) {
 			return;
 		}
+
+		// Add wampum_ prefix to name
+		$atts['name'] = 'wampum_' . $atts['name'];
 
 		// Parse args
 		$defaults = array(
@@ -193,6 +201,7 @@ class WampumForm {
 			'checkbox',
 			'hidden',
 			'password',
+			'password_strength',
 			'text',
 			'submit',
 		);
@@ -210,11 +219,14 @@ class WampumForm {
             case 'password':
                 $field = $this->get_field_password( $atts, $args );
                 break;
+            case 'password_strength':
+                $field = $this->get_field_password_strength( $atts, $args );
+                break;
             case 'text':
                 $field = $this->get_field_text( $atts, $args );
                 break;
             case 'submit':
-                $field = $this->get_field_button( $atts, $args );
+                $field = $this->get_field_submit( $atts, $args );
                 break;
             default:
                 $field = '';
@@ -224,16 +236,41 @@ class WampumForm {
         if ( empty( $field ) ) {
         	return;
         }
+        // Bail if hidden field as these get added in submit field wrap
+       	if ( 'hidden' == $type ) {
+       		return;
+       	}
         // trace( $field );
         return $this->get_field_open( $atts, $args ) . $field . $this->get_field_close( $atts, $args );
 	}
 
 	function get_field_open( $atts, $args ) {
-		$atts['class'] = trim( 'wampum-field ' . $atts['class'] );
-		if ( $this->settings['inline'] ) {
-			$atts['class'] = $atts['class'] . ' col col-xs';
+		$new_atts = array();
+		$classes  = '';
+		// If we have inline styles
+		if ( ! empty( $atts['style'] ) ) {
+			$new_atts['style'] = $atts['style'];
 		}
-		return sprintf( '<p %s>', wampum_attr( $atts ) );
+		// If we have extra classes
+		// if ( ! empty( $atts['class'] ) ) {
+		// 	// Make array
+		// 	$classes = explode( ' ', $atts['class'] );
+		// 	// Add prefix to each class name
+		// 	array_walk( $classes, function( &$class ) { $class = 'wampum-' . $class; } );
+		// 	// Make space separated string
+		// 	$classes = implode( ' ', $classes );
+		// }
+		/**
+		 * Add classes with wampum-field default class.
+		 * Trim incase we don't have additional classes
+		 */
+		$new_atts['class'] = trim( 'wampum-field ' . $atts['class'] );
+		// If form is inline
+		if ( $this->settings['inline'] ) {
+			// Add Flexington classes
+			$new_atts['class'] = $new_atts['class'] . ' col col-xs';
+		}
+		return sprintf( '<p %s>', wampum_attr( $new_atts ) );
 	}
 
 	function get_field_close( $atts, $args ) {
@@ -247,7 +284,7 @@ class WampumForm {
 
 	function get_field_hidden( $atts, $args ) {
 		$atts['type'] = 'hidden';
-		return $this->get_field_label( $atts, $args ) . $this->get_field_input( $atts, $args );
+		$this->hidden_fields .= $this->get_field_input( $atts, $args );
 	}
 
 	function get_field_password( $atts, $args ) {
@@ -255,14 +292,25 @@ class WampumForm {
 		return $this->get_field_label( $atts, $args ) . $this->get_field_input( $atts, $args );
 	}
 
+	function get_field_password_strength( $atts, $args ) {
+		$field = '';
+		$field .= '<span class="password-strength-meter" data-strength="">';
+			$field .= '<span class="password-strength-color">';
+				$field .= sprintf( '<span class="password-strength-text">%s</span>', $args['label'] );
+			$field .= '</span>';
+		$field .= '</span>';
+		return $field;
+	}
+
 	function get_field_text( $atts, $args ) {
 		$atts['type'] = 'text';
 		return $this->get_field_label( $atts, $args ) . $this->get_field_input( $atts, $args );
 	}
 
-	function get_field_button( $atts, $args ) {
+	function get_field_submit( $atts, $args ) {
 		$atts['type'] = 'submit';
-		return sprintf( '<button %s>%s</button>', wampum_attr( $atts ), $args['label'] );
+		// Return hidden fields plus submit button
+		return $this->hidden_fields . sprintf( '<button %s>%s</button>', wampum_attr( $atts ), $args['label'] );
 	}
 
 	/**

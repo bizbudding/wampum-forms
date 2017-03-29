@@ -322,6 +322,8 @@ final class Wampum_User_Forms {
 
 		$user = wp_signon( $data );
 
+		trace( $user );
+
 		// If error
 		if ( is_wp_error( $user ) ) {
 			return array(
@@ -829,7 +831,7 @@ final class Wampum_User_Forms {
         wp_register_script( 'wampum-zxcvbn', WAMPUM_USER_FORMS_PLUGIN_URL . 'js/zxcvbn.js', array('jquery'), '4.4.1', true );
         wp_register_script( 'wampum-user-forms', WAMPUM_USER_FORMS_PLUGIN_URL . 'js/wampum-user-forms.js', array('jquery'), WAMPUM_USER_FORMS_VERSION, true );
         // wp_register_script( 'wampum-user-forms', WAMPUM_USER_FORMS_PLUGIN_URL . 'js/wampum-user-forms.min.js', array('jquery'), WAMPUM_USER_FORMS_VERSION, true );
-        wp_localize_script( 'wampum-user-forms', 'wampum_user_forms', array(
+        wp_localize_script( 'wampum-user-forms', 'wampumFormVars', array(
 			'root'				=> esc_url_raw( rest_url() ),
 			'nonce'				=> wp_create_nonce( 'wp_rest' ),
 			'failure'			=> __( 'Something went wrong, please try again.', 'wampum' ),
@@ -921,26 +923,24 @@ final class Wampum_User_Forms {
 			return;
 		}
 
+		// Increment the counter
+		$this->form_counter++;
+
+		// Scripts
+		$this->enqueue_scripts();
+
 		/**
 		 * Set default username field label.
 		 * We do this late to give the registration form
 		 * a chance to set it differently than the rest.
 		 */
-		if ( ! $args['label_username'] ) {
-			if ( 'login' == $args['type'] ) {
-				$args['label_username'] = __( 'Username/Email', 'wampum' );
-			} else {
-				$args['label_username'] = __( 'Username', 'wampum' );
-			}
-		}
-
-		// Start the output
-		$form = '';
-
-		/**
-		 * Force some form defaults
-		 * foreach form type.
-		 */
+		// if ( ! $args['label_username'] ) {
+		// 	if ( 'login' == $args['type'] ) {
+		// 		$args['label_username'] = __( 'Username/Email', 'wampum' );
+		// 	} else {
+		// 		$args['label_username'] = __( 'Username', 'wampum' );
+		// 	}
+		// }
 
 		// Login form
 		if ( 'login' == $type ) {
@@ -956,6 +956,9 @@ final class Wampum_User_Forms {
 
 	function get_login_form( $args ) {
 
+		// Get the current page url
+		$current_url = ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+
 		// Labels
 		if ( empty( $args['title'] ) ) {
 			$args['title'] = __( 'Log In', 'wampum' );
@@ -964,89 +967,138 @@ final class Wampum_User_Forms {
 		// Get the form
 		$form = new WampumForm();
 
-		$form->open();
+		// Settings
+		$form->set( 'hidden', $args['hidden'] );
+		$form->set( 'inline', $args['inline'] );
+
+		// Open
+		$form->open( array(
+			'data-form' => 'login',
+		), $args );
+
+		// Honeypot
+		$form->add_field( 'text', array(
+			'name'	=> 'say_what',
+			'class'	=> 'say-what',
+		));
 
 		// Username
 		$form->add_field( 'text', array(
-			'name'		=> 'wampum_username',
-			'class'		=> 'wampum-username',
+			'name'		=> 'username',
+			'class'		=> 'username',
 			'required'	=> true,
+			'value'		=> '',
 		), array(
-			'label'	=> $args['label_username'],
-			'value'	=> '',
+			'label'	=> ! empty( $args['label_username'] ) ? $args['label_username'] : __( 'Email/Username', 'wampum' ),
 		) );
 
 		// Password
 		$form->add_field( 'password', array(
-			'name'		=> 'wampum_password',
-			'class'		=> 'wampum-password',
+			'name'		=> 'password',
+			'class'		=> 'password',
 			'required'	=> true,
+			'value'		=> '',
 		), array(
 			'label'	=> __( 'Password', 'wampum' ),
-			'value'	=> '',
 		) );
 
+		// Remember
+		if ( $args['remember'] ) {
+
+			$form->add_field( 'checkbox', array(
+				'name'		=> 'rememberme',
+				'class'		=> 'remember',
+				'checked'	=> $args['value_remember'],
+				'value'		=> 'forever',
+			), array(
+				'label'	=> __( 'Remember Me', 'wampum' ),
+			) );
+
+		}
+
+		// Current URL
+		$form->add_field( 'hidden', array(
+			'name'	=> 'current_url',
+			'value'	=> $current_url,
+		));
+
+		// Submit
 		$form->add_field( 'submit', array(
-			'name'		=> 'wampum_submit',
-			'class'		=> 'wampum-submit',
+			'name'	=> 'submit',
+			'class'	=> 'submit',
 		), array(
 			'label'	=> $args['button'],
 		) );
 
+		// Close
 		$form->close();
 
-		// Increment the counter
-		$this->form_counter++;
-
-		return sprintf( '<div class="wampum-form">%s</div>', $form->form );
-		// return $form->render( false );
+		return sprintf( '<div class="wampum-form">%s</div>', $form->render( $args, false ) );
 
 	}
 
 	function get_password_form( $args ) {
 
-		// Password form
-		if ( 'password' == $args['type'] ) {
+		// Get the current page url
+		$current_url = ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 
-			// Labels
-			if ( empty( $args['title'] ) ) {
-				$args['title'] = __( 'Set A New Password', 'wampum' );
-			}
-			if ( empty( $args['button'] ) ) {
-				$args['button'] = __( 'Save Password', 'wampum' );
-			}
-
-			// Force show
-			$args['password']			= true;
-			$args['password_confirm']	= true;
-			$args['password_strength']	= true;
-
-			// Get the form
-			$form = new WampumForm();
-
-			// Password
-			$form->add_field( 'password', array(
-				'name'		=> 'wampum_password',
-				'class'		=> 'wampum-password',
-				'required'	=> true,
-			), array(
-				'label'	=> __( 'Password', 'wampum' ),
-				'value'	=> '',
-			) );
-
-			// Password confirm
-			$form->add_field( 'password', array(
-				'name'		=> 'wampum_password_confirm',
-				'class'		=> 'wampum-password-confirm',
-				'required'	=> true,
-			), array(
-				'label'	=> __( 'Confirm Password', 'wampum' ),
-				'value'	=> '',
-			) );
-
-			return $form->render( false );
-
+		// Labels
+		if ( empty( $args['title'] ) ) {
+			$args['title'] = __( 'Set A New Password', 'wampum' );
 		}
+		if ( empty( $args['button'] ) ) {
+			$args['button'] = __( 'Save Password', 'wampum' );
+		}
+
+		// Get the form
+		$form = new WampumForm();
+
+		// Settings
+		$form->set( 'hidden', $args['hidden'] );
+		$form->set( 'inline', $args['inline'] );
+
+		// Open
+		$form->open( array(
+			'data-form' => 'password',
+		), $args );
+
+		// Honeypot
+		$form->add_field( 'text', array(
+			'name'	=> 'say_what',
+			'class'	=> 'say-what',
+		));
+
+		// Password
+		$form->add_field( 'password', array(
+			'name'		=> 'password',
+			'class'		=> 'password',
+			'required'	=> true,
+		), array(
+			'label'	=> __( 'Password', 'wampum' ),
+		) );
+
+		// Password confirm
+		$form->add_field( 'password', array(
+			'name'		=> 'password_confirm',
+			'class'		=> 'password-confirm',
+			'required'	=> true,
+		), array(
+			'label'	=> __( 'Confirm Password', 'wampum' ),
+		) );
+
+		// Password strength
+		$form->add_field( 'password_strength', array(
+			'name'	=> 'password_strength',
+			'class'	=> 'password-strength', // Force full width, even if inline
+			'style'	=> 'display:none;',
+		), array(
+			'label'	=> __( 'Strengther', 'wampum' ),
+		) );
+
+		// Close
+		$form->close();
+
+		return sprintf( '<div class="wampum-form">%s</div>', $form->render( $args, false ) );
 
 	}
 

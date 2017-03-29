@@ -1,5 +1,10 @@
 /* Layout */
 
+.wampum-form .say-what {
+	display: none;
+	visibility: hidden;
+}
+
 .wampum-form .wampum-field,
 .entry-content .wampum-form .wampum-field {
     margin-bottom: 15px;
