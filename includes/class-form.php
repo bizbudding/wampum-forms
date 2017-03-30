@@ -1,6 +1,9 @@
 <?php
 
-class WampumForm {
+/**
+ * @since  1.1.0
+ */
+class Wampum_Form {
 
 	/**
 	 * Stores all form HTML.
@@ -69,7 +72,7 @@ class WampumForm {
 	 * Set a specific form settings.
 	 *
 	 * Make and inline form:
-	 * $form = new WampumForm();
+	 * $form = new Wampum_Form();
 	 * $form->set( 'inline', true );
 	 *
 	 * @param string  $property  The argument to add/edit.

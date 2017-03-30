@@ -248,7 +248,7 @@
 
         // Setup our form data array
         var data = {
-                user_email: $registerForm.find( 'input[name="email"]' ).val(),
+                email: $registerForm.find( 'input[name="email"]' ).val(),
                 username: $registerForm.find( 'input[name="username"]' ).val(),
                 first_name: $registerForm.find( 'input[name="first_name"]' ).val(),
                 last_name: $registerForm.find( 'input[name="last_name"]' ).val(),
@@ -295,6 +295,75 @@
 
     });
 
+    // Subscribe form submit
+    $forms.on( 'submit', 'form[data-form="subscribe"]', function(e) {
+
+        console.log('Subscribe form submitted');
+
+        e.preventDefault();
+
+        // Set the form as a variable
+        var $subscribeForm = $(this),
+            $button       = $subscribeForm.find( 'button.submit' );
+
+        // Get the button text/value so we can add it back later
+        var buttonHTML = $button.html();
+
+        // Disable the $button
+        $button.prop( 'disabled', true );
+
+        // Set the $button text/value to loading icons
+        $button.html( getLoadingHTML() );
+
+        // Hide any notices
+        hideNotices( $subscribeForm );
+
+        // Setup our form data array
+        var data = {
+                email: $subscribeForm.find( 'input[name="email"]' ).val(),
+                first_name: $subscribeForm.find( 'input[name="first_name"]' ).val(),
+                last_name: $subscribeForm.find( 'input[name="last_name"]' ).val(),
+                ac_list_ids: $subscribeForm.find( 'input[name="ac_list_ids"]' ).val(),
+                ac_tags: $subscribeForm.find( 'input[name="ac_tags"]' ).val(),
+                say_what: $subscribeForm.find( 'input[name="say_what"]' ).val(), // honeypot
+            };
+
+        $.ajax({
+            method: 'POST',
+            url: wampumFormVars.root + 'wampum/v1/subscribe/',
+            data: data,
+            beforeSend: function ( xhr ) {
+                xhr.setRequestHeader( 'X-WP-Nonce', wampumFormVars.nonce );
+            },
+            success: function( response ) {
+                if ( true == response.success ) {
+                    // Display success message
+                    displayNotice( $subscribeForm, 'success', 'Success!' );
+
+                    // Only redirect if we have a value
+                    var redirect = $subscribeForm.find( 'input[name="redirect"]' ).val();
+                    // if ( '' != redirect ) {
+                        // Force refresh/redirect because we may be logged in
+                        window.location.replace( redirect );
+                    // }
+                } else {
+                    // Display error message
+                    displayNotice( $subscribeForm, 'error', response.message );
+                }
+            },
+            fail: function( response ) {
+                // Not sure when this would happen, but fallbacks!
+                displayNotice( $subscribeForm, 'error', response.failure );
+            }
+        }).done( function( response )  {
+            // Remove form processing CSS
+            $subscribeForm.removeClass('processing');
+            // Re-enable the button
+            $button.html(buttonHTML).prop( 'disabled', false );
+        });
+
+    });
+
 	// Membership verify submit
     $forms.on( 'submit', 'form[data-form="user-available"]', function(e) {
 
@@ -323,9 +392,9 @@
 
         // Setup our form data array
         var data = {
-        		say_what: $userAvailableForm.find( '[name="wampum_say_what"]' ).val(),
-                user_email: $userAvailableForm.find( '[name="wampum_user_email"]' ).val(),
+                email: $userAvailableForm.find( '[name="wampum_user_email"]' ).val(),
                 username: $userAvailableForm.find( '[name="wampum_username"]' ).val(),
+        		say_what: $userAvailableForm.find( '[name="wampum_say_what"]' ).val(),
                 current_url: wampumFormVars.current_url,
             };
 
@@ -449,7 +518,7 @@
                 plan_id: $membershipForm.find( '.wampum_plan_id' ).val(),
                 first_name: $membershipForm.find( '.wampum_first_name' ).val(),
                 last_name: $membershipForm.find( '.wampum_last_name' ).val(),
-                user_email: $membershipForm.find( '.wampum_user_email' ).val(),
+                email: $membershipForm.find( '.wampum_user_email' ).val(),
                 username: $membershipForm.find( '.wampum_username' ).val(),
                 password: $membershipForm.find( '.wampum_user_password' ).val(),
                 notifications: $membershipForm.find( '.wampum_notifications').val(),
