@@ -16,6 +16,10 @@ function wampum_attr( $attributes = array() ) {
 		if ( ! $value ) {
 			continue;
 		}
+		/**
+		 * if true (not 'true')
+		 * some params, like 'log_in' we want the value to be "true"
+		 */
 		if ( true === $value ) {
 			$output .= esc_html( $key ) . ' ';
 		} else {

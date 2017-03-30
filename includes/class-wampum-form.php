@@ -46,6 +46,11 @@ class WampumForm {
 	 */
 	function render( $args, $echo = true ) {
 
+		// Bail if the form has no fields
+		if ( ! $this->has_fields ) {
+			return;
+		}
+
 		$output = '';
 
 		$output .= $args['title'] ? sprintf( '<%s class="wampum-form-heading">%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : '';
@@ -100,7 +105,8 @@ class WampumForm {
 		$this->form .= '<div style="display:none;" class="wampum-notice"></div>';
 
 		// Maybe add Flexington row classes
-		if ( $this->settings['inline'] ) {
+
+		if ( filter_var( $this->settings['inline'], FILTER_VALIDATE_BOOLEAN ) ) {
 			$this->form .= '<div class="row gutter-10 bottom-xs">';
 		}
 
@@ -167,7 +173,7 @@ class WampumForm {
 		}
 
 		// Add wampum_ prefix to name
-		$atts['name'] = 'wampum_' . $atts['name'];
+		// $atts['name'] = 'wampum_' . $atts['name'];
 
 		// Parse args
 		$defaults = array(
@@ -199,6 +205,7 @@ class WampumForm {
 	function get_available_field_types() {
 		return array(
 			'checkbox',
+			'email',
 			'hidden',
 			'password',
 			'password_strength',
@@ -212,6 +219,9 @@ class WampumForm {
         switch ( $type ) {
             case 'checkbox':
                 $field = $this->get_field_checkbox( $atts, $args );
+                break;
+            case 'email':
+                $field = $this->get_field_email( $atts, $args );
                 break;
             case 'hidden':
                 $field = $this->get_field_hidden( $atts, $args );
@@ -280,6 +290,11 @@ class WampumForm {
 	function get_field_checkbox( $atts, $args ) {
 		$atts['type'] = 'checkbox';
 		return $this->get_field_input( $atts, $args ) . $this->get_field_label( $atts, $args );
+	}
+
+	function get_field_email( $atts, $args ) {
+		$atts['type'] = 'email';
+		return $this->get_field_label( $atts, $args ) . $this->get_field_input( $atts, $args );
 	}
 
 	function get_field_hidden( $atts, $args ) {

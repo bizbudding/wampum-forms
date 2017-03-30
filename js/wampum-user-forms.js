@@ -2,43 +2,72 @@
 
     'use strict';
 
-    var $forms = $('.wampum-form');
+    var $forms    = $('.wampum-form'),
+        $strength = $('.password-strength-meter');
 
-    // Show password strength meter when focusing on password field
-	$forms.on( 'focus', '.wampum_password', function(e) {
-    	$(this).closest('form').find('.password-strength').slideDown('fast');
-    });
+    // Password match
+    $.each( $forms, function() {
 
-    // Password strength meter
-    $forms.on( 'keyup', '.wampum_password', function(e) {
+        var $pwField   = $(this).find('input[name="password"]'),
+            $pwConfirm = $(this).find('input[name="password_confirm"]');
 
-    	var $form = $(this).closest('form');
-
-	    var strength = {
-	        0: "Weak",
-	        1: "Weak",
-	        2: "Okay",
-	        3: "Good",
-	        4: "Great",
-	    }
-
-	    var meter = $form.find('.password-strength-meter');
-	    var text  = $form.find('.password-strength-text');
-
-        var val    = $(this).val();
-        var result = zxcvbn(val);
-
-        // Update the password strength meter
-        meter.attr('data-strength', result.score);
-
-        // Update the text indicator
-        if ( val !== "" ) {
-            text.html(strength[result.score]);
-        } else {
-            text.html("");
+        // If we have password and password confirm fields
+        if ( ( $pwField.length && $pwConfirm.length ) > 0 ) {
+            // When typing in confirm field
+            $forms.on( 'keyup', $pwConfirm, function(e) {
+                if ( $pwField.val() == $pwConfirm.val() ) {
+                    // Add green border to both fields if passwords match
+                    $pwField.add($pwConfirm).css({'border-color':'#25f500'});
+                } else {
+                    // Remove border
+                    $pwField.add($pwConfirm).css({'border-color':''});
+                }
+            });
         }
-
     });
+
+    // If we have a strength meter
+    if ( $strength.length > 0 ) {
+
+        // Show password strength meter when focusing on password field
+    	$forms.on( 'focus', 'input[name="password"]', function(e) {
+        	$(this).closest('form').find('.password-strength').slideDown('fast');
+        });
+
+        // Password strength meter
+        $forms.on( 'keyup', 'input[name="password"]', function(e) {
+
+            console.log( 'Keyup Password' );
+
+        	var $form = $(this).closest('form');
+
+    	    var strength = {
+    	        0: "Weak",
+    	        1: "Weak",
+    	        2: "Okay",
+    	        3: "Good",
+    	        4: "Great",
+    	    }
+
+    	    var $meter = $form.find('.password-strength-meter');
+    	    var $text  = $form.find('.password-strength-text');
+
+            var val    = $(this).val();
+            var result = zxcvbn(val);
+
+            // Update the password strength meter
+            $meter.attr('data-strength', result.score);
+
+            // Update the text indicator
+            if ( val !== "" ) {
+                $text.html(strength[result.score]);
+            } else {
+                $text.html("");
+            }
+
+        });
+
+    }
 
     // Login form submit
     $forms.on( 'submit', 'form[data-form="login"]', function(e) {
@@ -58,7 +87,6 @@
         $loginForm.addClass('processing');
 
         // Disable the $button
-        // $button.attr( 'disabled', true );
         $button.prop( 'disabled', true );
 
         // Set the $button text/value to loading icons
@@ -75,8 +103,6 @@
                 say_what: $loginForm.find( 'input[name="say_what"]' ).val(), // honeypot
             };
 
-        console.log(data);
-
         $.ajax({
             method: 'POST',
             url: wampumFormVars.root + 'wampum/v1/login/',
@@ -85,21 +111,19 @@
                 xhr.setRequestHeader( 'X-WP-Nonce', wampumFormVars.nonce );
             },
             success: function( response ) {
-
-                console.log( response );
-
-                if ( response.success == true ) {
+                if ( true == response.success ) {
                     // Display success message
                 	displayNotice( $loginForm, 'success', 'Success!' );
 
-                	// Only redirect if we have a value
-                    var redirect = $loginForm.find( '.wampum_redirect' ).val();
-                    if ( redirect !== "" ) {
+                    // Get redirect URL
+                    var redirect = $loginForm.find( 'input[name="redirect"]' ).val();
+                    if ( '' != redirect ) {
+                        // If login form is part of a membership flow
                     	if ( 'membership_form' == redirect ) {
 		                	// Refresh the page
 		                	window.location.reload();
                     	} else {
-	                        // Refresh/redirect
+	                        // Redirect
 	                        window.location.replace( redirect );
                     	}
                     }
@@ -115,9 +139,86 @@
         }).done( function( response )  {
         	// Remove form processing CSS
 	        $loginForm.removeClass('processing');
+            // Re-enable the button
+            $button.html(buttonHTML).prop( 'disabled', false );
+        });
 
-                    // Re-enable the $butto// Get the button text/value so we can add it back latern
-        	$button.html(buttonHTML).attr( 'disabled', false );
+    });
+
+    // Password form submit
+    $forms.on( 'submit', 'form[data-form="password"]', function(e) {
+
+        console.log('Password form submitted');
+
+        e.preventDefault();
+
+        // Set the form as a variable
+        var $passwordForm = $(this),
+            $button       = $passwordForm.find( 'button.submit' );
+
+        // Get the button text/value so we can add it back later
+        var buttonHTML = $button.html();
+
+        // Show the form as processing
+        $passwordForm.addClass('processing');
+
+        // Disable the $button
+        $button.prop( 'disabled', true );
+
+        // Set the $button text/value to loading icons
+        $button.html( getLoadingHTML() );
+
+        // Hide any notices
+        hideNotices( $passwordForm );
+
+        // Setup our form data array
+        var data = {
+                password: $passwordForm.find( 'input[name="password"]' ).val(),
+                password_confirm: $passwordForm.find( 'input[name="password_confirm"]' ).val(),
+                say_what: $passwordForm.find( 'input[name="say_what"]' ).val(), // honeypot
+            };
+
+        $.ajax({
+            method: 'POST',
+            url: wampumFormVars.root + 'wampum/v1/password/',
+            data: data,
+            beforeSend: function ( xhr ) {
+                xhr.setRequestHeader( 'X-WP-Nonce', wampumFormVars.nonce );
+            },
+            success: function( response ) {
+
+                if ( true == response.success ) {
+                    // Clear text field values
+                    $passwordForm.find( 'input[type="password"]' ).val('');
+
+                    // Display success notice
+                    displayNotice( $passwordForm, 'success', 'Success!' );
+
+                    // Get redirect URL
+                    var redirect = $passwordForm.find( 'input[name="redirect"]' ).val();
+
+                    // Force refresh/redirect
+                    // trying to submit password form again was giving 403 forbidden, not worth dealing with)
+                    window.location.replace( redirect );
+                } else {
+                    // Clear the password strength value
+                    $passwordForm.find('.password-strength-meter').attr('data-strength', '');
+                    // Clear the password strength text
+                    $passwordForm.find('.password-strength-text').html('');
+                    // Display error message
+                    displayNotice( $passwordForm, 'error', response.message );
+                }
+
+            },
+            fail: function( response ) {
+                // Not sure when this would happen, but fallbacks!
+                displayNotice( $passwordForm, 'error', wampumFormVars.failure );
+            }
+        }).done( function( response )  {
+            // Remove form processing CSS
+            $passwordForm.removeClass('processing');
+            // Re-enable the button
+            $button.html(buttonHTML).prop( 'disabled', false );
         });
 
     });
@@ -130,32 +231,31 @@
         e.preventDefault();
 
         // Set the form as a variable
-        var RegisterForm = $(this);
-        // Show the form as processing
-        RegisterForm.addClass('processing');
-        // Set button as a variable
-        var button = RegisterForm.find( '.wampum-submit' );
+        var $registerForm = $(this),
+            $button       = $registerForm.find( 'button.submit' );
 
-                // Get the but// Get the button text/value so we can add it back laterton text/value so we can add it back later
-        var buttonHTML = button.html();
-        // Disable the button
-        button.attr( 'disabled', true );
-        // Set the button text/value to loading icons
-        button.html( getLoadingHTML() );
+        // Get the button text/value so we can add it back later
+        var buttonHTML = $button.html();
+
+        // Disable the $button
+        $button.prop( 'disabled', true );
+
+        // Set the $button text/value to loading icons
+        $button.html( getLoadingHTML() );
 
         // Hide any notices
-        hideNotices(RegisterForm);
+        hideNotices( $registerForm );
 
         // Setup our form data array
         var data = {
-                user_email: RegisterForm.find( '.wampum_user_email' ).val(),
-                username: RegisterForm.find( '.wampum_username' ).val(),
-                first_name: RegisterForm.find( '.wampum_first_name' ).val(),
-                last_name: RegisterForm.find( '.wampum_last_name' ).val(),
-                password: RegisterForm.find( '.wampum_user_password' ).val(),
-                log_in: RegisterForm.find( '.wampum_log_in' ).val(),
-                list_id: RegisterForm.find( '.wampum_ac_list_ids' ).val(),
-                say_what: RegisterForm.find( '.wampum_say_what' ).val(), // honeypot
+                user_email: $registerForm.find( 'input[name="email"]' ).val(),
+                username: $registerForm.find( 'input[name="username"]' ).val(),
+                first_name: $registerForm.find( 'input[name="first_name"]' ).val(),
+                last_name: $registerForm.find( 'input[name="last_name"]' ).val(),
+                password: $registerForm.find( 'input[name="password"]' ).val(),
+                log_in: $registerForm.find( 'input[name="log_in"]' ).val(),
+                ac_list_ids: $registerForm.find( 'input[name="ac_list_ids"]' ).val(),
+                say_what: $registerForm.find( 'input[name="say_what"]' ).val(), // honeypot
             };
 
         $.ajax({
@@ -166,103 +266,30 @@
                 xhr.setRequestHeader( 'X-WP-Nonce', wampumFormVars.nonce );
             },
             success: function( response ) {
-                if ( response.success == true ) {
+                if ( true == response.success ) {
                     // Display success message
-                    displayNotice( RegisterForm, 'success', 'Success!' );
+                    displayNotice( $registerForm, 'success', 'Success!' );
 
                     // Only redirect if we have a value
-                    var redirect = RegisterForm.find( '.wampum_redirect' ).val();
-                    if ( redirect !== "" ) {
-                        // Refresh/redirect
+                    var redirect = $registerForm.find( 'input[name="redirect"]' ).val();
+                    // if ( '' != redirect ) {
+                        // Force refresh/redirect because we may be logged in
                         window.location.replace( redirect );
-                    }
+                    // }
                 } else {
                     // Display error message
-                    displayNotice( RegisterForm, 'error', response.message );
+                    displayNotice( $registerForm, 'error', response.message );
                 }
             },
             fail: function( response ) {
                 // Not sure when this would happen, but fallbacks!
-                displayNotice( RegisterForm, 'error', response.failure );
+                displayNotice( $registerForm, 'error', response.failure );
             }
         }).done( function( response )  {
             // Remove form processing CSS
-            RegisterForm.removeClass('processing');
-
+            $registerForm.removeClass('processing');
             // Re-enable the button
-            button.html(buttonHTML).attr( 'disabled', false );
-        });
-
-    });
-
-    // Password form submit
-    $forms.on( 'submit', 'form[data-form="password"]', function(e) {
-
-		console.log('Password form submitted');
-
-        e.preventDefault();
-
-        // Set the form as a variable
-        var PasswordForm = $(this);
-        // Show the form as processing
-        PasswordForm.addClass('processing');
-        // Set button as a variable
-        var button = PasswordForm.find( '.wampum-submit' );
-
-                // Get the but// Get the button text/value so we can add it back laterton text/value so we can add it back later
-        var buttonHTML = button.html();
-        // Disable the button
-        button.attr( 'disabled', true );
-        // Set the button text/value to loading icons
-        button.html( getLoadingHTML() );
-
-        // Hide any notices
-        hideNotices(PasswordForm);
-
-        // Setup our form data array
-        var data = {
-                password: PasswordForm.find( '.wampum_user_password' ).val(),
-                password_confirm: PasswordForm.find( '.wampum_user_password_confirm' ).val(),
-                say_what: PasswordForm.find( '.wampum_say_what' ).val(), // honeypot
-            };
-
-        $.ajax({
-            method: 'POST',
-            url: wampumFormVars.root + 'wampum/v1/password/',
-            data: data,
-            beforeSend: function ( xhr ) {
-                xhr.setRequestHeader( 'X-WP-Nonce', wampumFormVars.nonce );
-            },
-            success: function( response ) {
-                if ( response.success == true ) {
-                	// Clear text field values
-                	PasswordForm.find( 'input:password' ).val('');
-                	// Display success notice
-					displayNotice( PasswordForm, 'success', 'Success!' );
-                	// Get redirect URL
-                    var redirect = PasswordForm.find( '.wampum_redirect' ).val();
-                    // Force refresh/redirect (trying to submit password form again was giving 403 forbidden, not worth dealing with)
-                    window.location.replace( redirect );
-                } else {
-                    // Display error message
-                    displayNotice( PasswordForm, 'error', response.message );
-                }
-
-            },
-            fail: function( response ) {
-                // Not sure when this would happen, but fallbacks!
-                displayNotice( PasswordForm, 'error', wampumFormVars.failure );
-            }
-        }).done( function( response )  {
-        	// Remove form processing CSS
-	        PasswordForm.removeClass('processing');
-	        // Clear the password strength value
-	        PasswordForm.find('.password-strength-meter').attr('data-strength', '');
-	        // Clear the password strength text
-	        PasswordForm.find('.password-strength-text').html('');
-
-            // Re-enable the button
-        	button.html(buttonHTML).attr( 'disabled', false );
+            $button.html(buttonHTML).prop( 'disabled', false );
         });
 
     });
