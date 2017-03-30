@@ -255,6 +255,7 @@
                 password: $registerForm.find( 'input[name="password"]' ).val(),
                 log_in: $registerForm.find( 'input[name="log_in"]' ).val(),
                 ac_list_ids: $registerForm.find( 'input[name="ac_list_ids"]' ).val(),
+                ac_tags: $registerForm.find( 'input[name="ac_tags"]' ).val(),
                 say_what: $registerForm.find( 'input[name="say_what"]' ).val(), // honeypot
             };
 
@@ -452,7 +453,9 @@
                 username: $membershipForm.find( '.wampum_username' ).val(),
                 password: $membershipForm.find( '.wampum_user_password' ).val(),
                 notifications: $membershipForm.find( '.wampum_notifications').val(),
-                say_what: $membershipForm.find( '.wampum_say_what' ).val(), // honeypot
+                ac_list_ids: $membershipForm.find( 'input[name="ac_list_ids"]' ).val(),
+                ac_tags: $membershipForm.find( 'input[name="ac_tags"]' ).val(),
+                say_what: $membershipForm.find( 'input[name="say_what"]' ).val(), // honeypot
                 current_url: wampumFormVars.current_url,
             };
 

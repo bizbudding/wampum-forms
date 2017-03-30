@@ -255,21 +255,13 @@ class WampumForm {
 	}
 
 	function get_field_open( $atts, $args ) {
+		// New atts array so atts meant for the field itself don't get applied to the wrap
 		$new_atts = array();
 		$classes  = '';
 		// If we have inline styles
 		if ( ! empty( $atts['style'] ) ) {
 			$new_atts['style'] = $atts['style'];
 		}
-		// If we have extra classes
-		// if ( ! empty( $atts['class'] ) ) {
-		// 	// Make array
-		// 	$classes = explode( ' ', $atts['class'] );
-		// 	// Add prefix to each class name
-		// 	array_walk( $classes, function( &$class ) { $class = 'wampum-' . $class; } );
-		// 	// Make space separated string
-		// 	$classes = implode( ' ', $classes );
-		// }
 		/**
 		 * Add classes with wampum-field default class.
 		 * Trim incase we don't have additional classes
@@ -278,7 +270,7 @@ class WampumForm {
 		// If form is inline
 		if ( $this->settings['inline'] ) {
 			// Add Flexington classes
-			$new_atts['class'] = $new_atts['class'] . ' col col-xs';
+			$new_atts['class'] = $new_atts['class'] . ' col col-xs-12 col-sm';
 		}
 		return sprintf( '<p %s>', wampum_attr( $new_atts ) );
 	}

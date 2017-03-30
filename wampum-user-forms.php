@@ -322,8 +322,6 @@ final class Wampum_User_Forms {
 
 		$user = wp_signon( $data );
 
-		trace( $user );
-
 		// If error
 		if ( is_wp_error( $user ) ) {
 			return array(
@@ -333,6 +331,10 @@ final class Wampum_User_Forms {
 		}
 		// Success
 		else {
+
+	        // ActiveCampaign
+	        $this->maybe_do_active_campaign( $data );
+
 			wp_set_current_user( $user->ID );
 			if ( wp_validate_auth_cookie( '', 'logged_in' ) != $user->ID ) {
 			    wp_set_auth_cookie( $user->ID, true );
@@ -358,7 +360,8 @@ final class Wampum_User_Forms {
 	 * 		@type  string  		$last_name 			Last Name
 	 * 		@type  string  		$password 	 		Password
 	 * 		@type  bool    		$log_in 			Whether to auto log user in after registration
-	 * 		@type  stringint 	$ac_list_ids 		The list ID to add
+	 * 		@type  stringint 	$ac_list_ids 		The list IDs to add
+	 * 		@type  stringint 	$ac_tags 			The Tags to add
 	 * }
 	 *
 	 * @return  array
@@ -508,6 +511,10 @@ final class Wampum_User_Forms {
 				'message' => $user_id->get_error_message(),
 			);
 		}
+
+        // ActiveCampaign
+        $this->maybe_do_active_campaign( $data );
+
 		// Success
 		return array(
 			'success' => true,
@@ -738,20 +745,26 @@ final class Wampum_User_Forms {
 	 */
 	function maybe_do_active_campaign( $data ) {
 
-        // Bail if we have no email or list ID
-        if ( ! ( $data['user_email'] || $data['ac_list_ids'] ) ) {
+		// Bail if no email
+		if ( ! $data['user_email'] ) {
+			return;
+		}
+
+        // list ID or Tag
+        if ( ! ( $data['ac_list_ids'] || $data['ac_tags'] ) ) {
         	return;
         }
 
     	$list_ids = explode( ',', $data['ac_list_ids'] );
+    	$tags 	  = explode( ',', $data['ac_tags'] );
 
         /**
          * ActiveCampain data.
          * This should be admin only settings.
          * Do not expose publicly!
          */
-		$ac_base_url	= 'https://bizbudding.api-us1.com';
-		$ac_key			= '4bd29871bc566dfe7dccdf819cdc0001c59bec88d5270ad85905b341bb70b2d861928fa0';
+		$ac_base_url = 'https://bizbudding.api-us1.com';
+		$ac_key		 = '4bd29871bc566dfe7dccdf819cdc0001c59bec88d5270ad85905b341bb70b2d861928fa0';
 
         // If we have a URL and a key
         if ( $ac_base_url && $ac_key ) {
@@ -777,10 +790,21 @@ final class Wampum_User_Forms {
 					$contact['last_name'] = sanitize_text_field( $data['last_name'] );
 				}
 
-				// Add user to existing ActiveCampaign lists
-				foreach( $list_ids as $list_id ) {
-					$contact["p[{$list_id}]"]	   = $list_id;
-					$contact["status[{$list_id}]"] = 1; // "Active" status
+				// If we have list(s)
+				if ( ! empty( $list_ids ) ) {
+					// Add user to existing ActiveCampaign lists
+					foreach( $list_ids as $list_id ) {
+						$contact["p[{$list_id}]"]	   = trim($list_id);
+						$contact["status[{$list_id}]"] = 1; // "Active" status
+					}
+				}
+
+				// If we have tags
+				if ( ! empty( $tags ) ) {
+					// Add tags to user
+					foreach( $tags as $tag ) {
+						$contact["tags[{$tag}]"] = sanitize_text_field( trim($tag) );
+					}
 				}
 
 				// Do the thang

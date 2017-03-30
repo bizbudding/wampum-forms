@@ -24,6 +24,10 @@
 	opacity: 0.75;
 }
 
+.wampum-form .col.remember {
+	margin-bottom: 22px;
+}
+
 /* Wampum Notices */
 
 .wampum-notice {
