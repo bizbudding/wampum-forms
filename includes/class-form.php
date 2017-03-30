@@ -21,8 +21,6 @@ class Wampum_Form {
 
 	protected $has_fields = false;
 
-	protected $has_password_confirm = false;
-
 	// protected $inline = false;
 
 	// Does this form have a submit value?
@@ -33,10 +31,6 @@ class Wampum_Form {
 			'hidden' => false,
 			'inline' => false,
 		);
-	}
-
-	function has_password_confirm() {
-		return $this->has_password_confirm;
 	}
 
 	/**
@@ -54,11 +48,7 @@ class Wampum_Form {
 			return;
 		}
 
-		$output = '';
-
-		$output .= $args['title'] ? sprintf( '<%s class="wampum-form-heading">%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : '';
-		$output .= $args['desc'] ? sprintf( '<p class="wampum-form-desc">%s</p>', $args['desc'] ) : '';
-		$output .= $this->form;
+		$output = $this->form;
 
 		if ( $echo ) {
 			echo $output;
@@ -93,6 +83,7 @@ class Wampum_Form {
 
 		// Default form attributes
 		$defaults = array(
+			'hidden' 	=> $this->settings['hidden'],
 			'action'	=> '',
 			'method'	=> 'post',
 			'enctype'	=> '',
@@ -103,6 +94,10 @@ class Wampum_Form {
 
 		// Opening form HTML
 		$this->form .= sprintf( '<form %s>', wampum_attr( $atts ) );
+
+		// Form title/description
+		$this->form .= $args['title'] ? sprintf( '<%s class="wampum-form-heading">%s</%s>', $args['title_wrap'], $args['title'], $args['title_wrap'] ) : '';
+		$this->form .= $args['desc'] ? sprintf( '<p class="wampum-form-desc">%s</p>', $args['desc'] ) : '';
 
 		// Add empty notice div before row, so it displays above all columns if inline
 		$this->form .= '<div style="display:none;" class="wampum-notice"></div>';

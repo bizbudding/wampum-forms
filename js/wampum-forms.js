@@ -253,6 +253,7 @@
                 first_name: $registerForm.find( 'input[name="first_name"]' ).val(),
                 last_name: $registerForm.find( 'input[name="last_name"]' ).val(),
                 password: $registerForm.find( 'input[name="password"]' ).val(),
+                password_confirm: $registerForm.find( 'input[name="password_confirm"]' ).val(),
                 log_in: $registerForm.find( 'input[name="log_in"]' ).val(),
                 ac_list_ids: $registerForm.find( 'input[name="ac_list_ids"]' ).val(),
                 ac_tags: $registerForm.find( 'input[name="ac_tags"]' ).val(),

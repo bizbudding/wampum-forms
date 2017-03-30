@@ -295,6 +295,16 @@ final class Wampum_Forms_Rest_API {
 			);
 		}
 
+		// Bail and return error if passwords don't match
+		if ( ! empty( $data['password'] ) && ! empty( $data['password_confirm'] ) ) {
+			if ( $data['password'] != $data['password_confirm'] ) {
+				return array(
+					'success' => false,
+					'message' => __( 'Passwords do not match', 'wampum' ),
+				);
+			}
+		}
+
         /**
          * Start the new user data
          * Email is the only field required to exist in the form
@@ -314,11 +324,11 @@ final class Wampum_Forms_Rest_API {
         }
 
         // Set username. Set as variable first, cause we may need it later for wp_signon()
-        $username = ( isset($data['username']) && $data['username'] ) ? $data['username'] : $email;
+        $username = ! empty( $data['username'] ) ? $data['username'] : $email;
         $userdata['user_login'] = $username;
 
         // Set password. Set as variable first, cause we may need it later for wp_signon()
-        $password = isset($data['password']) ? $data['password'] : wp_generate_password( $length = 12, $include_standard_special_chars = true );
+        $password = ! empty( $data['password'] ) ? $data['password'] : wp_generate_password( $length = 12, $include_standard_special_chars = true );
         $userdata['user_pass'] = $password;
 
         /**
@@ -626,6 +636,27 @@ final class Wampum_Forms_Rest_API {
 	}
 
 	/**
+	 * Honeypot validation
+	 * This field should be empty
+	 * If it has a value, that means a bot probably tried to submit the form
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return  array  The response
+	 */
+	function validate_say_what( $data ) {
+		if ( ! empty($data['say_what']) ) {
+			return array(
+				'success' => false,
+				'message' => __( 'Spam detected', 'wampum' ),
+			);
+		}
+		return array(
+			'success' => true,
+		);
+	}
+
+	/**
 	 * Maybe send data to ActiveCampaign
 	 *
 	 * @since  1.1.0
@@ -697,11 +728,11 @@ final class Wampum_Forms_Rest_API {
 				// Do the thang
 				$contact_sync = $ac->api( 'contact/sync', $contact );
 
-					if ( $contact_sync->success ) {
-						return array(
-							'success' => true,
-						);
-					}
+				if ( $contact_sync->success ) {
+					return array(
+						'success' => true,
+					);
+				}
 
 			}
 
@@ -715,24 +746,20 @@ final class Wampum_Forms_Rest_API {
 	}
 
 	/**
-	 * Honeypot validation
-	 * This field should be empty
-	 * If it has a value, that means a bot probably tried to submit the form
+	 * TODO!!!!!
 	 *
-	 * @since   1.0.0
+	 * Maybe send data to ActiveCampaign
 	 *
-	 * @return  array  The response
+	 * @since  1.1.0
 	 */
-	function validate_say_what( $data ) {
-		if ( ! empty($data['say_what']) ) {
-			return array(
-				'success' => false,
-				'message' => __( 'Spam detected', 'wampum' ),
-			);
+	function maybe_do_sharpspring( $data ) {
+
+		// Bail if no email
+		if ( ! $data['email'] ) {
+			return;
 		}
-		return array(
-			'success' => true,
-		);
-	}
+
+    }
+
 
 }

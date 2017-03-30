@@ -63,14 +63,14 @@ final class Wampum_Forms {
 	/**
 	 * Register stylesheets for later use
 	 *
-	 * Use via wp_enqueue_style('wampum-user-forms'); in a template
+	 * Use via wp_enqueue_style('wampum-forms'); in a template
 	 *
 	 * @since  1.0.0
 	 *
 	 * @return null
 	 */
 	function register_stylesheets() {
-	    wp_register_style( 'wampum-user-forms', WAMPUM_USER_FORMS_PLUGIN_URL . 'css/wampum-user-forms.min.css', array(), WAMPUM_USER_FORMS_VERSION );
+	    wp_register_style( 'wampum-forms', WAMPUM_USER_FORMS_PLUGIN_URL . 'css/wampum-forms.min.css', array(), WAMPUM_USER_FORMS_VERSION );
 	}
 
 	/**
@@ -85,9 +85,9 @@ final class Wampum_Forms {
 	function register_scripts() {
 		// All Forms
         wp_register_script( 'wampum-zxcvbn', WAMPUM_USER_FORMS_PLUGIN_URL . 'js/zxcvbn.js', array('jquery'), '4.4.2', true );
-        wp_register_script( 'wampum-user-forms', WAMPUM_USER_FORMS_PLUGIN_URL . 'js/wampum-user-forms.js', array('jquery'), WAMPUM_USER_FORMS_VERSION, true );
-        // wp_register_script( 'wampum-user-forms', WAMPUM_USER_FORMS_PLUGIN_URL . 'js/wampum-user-forms.min.js', array('jquery'), WAMPUM_USER_FORMS_VERSION, true );
-        wp_localize_script( 'wampum-user-forms', 'wampumFormVars', array(
+        wp_register_script( 'wampum-forms', WAMPUM_USER_FORMS_PLUGIN_URL . 'js/wampum-forms.js', array('jquery'), WAMPUM_USER_FORMS_VERSION, true );
+        // wp_register_script( 'wampum-forms', WAMPUM_USER_FORMS_PLUGIN_URL . 'js/wampum-forms.min.js', array('jquery'), WAMPUM_USER_FORMS_VERSION, true );
+        wp_localize_script( 'wampum-forms', 'wampumFormVars', array(
 			'root'				=> esc_url_raw( rest_url() ),
 			'nonce'				=> wp_create_nonce( 'wp_rest' ),
 			'failure'			=> __( 'Something went wrong, please try again.', 'wampum' ),
@@ -113,12 +113,12 @@ final class Wampum_Forms {
 	function enqueue_scripts() {
 		if ( ( $this->form_counter > 0 ) ) {
 			// CSS
-			wp_enqueue_style('wampum-user-forms');
+			wp_enqueue_style('wampum-forms');
 			// JS
 			if ( $this->password_meter ) {
 				wp_enqueue_script('wampum-zxcvbn');
 			}
-			wp_enqueue_script('wampum-user-forms');
+			wp_enqueue_script('wampum-forms');
 		}
 	}
 
@@ -248,6 +248,9 @@ final class Wampum_Forms {
             case 'subscribe':
                 $form = $this->get_subscribe_form( $args );
                 break;
+            case 'membership':
+                $form = $this->get_membership_form( $args );
+                break;
             default:
                 $form = '';
                 break;
@@ -257,9 +260,6 @@ final class Wampum_Forms {
         if ( empty($form) ) {
         	return;
         }
-
-		// Increment the counter
-		$this->form_counter++;
 
 		// Enqueue Scripts
 		$this->enqueue_scripts();
@@ -300,7 +300,13 @@ final class Wampum_Forms {
 		return $this->get_form( $args );
 	}
 
-	// TODO: Docs
+	/**
+	 * Get a subscribe form, with the wrapper
+	 *
+	 * @since  1.1.0
+	 *
+	 * @return string  the form
+	 */
 	function subscribe_form_callback( $args ) {
 		$args['type'] = 'subscribe';
 		return $this->get_form( $args );
@@ -340,18 +346,6 @@ final class Wampum_Forms {
 		if ( ! function_exists( 'wc_memberships' ) ) {
 			return;
 		}
-
-		// The full $args list is parsed in get_{name}_form() method
-		$defaults = array(
-			'plan_id' => false, // required
-		);
-		$args = wp_parse_args( $args, $defaults );
-
-		// Bail if no plan ID
-		if ( in_array( $args['plan_id'], array( false, 'false' ) ) ) {
-			return;
-		}
-
 		$args['type'] = 'membership';
 		return $this->get_form( $args );
 
@@ -360,19 +354,19 @@ final class Wampum_Forms {
 		 * This happens when a logged in user is already a member
 		 * and there is no notice to display for logged in members ( via $args['member_message'] ).
 		 */
-		$membership_form = $this->get_membership_form( $args );
-		if ( ! $membership_form ) {
-			return;
-		}
+		// $membership_form = $this->get_membership_form( $args );
+		// if ( ! $membership_form ) {
+		// 	return;
+		// }
 
 		// Set password meter to true, so that script is loaded
-		$this->password_meter = true;
+		// $this->password_meter = true;
 
 		// Send it!
-		return sprintf( '<div class="wampum-form">%s%s</div>',
-			$membership_form,
-			$this->get_login_form( array( 'hidden' => true ) ) // If form used in membership on-boarding, this tells us to refresh to current page
-		);
+		// return sprintf( '<div class="wampum-form">%s%s</div>',
+		// 	$membership_form,
+		// 	$this->get_login_form( array( 'hidden' => true ) ) // If form used in membership on-boarding, this tells us to refresh to current page
+		// );
 	}
 
 
@@ -406,7 +400,6 @@ final class Wampum_Forms {
 			'name'		=> 'username',
 			'class'		=> 'username',
 			'required'	=> true,
-			'value'		=> '',
 		), array(
 			'label'	=> ! empty( $args['label_username'] ) ? $args['label_username'] : __( 'Email/Username', 'wampum' ),
 		) );
@@ -416,7 +409,6 @@ final class Wampum_Forms {
 			'name'		=> 'password',
 			'class'		=> 'password',
 			'required'	=> true,
-			'value'		=> '',
 		), array(
 			'label'	=> __( 'Password', 'wampum' ),
 		) );
@@ -452,14 +444,14 @@ final class Wampum_Forms {
 		// Close
 		$form->close();
 
+		// Increment the counter
+		$this->form_counter++;
+
 		return sprintf( '<div class="wampum-form">%s</div>', $form->render( $args, false ) );
 
 	}
 
 	function get_password_form( $args ) {
-
-		// Load password strength script
-		$this->password_meter = true;
 
 		// Get the current page url
 		$current_url = ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
@@ -505,10 +497,13 @@ final class Wampum_Forms {
 			'label'	=> __( 'Confirm Password', 'wampum' ),
 		) );
 
+		// Load password strength script
+		$this->password_meter = true;
+
 		// Password strength
 		$form->add_field( 'password_strength', array(
 			'name'	=> 'password_strength',
-			'class'	=> 'password-strength', // Force full width, even if inline
+			'class'	=> 'password-strength',
 			'style'	=> 'display:none;',
 		), array(
 			'label'	=> __( 'Strength', 'wampum' ),
@@ -530,6 +525,9 @@ final class Wampum_Forms {
 
 		// Close
 		$form->close();
+
+		// Increment the counter
+		$this->form_counter++;
 
 		return sprintf( '<div class="wampum-form">%s</div>', $form->render( $args, false ) );
 
@@ -603,9 +601,45 @@ final class Wampum_Forms {
 				'name'		=> 'username',
 				'class'		=> 'username',
 				'required'	=> true,
-				'value'		=> '',
 			), array(
 				'label'	=> ! empty( $args['label_username'] ) ? $args['label_username'] : __( 'Username', 'wampum' ),
+			) );
+
+		}
+
+		// If password
+		if ( $args['password'] ) {
+
+			// Password
+			$form->add_field( 'password', array(
+				'name'		=> 'password',
+				'class'		=> 'password',
+				'required'	=> true,
+			), array(
+				'label'	=> __( 'Password', 'wampum' ),
+			) );
+
+			// Password confirm
+			if ( $args['password_confirm'] ) {
+
+				// Password confirm
+				$form->add_field( 'password', array(
+					'name'		=> 'password_confirm',
+					'class'		=> 'password-confirm',
+					'required'	=> true,
+				), array(
+					'label'	=> __( 'Confirm Password', 'wampum' ),
+				) );
+
+			}
+
+			// Password strength
+			$form->add_field( 'password_strength', array(
+				'name'	=> 'password_strength',
+				'class'	=> 'password-strength',
+				'style'	=> 'display:none;',
+			), array(
+				'label'	=> __( 'Strength', 'wampum' ),
 			) );
 
 		}
@@ -663,6 +697,9 @@ final class Wampum_Forms {
 		// Close
 		$form->close();
 
+		// Increment the counter
+		$this->form_counter++;
+
 		return sprintf( '<div class="wampum-form">%s</div>', $form->render( $args, false ) );
 
 	}
@@ -670,8 +707,11 @@ final class Wampum_Forms {
 	/**
 	 * Get a form strictly for subscribing a user to ActiveCampaign.
 	 *
-	 * @param  [type] $args [description]
-	 * @return [type]       [description]
+	 * @since   1.0.0
+	 *
+	 * @param   array  $args  array of form args
+	 *
+	 * @return  string  The form HTML
 	 */
 	function get_subscribe_form( $args ) {
 
@@ -794,7 +834,355 @@ final class Wampum_Forms {
 		// Close
 		$form->close();
 
+		// Increment the counter
+		$this->form_counter++;
+
 		return sprintf( '<div class="wampum-form">%s</div>', $form->render( $args, false ) );
+
+	}
+
+	function get_membership_form( $args ) {
+
+		// Bail if no plan ID
+		if ( empty( $args['plan_id'] ) ) {
+			return;
+		}
+
+		$html = '';
+
+		/**
+		 * User Available form
+		 */
+		if ( ! is_user_logged_in() ) {
+
+			// Get the user available form
+			$user_available = new Wampum_Form();
+
+			// Settings
+			$user_available->set( 'hidden', false );
+			$user_available->set( 'inline', $args['inline'] );
+
+			// Open
+			$user_available->open( array(
+				'data-form' => 'user-available',
+			), $args );
+
+			// Honeypot
+			$user_available->add_field( 'text', array(
+				'name'	=> 'say_what',
+				'class'	=> 'say-what',
+			));
+
+			// First Name
+			if ( $args['first_name'] ) {
+
+				$user_available->add_field( 'text', array(
+					'name'	=> 'first_name',
+					'class'	=> 'first-name',
+				), array(
+					'label'	=> $args['last_name'] ? __( 'First Name', 'wampum' ) : __( 'Name', 'wampum' ),
+				) );
+
+			}
+
+			// Last Name
+			if ( $args['last_name'] ) {
+
+				$user_available->add_field( 'text', array(
+					'name'	=> 'last_name',
+					'class'	=> 'last-name',
+				), array(
+					'label'	=> __( 'Last Name', 'wampum' ),
+				) );
+
+			}
+
+			// Email
+			$user_available->add_field( 'email', array(
+				'name'		=> 'email',
+				'class'		=> 'email',
+				'required'	=> true,
+			), array(
+				'label'	=> __( 'Email', 'wampum' ),
+			) );
+
+			// Username
+			if ( $args['username'] ) {
+
+				// Username
+				$user_available->add_field( 'text', array(
+					'name'		=> 'username',
+					'class'		=> 'username',
+					'required'	=> true,
+				), array(
+					'label'	=> ! empty( $args['label_username'] ) ? $args['label_username'] : __( 'Username', 'wampum' ),
+				) );
+
+			}
+
+			// Redirect
+			$user_available->add_field( 'hidden', array(
+				'name'	=> 'redirect',
+				'value'	=> $args['redirect'],
+			));
+
+			// Submit
+			$user_available->add_field( 'submit', array(
+				'name'	=> 'submit',
+				'class'	=> 'submit',
+			), array(
+				'label'	=> $args['button'],
+			) );
+
+			// Close
+			$user_available->close();
+
+			// Increment the counter
+			$this->form_counter++;
+
+			// Add this form to the HTML to return
+			$html .= $user_available->render( $args, false );
+
+		} // not logged in
+
+		/**
+		 * Join Membership
+		 */
+		$join = new Wampum_Form();
+
+		// Settings
+		if ( ! is_user_logged_in() ) {
+			$join->set( 'hidden', true );
+		} else {
+			$join->set( 'hidden', false );
+		}
+		$join->set( 'inline', $args['inline'] );
+
+		// Open
+		$join->open( array(
+			'data-form' => 'join-membership',
+		), $args );
+
+		// Honeypot
+		$join->add_field( 'text', array(
+			'name'	=> 'say_what',
+			'class'	=> 'say-what',
+		));
+
+		// First Name
+		if ( $args['first_name'] ) {
+
+			$join->add_field( 'text', array(
+				'name'	=> 'first_name',
+				'class'	=> 'first-name',
+				'value'	=> $first_name,
+			), array(
+				'label'	=> $args['last_name'] ? __( 'First Name', 'wampum' ) : __( 'Name', 'wampum' ),
+			) );
+
+		}
+
+		// Last Name
+		if ( $args['last_name'] ) {
+
+			$join->add_field( 'text', array(
+				'name'	=> 'last_name',
+				'class'	=> 'last-name',
+				'value'	=> $last_name,
+			), array(
+				'label'	=> __( 'Last Name', 'wampum' ),
+			) );
+
+		}
+
+		// Email
+		$join->add_field( 'email', array(
+			'name'		=> 'email',
+			'class'		=> 'email',
+			'required'	=> true,
+		), array(
+			'label'	=> __( 'Email', 'wampum' ),
+		) );
+
+		// If not logged in
+		if ( ! is_user_logged_in() ) {
+
+			// Username
+			if ( $args['username'] ) {
+
+				// Username
+				$join->add_field( 'text', array(
+					'name'		=> 'username',
+					'class'		=> 'username',
+					'required'	=> true,
+				), array(
+					'label'	=> ! empty( $args['label_username'] ) ? $args['label_username'] : __( 'Username', 'wampum' ),
+				) );
+
+			}
+
+			// Password
+			$join->add_field( 'password', array(
+				'name'		=> 'password',
+				'class'		=> 'password',
+				'required'	=> true,
+			), array(
+				'label'	=> __( 'Password', 'wampum' ),
+			) );
+
+			// Load password strength script
+			$this->password_meter = true;
+
+			// Password strength
+			$join->add_field( 'password_strength', array(
+				'name'	=> 'password_strength',
+				'class'	=> 'password-strength',
+				'style'	=> 'display:none;',
+			), array(
+				'label'	=> __( 'Strength', 'wampum' ),
+			) );
+
+		}
+
+		// Plan ID
+		$join->add_field( 'hidden', array(
+			'name'	=> 'plan_id',
+			'value'	=> $args['plan_id'],
+		));
+
+		// Active Campaign List IDs
+		if ( ! empty( $args['ac_list_ids'] ) ) {
+
+			$join->add_field( 'hidden', array(
+				'name'	=> 'ac_list_ids',
+				'value'	=> $args['ac_list_ids'],
+			));
+
+		}
+
+		// Active Campaign Tags
+		if ( ! empty( $args['ac_tags'] ) ) {
+
+			$join->add_field( 'hidden', array(
+				'name'	=> 'ac_tags',
+				'value'	=> $args['ac_tags'],
+			));
+
+		}
+
+		// Notifications
+		if ( ! empty( $args['notifications'] ) ) {
+
+			$join->add_field( 'hidden', array(
+				'name'	=> 'notifications',
+				'value'	=> $args['notifications'],
+			));
+
+		}
+
+		// Redirect
+		$join->add_field( 'hidden', array(
+			'name'	=> 'redirect',
+			'value'	=> $args['redirect'],
+		));
+
+		// Submit
+		$join->add_field( 'submit', array(
+			'name'	=> 'submit',
+			'class'	=> 'submit',
+		), array(
+			'label'	=> $args['button'],
+		) );
+
+		// Close
+		$join->close();
+
+		// Increment the counter
+		$this->form_counter++;
+
+		// Add this form to the HTML to return
+		$html .= $join->render( $args, false );
+
+		/**
+		 * Login Form
+		 */
+		// Get the form
+		$login = new Wampum_Form();
+
+		$args['title'] = __( 'Log In', 'wampum' );
+
+		// Settings
+		$login->set( 'hidden', true );
+		$login->set( 'inline', $args['inline'] );
+
+		// Open
+		$login->open( array(
+			'data-form' => 'login',
+		), $args );
+
+		// Honeypot
+		$login->add_field( 'text', array(
+			'name'	=> 'say_what',
+			'class'	=> 'say-what',
+		));
+
+		// Username
+		$login->add_field( 'text', array(
+			'name'		=> 'username',
+			'class'		=> 'username',
+			'required'	=> true,
+		), array(
+			'label'	=> ! empty( $args['label_username'] ) ? $args['label_username'] : __( 'Email/Username', 'wampum' ),
+		) );
+
+		// Password
+		$login->add_field( 'password', array(
+			'name'		=> 'password',
+			'class'		=> 'password',
+			'required'	=> true,
+		), array(
+			'label'	=> __( 'Password', 'wampum' ),
+		) );
+
+		// Remember
+		if ( $args['remember'] ) {
+
+			$login->add_field( 'checkbox', array(
+				'name'		=> 'rememberme',
+				'class'		=> 'remember',
+				'checked'	=> $args['value_remember'],
+				'value'		=> 'forever',
+			), array(
+				'label'	=> __( 'Remember Me', 'wampum' ),
+			) );
+
+		}
+
+		// Redirect
+		$login->add_field( 'hidden', array(
+			'name'	=> 'redirect',
+			'value'	=> 'membership_form', // Part of membership form flow so JS reload same page
+		));
+
+		// Submit
+		$login->add_field( 'submit', array(
+			'name'	=> 'submit',
+			'class'	=> 'submit',
+		), array(
+			'label'	=> __( 'Log In', 'wampum' ),
+		) );
+
+		// Close
+		$login->close();
+
+		// Increment the counter
+		$this->form_counter++;
+
+		// Add this form to the HTML to return
+		$html .= $login->render( $args, false );
+
+		// Bring it all home baby
+		return sprintf( '<div class="wampum-form">%s</div>', $html );
 
 	}
 
