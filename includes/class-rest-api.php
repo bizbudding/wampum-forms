@@ -25,10 +25,7 @@ final class Wampum_Forms_Rest_API {
 	 *
 	 * @since   1.1.0
 	 * @static  var array $instance
-	 * @uses    Wampum_Forms_Rest_API::setup_constants() Setup the constants needed.
-	 * @uses    Wampum_Forms_Rest_API::includes() Include the required files.
-	 * @uses    Wampum_Forms_Rest_API::load_textdomain() load the language files.
-	 * @see     Wampum_Forms_Rest_API()
+	 * @uses    Wampum_Forms_Rest_API->setup() load the language files.
 	 * @return  object | Wampum_Forms_Rest_API The one true Wampum_Forms_Rest_API
 	 */
 	public static function instance() {
@@ -92,6 +89,11 @@ final class Wampum_Forms_Rest_API {
 			'callback' => array( $this, 'status' ),
 	    ));
 
+	    register_rest_route( 'wampum/v1', '/active-campaign/', array(
+			'methods'  => 'GET',
+			'callback' => array( $this, 'is_active_campaign_connected' ),
+	    ));
+
 		/* **** *
 		 * POST *
 		 * **** */
@@ -128,11 +130,17 @@ final class Wampum_Forms_Rest_API {
 
 	}
 
-	// This function displays a message when visiting the endpoint, to confirm it's actually registered
+	/**
+	 * This function displays a message when visiting the endpoint, to confirm it's actually registered
+	 *
+	 * @since  1.0.0
+	 *
+	 * @return array
+	 */
 	function status() {
 		return array(
 			'success' => true,
-			'message' => 'All is well in the world of Wampum'
+			'message' => 'All is well in the world of Wampum',
 		);
 	}
 
@@ -177,6 +185,13 @@ final class Wampum_Forms_Rest_API {
 			if ( wp_validate_auth_cookie( '', 'logged_in' ) != $user->ID ) {
 			    wp_set_auth_cookie( $user->ID, true );
 			}
+
+	        // Notifications
+	        $this->maybe_do_notifications( $data, $message );
+
+	        // ActiveCampaign
+	        $this->maybe_do_active_campaign( $data );
+
 			return array(
 				'success' => true,
 			);
@@ -244,6 +259,9 @@ final class Wampum_Forms_Rest_API {
 				'message' => $user_id->get_error_message(),
 			);
 		}
+
+        // Notifications
+        $this->maybe_do_notifications( $data, $message );
 
         // ActiveCampaign
         $this->maybe_do_active_campaign( $data );
@@ -373,6 +391,9 @@ final class Wampum_Forms_Rest_API {
 			$user = wp_signon( $signon_data );
         }
 
+        // Notifications
+        $this->maybe_do_notifications( $data, $message );
+
         // ActiveCampaign
         $this->maybe_do_active_campaign( $data );
 
@@ -415,6 +436,9 @@ final class Wampum_Forms_Rest_API {
 
         if ( true == $ac['success'] ) {
 
+	        // Notifications
+	        $this->maybe_do_notifications( $data );
+
 	        // Success!
 			return array(
 				'success' => true,
@@ -422,10 +446,7 @@ final class Wampum_Forms_Rest_API {
 
         }
 
-		return array(
-			'success' => false,
-			'message' => __( 'Uh oh! Looks like there was an error.', 'wampum' ),
-		);
+		return $ac;
 
 	}
 
@@ -620,30 +641,18 @@ final class Wampum_Forms_Rest_API {
             $user_membership->add_note( sanitize_text_field($note) );
         }
 
-        // If email notifications set, let's send away!
-        if ( isset($data['notifications']) && ! empty($data['notifications']) ) {
-
-			// Make an array and trim spaces around each email
-			$notifications = array_map( 'trim', ( explode( ',', $data['notifications'] ) ) );
-			// Sanitize each email
-			$notifications = array_map( 'sanitize_email', $notifications );
-
-			// $to		 = trim(sanitize_text_field($data['notifications']));
-			$to		 = $notifications;
-			$subject = get_bloginfo('name') . ' - ' . get_the_title($plan_id) . ' membership added';
-
-			// Build the body
-			$body = get_bloginfo('name') . ' - ' . get_the_title($plan_id) . ' membership added via Wampum form at ' . esc_url($data['current_url']);
-	        if ( $data['first_name'] ) {
-	            $body .= ' - ' . $data['first_name'];
-	        }
-	        if ( $data['last_name'] ) {
-	            $body .= ' ' . $data['last_name'];
-	        }
-	        $body .= ' - ' .  $email;
-	        // Send it
-			wp_mail( $to, $subject, $body );
+		// Build notification message
+		$message = get_bloginfo('name') . ' - ' . get_the_title($plan_id) . ' membership added via Wampum form at ' . esc_url($data['current_url']);
+        if ( $data['first_name'] ) {
+            $message .= ' - ' . $data['first_name'];
         }
+        if ( $data['last_name'] ) {
+            $message .= ' ' . $data['last_name'];
+        }
+        $message .= ' - ' .  $email;
+
+        // Notifications
+        $this->maybe_do_notifications( $data, $message );
 
         // ActiveCampaign
         $this->maybe_do_active_campaign( $data );
@@ -678,9 +687,59 @@ final class Wampum_Forms_Rest_API {
 	}
 
 	/**
+	 * Maybe send email notificaitons of form submissions.
+	 *
+	 * @since   1.1.0
+	 *
+	 * @param   array  $data  	 Array of data to check user
+	 * @param   string $message  The email body
+	 *
+	 * @return  void
+	 */
+	function maybe_do_notifications( $data, $message = '' ) {
+
+        // Bail if no notifications
+        if ( ! isset($data['notifications']) && empty($data['notifications']) ) {
+        	return;
+        }
+
+		// Make an array and trim spaces around each email
+		$notifications = array_map( 'trim', ( explode( ',', $data['notifications'] ) ) );
+
+		// Sanitize each email
+		$notifications = array_map( 'sanitize_email', $notifications );
+
+		$to		 = $notifications;
+		$subject = sprintf( '%s - New Wampum %s form submission', get_bloginfo('name'), ucwords($data['type']) );
+		$body	 = $message;
+
+		if ( empty($body) ) {
+			// Build the body
+			$body = sprintf( '%s form details\r\n', ucwords($data['type']) );
+	        if ( ! empty( $data['first_name'] ) ) {
+	            $body .= sprintf( 'First Name: %s\r\n', $data['first_name'] );
+	        }
+	        if ( ! empty( $data['last_name'] ) ) {
+	            $body .= sprintf( 'Last Name: %s\r\n', $data['first_name'] );
+	        }
+	        if ( ! empty( $data['email'] ) ) {
+	            $body .= sprintf( 'Email: %s\r\n', $data['first_name'] );
+	        }
+	    }
+
+        // Send it
+		wp_mail( $to, $subject, $body );
+
+	}
+
+	/**
 	 * Maybe send data to ActiveCampaign
 	 *
-	 * @since  1.1.0
+	 * @since   1.1.0
+	 *
+	 * @param   array  $data  	 Array of data to check user
+	 *
+	 * @return  array  Associative array of success and maybe message
 	 */
 	function maybe_do_active_campaign( $data ) {
 
@@ -694,67 +753,48 @@ final class Wampum_Forms_Rest_API {
         	return;
         }
 
-    	$list_ids = explode( ',', $data['ac_list_ids'] );
-    	$tags 	  = explode( ',', $data['ac_tags'] );
+		// Setup AC
+    	$ac = $this->get_active_campaign_object();
 
-        /**
-         * ActiveCampain data.
-         * This should be admin only settings.
-         * Do not expose publicly!
-         */
-		$ac_base_url = 'https://bizbudding.api-us1.com';
-		$ac_key		 = '4bd29871bc566dfe7dccdf819cdc0001c59bec88d5270ad85905b341bb70b2d861928fa0';
+        // If valid AC object
+        if ( $ac ) {
 
-        // If we have a URL and a key
-        if ( $ac_base_url && $ac_key ) {
+			// Start the contact array, email is required in our form
+			$contact = array( 'email' => sanitize_email( $data['email'] ) );
 
-        	// Load the AC PHP library
-        	require_once( WAMPUM_USER_FORMS_INCLUDES_DIR . 'vendor/activecampaign-api-php/includes/ActiveCampaign.class.php' );
+			// Add first name if we have one
+			if ( $data['first_name'] ) {
+				$contact['first_name'] = sanitize_text_field( $data['first_name'] );
+			}
+			// Add last name if we have one
+			if ( $data['last_name'] ) {
+				$contact['last_name'] = sanitize_text_field( $data['last_name'] );
+			}
 
-			// Setup AC
-			$ac = new ActiveCampaign( esc_url($ac_base_url), sanitize_text_field($ac_key) );
-
-			// Test API creds
-			if ( (int) $ac->credentials_test() ) {
-
-				// Start the contact array, email is required in our form
-				$contact = array( 'email' => sanitize_email( $data['email'] ) );
-
-				// Add first name if we have one
-				if ( $data['first_name'] ) {
-					$contact['first_name'] = sanitize_text_field( $data['first_name'] );
+			// If we have list(s)
+			if ( ! empty( $list_ids ) ) {
+				// Add user to existing ActiveCampaign lists
+				foreach( $list_ids as $list_id ) {
+					$contact["p[{$list_id}]"]	   = trim($list_id);
+					$contact["status[{$list_id}]"] = 1; // "Active" status
 				}
-				// Add last name if we have one
-				if ( $data['last_name'] ) {
-					$contact['last_name'] = sanitize_text_field( $data['last_name'] );
+			}
+
+			// If we have tags
+			if ( ! empty( $tags ) ) {
+				// Add tags to user
+				foreach( $tags as $tag ) {
+					$contact["tags[{$tag}]"] = sanitize_text_field( trim($tag) );
 				}
+			}
 
-				// If we have list(s)
-				if ( ! empty( $list_ids ) ) {
-					// Add user to existing ActiveCampaign lists
-					foreach( $list_ids as $list_id ) {
-						$contact["p[{$list_id}]"]	   = trim($list_id);
-						$contact["status[{$list_id}]"] = 1; // "Active" status
-					}
-				}
+			// Do the thang
+			$contact_sync = $ac->api( 'contact/sync', $contact );
 
-				// If we have tags
-				if ( ! empty( $tags ) ) {
-					// Add tags to user
-					foreach( $tags as $tag ) {
-						$contact["tags[{$tag}]"] = sanitize_text_field( trim($tag) );
-					}
-				}
-
-				// Do the thang
-				$contact_sync = $ac->api( 'contact/sync', $contact );
-
-				if ( $contact_sync->success ) {
-					return array(
-						'success' => true,
-					);
-				}
-
+			if ( $contact_sync->success ) {
+				return array(
+					'success' => true,
+				);
 			}
 
         }
@@ -764,6 +804,65 @@ final class Wampum_Forms_Rest_API {
 			'message' => __( 'Uh oh! Looks like there was an error.', 'wampum' ),
 		);
 
+	}
+
+	/**
+	 * Check if active campaign credentials are saved and valid.
+	 * Uses base_url and key from Wampum Forms settings page.
+	 *
+	 * @since  1.1.0
+	 *
+	 * @return bool
+	 */
+	function is_active_campaign_connected() {
+
+		$ac = $this->get_active_campaign_object();
+
+		// If connection is valid
+		if ( is_object($ac) ) {
+			return true;
+		}
+
+		// No good
+		return false;
+
+	}
+
+	/**
+	 * Get the Active Campaign php object.
+	 *
+	 * @since   1.1.0
+	 *
+	 * @return  object|bool(false)
+	 */
+	function get_active_campaign_object() {
+		// Settings
+		$ac = get_option( 'wampum_forms_ac' );
+		// If not what we need
+		if ( empty($ac) || ! isset($ac['base_url']) || ! isset($ac['key']) ) {
+			return false;
+		}
+		// Get AC object
+		$ac = new ActiveCampaign( esc_url($ac['base_url']), sanitize_text_field($ac['key']) );
+		// Test creds
+		if ( is_object($ac) && $ac->credentials_test() ) {
+			// If A-Okay bring it home
+			return $ac;
+		}
+		// No good
+		return false;
+
+	}
+
+	/**
+	 * Test if connection to active campaign works.
+	 *
+	 * @param  object  $ac  the ac object via $ac = new ActiveCampaign( esc_url($ac_base_url), sanitize_text_field($ac_key) )
+	 *
+	 * @return bool
+	 */
+	function active_campaign_credentials_test( $ac ) {
+		return $ac->credentials_test();
 	}
 
 	/**

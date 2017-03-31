@@ -31,7 +31,7 @@ final class Wampum_Forms {
 	 *
 	 * @since   1.1.0
 	 * @static  var array $instance
-	 * @uses    Wampum_Forms::setup() Setup the hooks/filters
+	 * @uses    Wampum_Forms->setup() Setup the hooks/filters
 	 * @return  object | Wampum_Forms The one true Wampum_Forms
 	 */
 	public static function instance() {
@@ -44,6 +44,13 @@ final class Wampum_Forms {
 		return self::$instance;
 	}
 
+	/**
+	 * CLass setup actions/filters/hooks
+	 *
+	 * @since  1.0.0
+	 *
+	 * @return void
+	 */
 	function setup() {
 
 		// Register styles and scripts
@@ -67,10 +74,10 @@ final class Wampum_Forms {
 	 *
 	 * @since  1.0.0
 	 *
-	 * @return null
+	 * @return void
 	 */
 	function register_stylesheets() {
-	    wp_register_style( 'wampum-forms', WAMPUM_USER_FORMS_PLUGIN_URL . 'css/wampum-forms.min.css', array(), WAMPUM_USER_FORMS_VERSION );
+	    wp_register_style( 'wampum-forms', WAMPUM_FORMS_PLUGIN_URL . 'css/wampum-forms.min.css', array(), WAMPUM_FORMS_VERSION );
 	}
 
 	/**
@@ -80,13 +87,13 @@ final class Wampum_Forms {
 	 *
 	 * @since  1.0.0
 	 *
-	 * @return null
+	 * @return void
 	 */
 	function register_scripts() {
 		// All Forms
-        wp_register_script( 'wampum-zxcvbn', WAMPUM_USER_FORMS_PLUGIN_URL . 'js/zxcvbn.js', array('jquery'), '4.4.2', true );
-        wp_register_script( 'wampum-forms', WAMPUM_USER_FORMS_PLUGIN_URL . 'js/wampum-forms.js', array('jquery'), WAMPUM_USER_FORMS_VERSION, true );
-        // wp_register_script( 'wampum-forms', WAMPUM_USER_FORMS_PLUGIN_URL . 'js/wampum-forms.min.js', array('jquery'), WAMPUM_USER_FORMS_VERSION, true );
+        wp_register_script( 'wampum-zxcvbn', WAMPUM_FORMS_PLUGIN_URL . 'js/zxcvbn.js', array('jquery'), '4.4.2', true );
+        wp_register_script( 'wampum-forms', WAMPUM_FORMS_PLUGIN_URL . 'js/wampum-forms.js', array('jquery'), WAMPUM_FORMS_VERSION, true );
+        // wp_register_script( 'wampum-forms', WAMPUM_FORMS_PLUGIN_URL . 'js/wampum-forms.min.js', array('jquery'), WAMPUM_FORMS_VERSION, true );
         wp_localize_script( 'wampum-forms', 'wampumFormVars', array(
 			'root'				=> esc_url_raw( rest_url() ),
 			'nonce'				=> wp_create_nonce( 'wp_rest' ),
@@ -108,7 +115,7 @@ final class Wampum_Forms {
 	 *
 	 * @since  1.0.0
 	 *
-	 * @return null
+	 * @return void
 	 */
 	function enqueue_scripts() {
 		if ( ( $this->form_counter > 0 ) ) {
@@ -123,6 +130,90 @@ final class Wampum_Forms {
 	}
 
 	/**
+	 * Get a login form, with the wrapper
+	 *
+	 * @since  1.1.0
+	 *
+	 * @param  $args   the form args
+	 *
+	 * @return string  the form HTML
+	 */
+	function login_form_callback( $args ) {
+		// Bail if already logged in
+		if ( is_user_logged_in() ) {
+			return;
+		}
+		$args['type'] = 'login';
+		return $this->get_form( $args );
+	}
+
+	/**
+	 * Get a registration form, with the wrapper
+	 *
+	 * @since  1.1.0
+	 *
+	 * @param  $args   the form args
+	 *
+	 * @return string  the form HTML
+	 */
+	function register_form_callback( $args ) {
+		// Bail if already logged in
+		if ( is_user_logged_in() ) {
+			return;
+		}
+		$args['type'] = 'register';
+		return $this->get_form( $args );
+	}
+
+	/**
+	 * Get a subscribe form, with the wrapper
+	 *
+	 * @since  1.1.0
+	 *
+	 * @return string  the form HTML
+	 */
+	function subscribe_form_callback( $args ) {
+		$args['type'] = 'subscribe';
+		return $this->get_form( $args );
+	}
+
+	/**
+	 * Get a password form, with the wrapper
+	 *
+	 * @since  1.1.0
+	 *
+	 * @param  $args   the form args
+	 *
+	 * @return string  the form HTML
+	 */
+	function password_form_callback( $args ) {
+		// Bail if user is not logged in
+		if ( ! is_user_logged_in() ) {
+			return;
+		}
+		$args['type'] = 'password';
+		return $this->get_form( $args );
+	}
+
+	/**
+	 * Get a membership form, with the wrapper
+	 *
+	 * @since  1.1.0
+	 *
+	 * @param  $args   the form args
+	 *
+	 * @return string  the form HTML
+	 */
+	function membership_form_callback( $args ) {
+		// Bail if WooCommerce Memberships is not active
+		if ( ! function_exists( 'wc_memberships' ) ) {
+			return;
+		}
+		$args['type'] = 'membership';
+		return $this->get_form( $args );
+	}
+
+	/**
 	 * Get a form, by type.
 	 *
 	 * @since 	1.1.0
@@ -131,45 +222,46 @@ final class Wampum_Forms {
 	 *
 	 *      Associative array of args to build form.
 	 *
-	 * 		@type  string   $type 		 	 	(required) The type of form to return
-	 * 		@type  bool 	$hidden			 	Whether to hide the form by default (display:none; inline style)
-	 * 		@type  bool 	$inline			 	Display the form fields in a row
-	 * 		@type  string   $title 			 	The form title to display
-	 * 		@type  string   $title_wrap 	 	The title wrap element
-	 * 		@type  string   $desc 			 	The form description to display
-	 * 		@type  bool 	$first_name 	 	Whether to show first name field
-	 * 		@type  bool 	$last_name	 	 	Whether to show last name field
-	 * 		@type  bool 	$email  	 	 	Whether to show email field
-	 * 		@type  bool 	$username 	 	 	Whether to show username field
-	 * 		@type  bool 	$password 			Whether to show password field
-	 * 		@type  bool 	$password_confirm   Whether to show password confirm field
-	 * 		@type  bool 	$password_strength   Whether to show password strength meter
-	 * 		@type  bool 	$require_first_name Whether to make the first name field required
-	 * 		@type  bool 	$require_last_name 	Whether to make the last name field required
-	 * 		@type  bool 	$require_email 		Whether to make the email field required
-	 * 		@type  bool 	$require_username 	Whether to make the username field required
-	 * 		@type  bool 	$require_password 	Whether to make the password field required
-	 * 		@type  string 	$label_email 	    The label of the email field
-	 * 		@type  string 	$value_email 	    The value to load in the email field
-	 * 		@type  string 	$readonly_email	    Whether to set the email field as readonly
-	 * 		@type  string 	$button	 		 	The button text to display
-	 * 		@type  string   $notifications 	 	Comma-separated list of emails to notify upons successful submission
-	 * 		@type  string   $redirect 		 	URL to redirect after form submission
-	 * 		@type  integer 	$ac_list_ids	 	Comma-separated list of ActiveCampaign list IDs to add a contact to
-	 * 		@type  integer 	$ac_tags	 	 	Comma-separated list of ActiveCampaign tag IDs to add a contact to
+	 * 		@type  string   $type 		 	 			(required) The type of form to return
+	 * 		@type  bool 	$hidden			 			Whether to hide the form by default (display:none; inline style)
+	 * 		@type  bool 	$inline			 			Display the form fields in a row
+	 * 		@type  string   $title 			 			The form title to display
+	 * 		@type  string   $title_wrap 	 			The title wrap element
+	 * 		@type  string   $desc 			 			The form description to display
+	 * 		@type  bool 	$first_name 	 			Whether to show first name field
+	 * 		@type  bool 	$last_name	 	 			Whether to show last name field
+	 * 		@type  bool 	$email  	 	 			Whether to show email field
+	 * 		@type  bool 	$username 	 	 			Whether to show username field
+	 * 		@type  bool 	$password 					Whether to show password field
+	 * 		@type  bool 	$password_confirm   		Whether to show password confirm field
+	 * 		@type  bool 	$password_strength  		Whether to show password strength meter
+	 * 		@type  string 	$label_first_name 			The label of the first name field
+	 * 		@type  string 	$label_last_name	 		The label of the last name field
+	 * 		@type  string 	$label_email  	 	 		The label of the email field
+	 * 		@type  string 	$label_username 	 	 	The label of the username field
+	 * 		@type  string 	$label_password 			The label of the password field
+	 * 		@type  string 	$label_password_confirm   	The label of the password confirm field
+	 * 		@type  string 	$label_password_strength  	The label of the password strength meter
+	 * 		@type  string 	$button	 		 			The button text to display
+	 * 		@type  string   $notifications 	 			Comma-separated list of emails to notify upons successful submission
+	 * 		@type  string   $redirect 		 			URL to redirect after form submission
+	 * 		@type  integer 	$ac_list_ids	 			Comma-separated list of ActiveCampaign list IDs to add a contact to
+	 * 		@type  integer 	$ac_tags	 	 			Comma-separated list of ActiveCampaign tag IDs to add a contact to
 	 *
 	 * 		// Login-specific form params
-	 * 		@type  string 	$label_username 	The label of the username field
-	 * 		@type  string  	$value_username	 	The value to load in the username field
-	 * 		@type  bool  	$remember 		 	Whether to remember the values and stay logged in
-	 * 		@type  bool  	$value_remember	 	Whether to start the 'remember' checkbox as checked
+	 *
+	 * 		@type  bool  	$remember 		 			Whether to remember the values and stay logged in
+	 * 		@type  string 	$label_username 			The label of the username field
+	 * 		@type  bool  	$value_remember	 			Whether to start the 'remember' checkbox as checked
 	 *
 	 * 		// Register-specific form params
-	 * 		@type  bool  	$log_in	 		 	Whether to log user in after registration
+	 *
+	 * 		@type  bool  	$log_in	 		 			Whether to log user in after registration
 	 *
 	 * 		// Membership-specific form params
-	 * 		@type  integer  $plan_id 		 	(required) The WooCommerce Memberships ID
-	 * 		@type  string  	$member_message	 	Message to display in place of the form if a logged in user is already a member
+	 *
+	 * 		@type  integer  $plan_id 		 			(required) The WooCommerce Memberships ID
+	 * 		@type  string  	$member_message	 			Message to display in place of the form if a logged in user is already a member
 	 *
 	 * }
 	 *
@@ -183,48 +275,75 @@ final class Wampum_Forms {
 		 * Some args will be forced depending on form type.
 		 */
 		$args = shortcode_atts( array(
-			'type'					=> '',
-			'hidden'				=> false,
-			'inline'				=> false,
-			'title'					=> '',
-			'title_wrap'			=> 'h3',
-			'desc'					=> '',
-			'first_name'			=> false,
-			'last_name'				=> false,
-			'email'					=> false,
-			'username'				=> false,
-			'password'				=> false,
-			'password_confirm'		=> false,
-			'password_strength'		=> false,
-			'require_first_name'	=> false,
-			'require_last_name'		=> false,
-			'require_email'			=> true,
-			'require_username'		=> false,
-			// 'require_password'		=> false,
-			'label_email'			=> __( 'Email', 'wampum' ),
-			'value_email'			=> '',
-			'readonly_email'		=> false,
-			'button'				=> __( 'Submit', 'wampum' ),
-			'notifications'			=> '',
-			'redirect'				=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], // a url or null
-			'ac_list_ids'			=> '',
-			'ac_tags'				=> '',
-			// Login-specific form params
-			'label_username'		=> '',
-			'value_username'		=> '',
-			'remember'				=> true,
-			'value_remember'		=> true,
-			// Register-specific form params
-			'log_in'				=> false,
-			// Membership-specific form params
-			'plan_id'				=> '',
-			'member_message'		=> '',
+			'type'						=> '',
+			'hidden'					=> false,
+			'inline'					=> false,
+			'title'						=> '',
+			'title_wrap'				=> 'h3',
+			'desc'						=> '',
+			'first_name'				=> false,
+			'last_name'					=> false,
+			'email'						=> false,
+			'username'					=> false,
+			'password'					=> false,
+			'password_confirm'			=> false,
+			'password_strength'			=> false,
+			'label_first_name'			=> '',
+			'label_last_name'			=> '',
+			'label_email'				=> '',
+			'label_username'			=> '',
+			'label_password'			=> '',
+			'label_password_confirm'	=> '',
+			'label_password_strength'	=> '',
+			'button'					=> __( 'Submit', 'wampum' ),
+			'notifications'				=> '',
+			'redirect'					=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], // a url or null
+			'ac_list_ids'				=> '',
+			'ac_tags'					=> '',
+			'remember'					=> true,
+			'label_remember'			=> '',
+			'value_remember'			=> true,
+			'log_in'					=> false,
+			'plan_id'					=> '',
+			'member_message'			=> '',
 		), $args, 'wampum_form' );
 
-		// TODO: Sanitize all fields back into same assoctiative array
+		// Sanitize the args
+		$args = array(
+			'type'						=> sanitize_text_field( $args['type'] ),
+			'hidden'					=> filter_var( $args['hidden'], FILTER_VALIDATE_BOOLEAN ),
+			'inline'					=> filter_var( $args['inline'], FILTER_VALIDATE_BOOLEAN ),
+			'title'						=> sanitize_text_field( $args['title'] ),
+			'title_wrap'				=> sanitize_text_field( $args['title_wrap'] ),
+			'desc'						=> sanitize_text_field( $args['desc'] ),
+			'first_name'				=> filter_var( $args['first_name'], FILTER_VALIDATE_BOOLEAN ),
+			'last_name'					=> filter_var( $args['last_name'], FILTER_VALIDATE_BOOLEAN ),
+			'email'						=> filter_var( $args['email'], FILTER_VALIDATE_BOOLEAN ),
+			'username'					=> filter_var( $args['username'], FILTER_VALIDATE_BOOLEAN ),
+			'password'					=> filter_var( $args['password'], FILTER_VALIDATE_BOOLEAN ),
+			'password_confirm'			=> filter_var( $args['password_confirm'], FILTER_VALIDATE_BOOLEAN ),
+			'password_strength'			=> filter_var( $args['password_strength'], FILTER_VALIDATE_BOOLEAN ),
+			'label_first_name'			=> sanitize_text_field( $args['label_first_name'] ),
+			'label_last_name'			=> sanitize_text_field( $args['label_last_name'] ),
+			'label_email'				=> sanitize_text_field( $args['label_email'] ),
+			'label_username'			=> sanitize_text_field( $args['label_username'] ),
+			'label_password'			=> sanitize_text_field( $args['label_password'] ),
+			'label_password_confirm'	=> sanitize_text_field( $args['label_password_confirm'] ),
+			'label_password_strength'	=> sanitize_text_field( $args['label_password_strength'] ),
+			'button'					=> sanitize_text_field( $args['button'] ),
+			'notifications'				=> sanitize_text_field( $args['notifications'] ),
+			'redirect'					=> sanitize_text_field( $args['redirect'] ), // Can't esc_url() cause we may allow strings to check against,
+			'ac_list_ids'				=> sanitize_text_field( $args['ac_list_ids'] ),
+			'ac_tags'					=> sanitize_text_field( $args['ac_tags'] ),
+			'remember'					=> filter_var( $args['remember'], FILTER_VALIDATE_BOOLEAN ),
+			'label_remember'			=> sanitize_text_field( $args['label_remember'] ),
+			'value_remember'			=> filter_var( $args['value_remember'], FILTER_VALIDATE_BOOLEAN ),
+			'log_in'					=> filter_var( $args['log_in'], FILTER_VALIDATE_BOOLEAN ),
+			'plan_id'					=> intval( $args['plan_id'] ),
+			'member_message'			=> sanitize_text_field( $args['member_message'] ),
+		);
 
-		// Sanitize the form type
-		$type = sanitize_text_field( $args['type'] );
+		$type = $args['type'];
 
 		// Available form types
 		$types = array( 'login', 'password', 'register', 'subscribe', 'membership' );
@@ -271,105 +390,12 @@ final class Wampum_Forms {
 	/**
 	 * Get a login form, with the wrapper
 	 *
-	 * @since  1.0.0
-	 *
-	 * @return string  the form
-	 */
-	function login_form_callback( $args ) {
-		// Bail if already logged in
-		if ( is_user_logged_in() ) {
-			return;
-		}
-		$args['type'] = 'login';
-		return $this->get_form( $args );
-	}
-
-	/**
-	 * Get a registration form, with the wrapper
-	 *
 	 * @since  1.1.0
 	 *
-	 * @return string  the form
+	 * @param  $args   the form args
+	 *
+	 * @return string  the form HTML
 	 */
-	function register_form_callback( $args ) {
-		// Bail if already logged in
-		if ( is_user_logged_in() ) {
-			return;
-		}
-		$args['type'] = 'register';
-		return $this->get_form( $args );
-	}
-
-	/**
-	 * Get a subscribe form, with the wrapper
-	 *
-	 * @since  1.1.0
-	 *
-	 * @return string  the form
-	 */
-	function subscribe_form_callback( $args ) {
-		$args['type'] = 'subscribe';
-		return $this->get_form( $args );
-	}
-
-	/**
-	 * Get a password form, with the wrapper
-	 *
-	 * @since  1.0.0
-	 *
-	 * @return string  the form
-	 */
-	function password_form_callback( $args ) {
-		// Bail if user is not logged in
-		if ( ! is_user_logged_in() ) {
-			return;
-		}
-		$args['type'] = 'password';
-		return $this->get_form( $args );
-
-		// Set password meter to true, so that script is loaded
-		// $this->password_meter = true;
-
-		// Send it!
-		// return sprintf( '<div class="wampum-form">%s</div>', $this->get_password_form( $args ) );
-	}
-
-	/**
-	 * Get a membership form, with the wrapper
-	 *
-	 * @since  1.0.0
-	 *
-	 * @return string  the form
-	 */
-	function membership_form_callback( $args ) {
-		// Bail if WooCommerce Memberships is not active
-		if ( ! function_exists( 'wc_memberships' ) ) {
-			return;
-		}
-		$args['type'] = 'membership';
-		return $this->get_form( $args );
-
-		/**
-		 * Bail if no membership form.
-		 * This happens when a logged in user is already a member
-		 * and there is no notice to display for logged in members ( via $args['member_message'] ).
-		 */
-		// $membership_form = $this->get_membership_form( $args );
-		// if ( ! $membership_form ) {
-		// 	return;
-		// }
-
-		// Set password meter to true, so that script is loaded
-		// $this->password_meter = true;
-
-		// Send it!
-		// return sprintf( '<div class="wampum-form">%s%s</div>',
-		// 	$membership_form,
-		// 	$this->get_login_form( array( 'hidden' => true ) ) // If form used in membership on-boarding, this tells us to refresh to current page
-		// );
-	}
-
-
 	function get_login_form( $args ) {
 
 		// Labels
@@ -410,7 +436,7 @@ final class Wampum_Forms {
 			'class'		=> 'password',
 			'required'	=> true,
 		), array(
-			'label'	=> __( 'Password', 'wampum' ),
+			'label'	=> ! empty( $args['label_password'] ) ? $args['label_password'] : __( 'Password', 'wampum' ),
 		) );
 
 		// Remember
@@ -451,6 +477,15 @@ final class Wampum_Forms {
 
 	}
 
+	/**
+	 * Get a password form, with the wrapper
+	 *
+	 * @since  1.1.0
+	 *
+	 * @param  $args   the form args
+	 *
+	 * @return string  the form HTML
+	 */
 	function get_password_form( $args ) {
 
 		// Get the current page url
@@ -485,7 +520,7 @@ final class Wampum_Forms {
 			'class'		=> 'password',
 			'required'	=> true,
 		), array(
-			'label'	=> __( 'Password', 'wampum' ),
+			'label'	=> ! empty( $args['label_password'] ) ? $args['label_password'] : __( 'Password', 'wampum' ),
 		) );
 
 		// Password confirm
@@ -494,7 +529,7 @@ final class Wampum_Forms {
 			'class'		=> 'password-confirm',
 			'required'	=> true,
 		), array(
-			'label'	=> __( 'Confirm Password', 'wampum' ),
+			'label'	=> ! empty( $args['label_password_confirm'] ) ? $args['label_password_confirm'] : __( 'Confirm Password', 'wampum' ),
 		) );
 
 		// Load password strength script
@@ -506,7 +541,7 @@ final class Wampum_Forms {
 			'class'	=> 'password-strength',
 			'style'	=> 'display:none;',
 		), array(
-			'label'	=> __( 'Strength', 'wampum' ),
+			'label'	=> ! empty( $args['label_password_strength'] ) ? $args['label_password_strength'] : __( 'Strength', 'wampum' ),
 		) );
 
 		// Redirect
@@ -533,6 +568,15 @@ final class Wampum_Forms {
 
 	}
 
+	/**
+	 * Get a register form, with the wrapper
+	 *
+	 * @since  1.1.0
+	 *
+	 * @param  $args   the form args
+	 *
+	 * @return string  the form HTML
+	 */
 	function get_register_form( $args ) {
 
 		// Labels
@@ -561,12 +605,23 @@ final class Wampum_Forms {
 		// First Name
 		if ( $args['first_name'] ) {
 
+			// Default label
+			$label_first_name = __( 'Name', 'wampum' );
+			// If we have a custom label
+			if ( $args['label_first_name'] ) {
+				$label_first_name = $args['label_first_name'];
+			}
+			// Else if we are showing the last name
+			elseif ( $args['last_name'] ) {
+				$label_first_name = __( 'First Name', 'wampum' );
+			}
+
 			$form->add_field( 'text', array(
 				'name'	=> 'first_name',
 				'class'	=> 'first-name',
 				'value'	=> $first_name,
 			), array(
-				'label'	=> $args['last_name'] ? __( 'First Name', 'wampum' ) : __( 'Name', 'wampum' ),
+				'label'	=> $label_first_name,
 			) );
 
 		}
@@ -579,7 +634,7 @@ final class Wampum_Forms {
 				'class'	=> 'last-name',
 				'value'	=> $last_name,
 			), array(
-				'label'	=> __( 'Last Name', 'wampum' ),
+				'label'	=> ! empty( $args['label_last_name'] ) ? $args['label_last_name'] : __( 'Last Name', 'wampum' ),
 			) );
 
 		}
@@ -590,7 +645,7 @@ final class Wampum_Forms {
 			'class'		=> 'email',
 			'required'	=> true,
 		), array(
-			'label'	=> __( 'Email', 'wampum' ),
+			'label'	=> ! empty( $args['label_email'] ) ? $args['label_email'] : __( 'Email', 'wampum' ),
 		) );
 
 		// Username
@@ -616,7 +671,7 @@ final class Wampum_Forms {
 				'class'		=> 'password',
 				'required'	=> true,
 			), array(
-				'label'	=> __( 'Password', 'wampum' ),
+				'label'	=> ! empty( $args['label_password'] ) ? $args['label_password'] : __( 'Password', 'wampum' ),
 			) );
 
 			// Password confirm
@@ -628,7 +683,7 @@ final class Wampum_Forms {
 					'class'		=> 'password-confirm',
 					'required'	=> true,
 				), array(
-					'label'	=> __( 'Confirm Password', 'wampum' ),
+					'label'	=> ! empty( $args['label_password_confirm'] ) ? $args['label_password_confirm'] : __( 'Password Confirm', 'wampum' ),
 				) );
 
 			}
@@ -639,7 +694,7 @@ final class Wampum_Forms {
 				'class'	=> 'password-strength',
 				'style'	=> 'display:none;',
 			), array(
-				'label'	=> __( 'Strength', 'wampum' ),
+				'label'	=> ! empty( $args['label_password_strength'] ) ? $args['label_password_strength'] : __( 'Strength', 'wampum' ),
 			) );
 
 		}
@@ -707,9 +762,9 @@ final class Wampum_Forms {
 	/**
 	 * Get a form strictly for subscribing a user to ActiveCampaign.
 	 *
-	 * @since   1.0.0
+	 * @since   1.1.0
 	 *
-	 * @param   array  $args  array of form args
+	 * @param   array   $args  array of form args
 	 *
 	 * @return  string  The form HTML
 	 */
@@ -754,12 +809,23 @@ final class Wampum_Forms {
 		// First Name
 		if ( $args['first_name'] ) {
 
+			// Default label
+			$label_first_name = __( 'Name', 'wampum' );
+			// If we have a custom label
+			if ( $args['label_first_name'] ) {
+				$label_first_name = $args['label_first_name'];
+			}
+			// Else if we are showing the last name
+			elseif ( $args['last_name'] ) {
+				$label_first_name = __( 'First Name', 'wampum' );
+			}
+
 			$form->add_field( 'text', array(
 				'name'	=> 'first_name',
 				'class'	=> 'first-name',
 				'value'	=> $first_name,
 			), array(
-				'label'	=> $args['last_name'] ? __( 'First Name', 'wampum' ) : __( 'Name', 'wampum' ),
+				'label'	=> $label_first_name,
 			) );
 
 		}
@@ -772,7 +838,7 @@ final class Wampum_Forms {
 				'class'	=> 'last-name',
 				'value'	=> $last_name,
 			), array(
-				'label'	=> __( 'Last Name', 'wampum' ),
+				'label'	=> ! empty( $args['label_last_name'] ) ? $args['label_last_name'] : __( 'Last Name', 'wampum' ),
 			) );
 
 		}
@@ -784,7 +850,7 @@ final class Wampum_Forms {
 			'required'	=> true,
 			'value'		=> $email,
 		), array(
-			'label'	=> __( 'Email', 'wampum' ),
+			'label'	=> ! empty( $args['label_email'] ) ? $args['label_email'] : __( 'Email', 'wampum' ),
 		) );
 
 		// Active Campaign List IDs
@@ -841,6 +907,15 @@ final class Wampum_Forms {
 
 	}
 
+	/**
+	 * Get a membership form, with the wrapper
+	 *
+	 * @since  1.1.0
+	 *
+	 * @param  $args   the form args
+	 *
+	 * @return string  the form HTML
+	 */
 	function get_membership_form( $args ) {
 
 		// Bail if no plan ID
@@ -885,11 +960,22 @@ final class Wampum_Forms {
 			// First Name
 			if ( $args['first_name'] ) {
 
+				// Default label
+				$label_first_name = __( 'Name', 'wampum' );
+				// If we have a custom label
+				if ( $args['label_first_name'] ) {
+					$label_first_name = $args['label_first_name'];
+				}
+				// Else if we are showing the last name
+				elseif ( $args['last_name'] ) {
+					$label_first_name = __( 'First Name', 'wampum' );
+				}
+
 				$user_available->add_field( 'text', array(
 					'name'	=> 'first_name',
 					'class'	=> 'first-name',
 				), array(
-					'label'	=> $args['last_name'] ? __( 'First Name', 'wampum' ) : __( 'Name', 'wampum' ),
+					'label'	=> $label_first_name,
 				) );
 
 			}
@@ -901,7 +987,7 @@ final class Wampum_Forms {
 					'name'	=> 'last_name',
 					'class'	=> 'last-name',
 				), array(
-					'label'	=> __( 'Last Name', 'wampum' ),
+					'label'	=> ! empty( $args['label_last_name'] ) ? $args['label_last_name'] : __( 'Last Name', 'wampum' ),
 				) );
 
 			}
@@ -912,7 +998,7 @@ final class Wampum_Forms {
 				'class'		=> 'email',
 				'required'	=> true,
 			), array(
-				'label'	=> __( 'Email', 'wampum' ),
+				'label'	=> ! empty( $args['label_email'] ) ? $args['label_email'] : __( 'Email', 'wampum' ),
 			) );
 
 			// Username
@@ -993,7 +1079,7 @@ final class Wampum_Forms {
 				'class'	=> 'first-name',
 				'value'	=> $first_name,
 			), array(
-				'label'	=> $args['last_name'] ? __( 'First Name', 'wampum' ) : __( 'Name', 'wampum' ),
+				'label'	=> $label_first_name,
 			) );
 
 		}
@@ -1006,7 +1092,7 @@ final class Wampum_Forms {
 				'class'	=> 'last-name',
 				'value'	=> $last_name,
 			), array(
-				'label'	=> __( 'Last Name', 'wampum' ),
+				'label'	=> ! empty( $args['label_last_name'] ) ? $args['label_last_name'] : __( 'Last Name', 'wampum' ),
 			) );
 
 		}
@@ -1019,7 +1105,7 @@ final class Wampum_Forms {
 			'value'		=> $email,
 			'readonly' 	=> $logged_in ? true : false,
 		), array(
-			'label'	=> __( 'Email', 'wampum' ),
+			'label'	=> ! empty( $args['label_email'] ) ? $args['label_email'] : __( 'Email', 'wampum' ),
 		) );
 
 		// If not logged in
@@ -1045,7 +1131,7 @@ final class Wampum_Forms {
 				'class'		=> 'password',
 				'required'	=> true,
 			), array(
-				'label'	=> __( 'Password', 'wampum' ),
+				'label'	=> ! empty( $args['label_password'] ) ? $args['label_password'] : __( 'Password', 'wampum' ),
 			) );
 
 			// Load password strength script
@@ -1057,7 +1143,7 @@ final class Wampum_Forms {
 				'class'	=> 'password-strength',
 				'style'	=> 'display:none;',
 			), array(
-				'label'	=> __( 'Strength', 'wampum' ),
+				'label'	=> ! empty( $args['label_password_strength'] ) ? $args['label_password_strength'] : __( 'Strength', 'wampum' ),
 			) );
 
 		}
@@ -1159,7 +1245,7 @@ final class Wampum_Forms {
 			'class'		=> 'password',
 			'required'	=> true,
 		), array(
-			'label'	=> __( 'Password', 'wampum' ),
+			'label'	=> ! empty( $args['label_password'] ) ? $args['label_password'] : __( 'Password', 'wampum' ),
 		) );
 
 		// Remember
@@ -1171,7 +1257,7 @@ final class Wampum_Forms {
 				'checked'	=> $args['value_remember'],
 				'value'		=> 'forever',
 			), array(
-				'label'	=> __( 'Remember Me', 'wampum' ),
+				'label'	=> ! empty( $args['label_remember'] ) ? $args['label_remember'] : __( 'Remember Me', 'wampum' ),
 			) );
 
 		}
@@ -1201,50 +1287,6 @@ final class Wampum_Forms {
 
 		// Bring it all home baby
 		return sprintf( '<div class="wampum-form">%s</div>', $html );
-
-	}
-
-	/**
-	 *
-	 */
-	function sanitize_args( $args ) {
-
-		// Sanitize all the things
-		$type				= sanitize_text_field( $args['type'] );
-		$hidden				= filter_var( $args['hidden'], FILTER_VALIDATE_BOOLEAN );
-		$inline				= filter_var( $args['inline'], FILTER_VALIDATE_BOOLEAN );
-		$title				= sanitize_text_field( $args['title'] );
-		$title_wrap			= sanitize_text_field( $args['title_wrap'] );
-		$desc				= sanitize_text_field( $args['desc'] );
-		$first_name			= filter_var( $args['first_name'], FILTER_VALIDATE_BOOLEAN );
-		$last_name			= filter_var( $args['last_name'], FILTER_VALIDATE_BOOLEAN );
-		$email				= filter_var( $args['email'], FILTER_VALIDATE_BOOLEAN );
-		$username			= filter_var( $args['username'], FILTER_VALIDATE_BOOLEAN );
-		$password			= filter_var( $args['password'], FILTER_VALIDATE_BOOLEAN );
-		$password_confirm	= filter_var( $args['password_confirm'], FILTER_VALIDATE_BOOLEAN );
-		$password_strength	= filter_var( $args['password_strength'], FILTER_VALIDATE_BOOLEAN );
-		$require_first_name	= filter_var( $args['require_first_name'], FILTER_VALIDATE_BOOLEAN );
-		$require_last_name	= filter_var( $args['require_last_name'], FILTER_VALIDATE_BOOLEAN );
-		$require_email		= filter_var( $args['require_email'], FILTER_VALIDATE_BOOLEAN );
-		$require_username	= filter_var( $args['require_username'], FILTER_VALIDATE_BOOLEAN );
-		// $require_password	= filter_var( $args['require_password'], FILTER_VALIDATE_BOOLEAN );
-		$value_email		= sanitize_text_field( $args['value_email'] );
-		$label_email		= sanitize_text_field( $args['label_email'] );
-		$readonly_email		= filter_var( $args['readonly_email'], FILTER_VALIDATE_BOOLEAN );
-		$button				= sanitize_text_field( $args['button'] );
-		$notifications 		= sanitize_text_field( $args['notifications'] );
-		// $notifications		= array_map( 'trim', ( explode( ',', $args['notifications'] ) ) ); // Trim spaces around each email
-		// $notifications		= array_map( 'sanitize_email', $notifications ); // Sanitize the email
-		$redirect			= sanitize_text_field( $args['redirect'] ); // Can't esc_url() cause we may allow strings to check against?
-		$ac_list_ids		= sanitize_text_field( $args['ac_list_ids'] );
-		$ac_tags			= sanitize_text_field( $args['ac_tags'] );
-		$label_username		= sanitize_text_field( $args['label_username'] );
-		$value_username		= sanitize_text_field( $args['value_username'] );
-		$remember			= filter_var( $args['remember'], FILTER_VALIDATE_BOOLEAN );
-		$value_remember		= filter_var( $args['value_remember'], FILTER_VALIDATE_BOOLEAN );
-		$log_in				= filter_var( $args['log_in'], FILTER_VALIDATE_BOOLEAN );
-		$plan_id			= intval( $args['plan_id'] );
-		$member_message		= sanitize_text_field( $args['member_message'] );
 
 	}
 

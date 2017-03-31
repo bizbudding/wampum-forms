@@ -147,6 +147,7 @@ final class Wampum_Forms_Setup {
 			// Instantiate Classes
 			self::$instance->forms 	  = Wampum_Forms::instance();
 			self::$instance->rest_api = Wampum_Forms_Rest_API::instance();
+			self::$instance->settings = Wampum_Form_Settings::instance();
 		}
 		return self::$instance;
 	}
@@ -184,28 +185,28 @@ final class Wampum_Forms_Setup {
 	 */
 	private function setup_constants() {
 		// Plugin version.
-		if ( ! defined( 'WAMPUM_USER_FORMS_VERSION' ) ) {
-			define( 'WAMPUM_USER_FORMS_VERSION', '1.0.0' );
+		if ( ! defined( 'WAMPUM_FORMS_VERSION' ) ) {
+			define( 'WAMPUM_FORMS_VERSION', '1.0.0' );
 		}
 		// Plugin Folder Path.
-		if ( ! defined( 'WAMPUM_USER_FORMS_PLUGIN_DIR' ) ) {
-			define( 'WAMPUM_USER_FORMS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+		if ( ! defined( 'WAMPUM_FORMS_PLUGIN_DIR' ) ) {
+			define( 'WAMPUM_FORMS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 		}
 		// Plugin Includes Path
-		if ( ! defined( 'WAMPUM_USER_FORMS_INCLUDES_DIR' ) ) {
-			define( 'WAMPUM_USER_FORMS_INCLUDES_DIR', WAMPUM_USER_FORMS_PLUGIN_DIR . 'includes/' );
+		if ( ! defined( 'WAMPUM_FORMS_INCLUDES_DIR' ) ) {
+			define( 'WAMPUM_FORMS_INCLUDES_DIR', WAMPUM_FORMS_PLUGIN_DIR . 'includes/' );
 		}
 		// Plugin Folder URL.
-		if ( ! defined( 'WAMPUM_USER_FORMS_PLUGIN_URL' ) ) {
-			define( 'WAMPUM_USER_FORMS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+		if ( ! defined( 'WAMPUM_FORMS_PLUGIN_URL' ) ) {
+			define( 'WAMPUM_FORMS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 		}
 		// Plugin Root File.
-		if ( ! defined( 'WAMPUM_USER_FORMS_PLUGIN_FILE' ) ) {
-			define( 'WAMPUM_USER_FORMS_PLUGIN_FILE', __FILE__ );
+		if ( ! defined( 'WAMPUM_FORMS_PLUGIN_FILE' ) ) {
+			define( 'WAMPUM_FORMS_PLUGIN_FILE', __FILE__ );
 		}
 		// Plugin Base Name
-		if ( ! defined( 'WAMPUM_USER_FORMS_BASENAME' ) ) {
-			define( 'WAMPUM_USER_FORMS_BASENAME', dirname( plugin_basename( __FILE__ ) ) );
+		if ( ! defined( 'WAMPUM_FORMS_BASENAME' ) ) {
+			define( 'WAMPUM_FORMS_BASENAME', dirname( plugin_basename( __FILE__ ) ) );
 		}
 	}
 
@@ -217,10 +218,14 @@ final class Wampum_Forms_Setup {
 	 * @return void
 	 */
 	private function includes() {
-		require_once WAMPUM_USER_FORMS_INCLUDES_DIR . 'class-form.php';
-		require_once WAMPUM_USER_FORMS_INCLUDES_DIR . 'class-forms.php';
-		require_once WAMPUM_USER_FORMS_INCLUDES_DIR . 'class-rest-api.php';
-		require_once WAMPUM_USER_FORMS_INCLUDES_DIR . 'helpers.php';
+		require_once WAMPUM_FORMS_INCLUDES_DIR . 'class-form.php';
+		require_once WAMPUM_FORMS_INCLUDES_DIR . 'class-forms.php';
+		require_once WAMPUM_FORMS_INCLUDES_DIR . 'class-rest-api.php';
+		require_once WAMPUM_FORMS_INCLUDES_DIR . 'class-settings.php';
+		require_once WAMPUM_FORMS_INCLUDES_DIR . 'helpers.php';
+    	// Vendor
+    	require_once WAMPUM_FORMS_INCLUDES_DIR . 'vendor/activecampaign-api-php/includes/ActiveCampaign.class.php';
+
 	}
 
 	/******************
@@ -695,9 +700,9 @@ endif; // End if class_exists check.
  *
  * @return object|Wampum_Forms_Setup The one true Wampum_Forms_Setup Instance.
  */
-function Wampum_Forms_Builder() {
+function Wampum_Forms() {
 	return Wampum_Forms_Setup::instance();
 }
 
 // Get Wampum_Forms_Setup Running.
-Wampum_Forms_Builder();
+Wampum_Forms();
