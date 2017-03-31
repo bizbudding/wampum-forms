@@ -422,6 +422,7 @@ final class Wampum_Forms_Rest_API {
 	 * 		@type  string  		$last_name 		Last Name
 	 * 		@type  string 		$ac_list_ids 	Comma separated list IDs to add
 	 * 		@type  string 		$ac_tags 		Comma separated tags to add
+	 * 		@type  string 		$notifications 	Comma separated tags to add
 	 * 		@type  string   	$say_what   	Honeypot
 	 *
 	 * }
@@ -699,7 +700,7 @@ final class Wampum_Forms_Rest_API {
 	function maybe_do_notifications( $data, $message = '' ) {
 
         // Bail if no notifications
-        if ( ! isset($data['notifications']) && empty($data['notifications']) ) {
+        if ( ! isset($data['notifications']) || empty($data['notifications']) ) {
         	return;
         }
 

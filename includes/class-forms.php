@@ -453,6 +453,16 @@ final class Wampum_Forms {
 
 		}
 
+		// Notifications
+		if ( ! empty( $args['notifications'] ) ) {
+
+			$form->add_field( 'hidden', array(
+				'name'	=> 'notifications',
+				'value'	=> $args['notifications'],
+			));
+
+		}
+
 		// Redirect
 		$form->add_field( 'hidden', array(
 			'name'	=> 'redirect',
@@ -543,6 +553,16 @@ final class Wampum_Forms {
 		), array(
 			'label'	=> ! empty( $args['password_strength_label'] ) ? $args['password_strength_label'] : __( 'Strength', 'wampum' ),
 		) );
+
+		// Notifications
+		if ( ! empty( $args['notifications'] ) ) {
+
+			$form->add_field( 'hidden', array(
+				'name'	=> 'notifications',
+				'value'	=> $args['notifications'],
+			));
+
+		}
 
 		// Redirect
 		$form->add_field( 'hidden', array(

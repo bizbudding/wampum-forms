@@ -48,8 +48,6 @@
         // Password strength meter
         $forms.on( 'keyup', 'input[name="password"]', function(e) {
 
-            console.log( 'Keyup Password' );
-
         	var $form = $(this).closest('form');
 
     	    var strength = {
@@ -111,6 +109,7 @@
                 user_login: $loginForm.find( 'input[name="username"]' ).val(),
                 user_password: $loginForm.find( 'input[name="password"]' ).val(),
                 remember: $loginForm.find( 'input[name="rememberme"]' ).val(),
+                notifications: $loginForm.find( 'input[name="notifications"]' ).val(),
                 say_what: $loginForm.find( 'input[name="say_what"]' ).val(), // honeypot
             };
 
@@ -186,6 +185,7 @@
         var data = {
                 password: $passwordForm.find( 'input[name="password"]' ).val(),
                 password_confirm: $passwordForm.find( 'input[name="password_confirm"]' ).val(),
+                notifications: $passwordForm.find( 'input[name="notifications"]' ).val(),
                 say_what: $passwordForm.find( 'input[name="say_what"]' ).val(), // honeypot
             };
 
@@ -266,6 +266,7 @@
                 log_in: $registerForm.find( 'input[name="log_in"]' ).val(),
                 ac_list_ids: $registerForm.find( 'input[name="ac_list_ids"]' ).val(),
                 ac_tags: $registerForm.find( 'input[name="ac_tags"]' ).val(),
+                notifications: $registerForm.find( 'input[name="notifications"]' ).val(),
                 say_what: $registerForm.find( 'input[name="say_what"]' ).val(), // honeypot
             };
 
@@ -335,6 +336,7 @@
                 last_name: $subscribeForm.find( 'input[name="last_name"]' ).val(),
                 ac_list_ids: $subscribeForm.find( 'input[name="ac_list_ids"]' ).val(),
                 ac_tags: $subscribeForm.find( 'input[name="ac_tags"]' ).val(),
+                notifications: $subscribeForm.find( 'input[name="notifications"]' ).val(),
                 say_what: $subscribeForm.find( 'input[name="say_what"]' ).val(), // honeypot
             };
 
@@ -534,6 +536,7 @@
                 notifications: $membershipForm.find( 'input[name="notifications"]').val(),
                 ac_list_ids: $membershipForm.find( 'input[name="ac_list_ids"]' ).val(),
                 ac_tags: $membershipForm.find( 'input[name="ac_tags"]' ).val(),
+                notifications: $membershipForm.find( 'input[name="notifications"]' ).val(),
                 say_what: $membershipForm.find( 'input[name="say_what"]' ).val(), // honeypot
                 current_url: wampumFormVars.current_url,
             };
