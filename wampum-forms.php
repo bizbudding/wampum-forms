@@ -15,7 +15,7 @@
  * Text Domain:        wampum
  * License:            GPL-2.0+
  * License URI:        http://www.gnu.org/licenses/gpl-2.0.txt
- * Version:            1.0.0
+ * Version:            1.1.0
  * GitHub Plugin URI:  https://github.com/JiveDig/wampum-user-forms
  * GitHub Branch:	   master
  */
@@ -23,73 +23,6 @@
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) exit;
-
-/**
- * Get a login form
- *
- * @param  array   $args	 Args to configure form
- *
- * @return string  The form
- */
-function wampum_get_form( $args = array() ) {
-	// return Wampum_Forms_Builder()->forms->get_form( $args );
-}
-
-/**
- * Get a login form
- *
- * @param  array   $args	 Args to configure form
- *
- * @return string  The form
- */
-function wampum_get_login_form( $args = array() ) {
-	// return Wampum_Forms_Builder()->forms->login_form_callback( $args );
-}
-
-/**
- * Get a registration form
- *
- * @param  array   $args	 Args to configure form
- *
- * @return string  The form
- */
-function wampum_get_register_form( $args = array() ) {
-	// return Wampum_Forms_Builder()->forms->register_form_callback( $args );
-}
-
-/**
- * Get a password form
- *
- * @param  array   $args	 Args to configure form
- *
- * @return string  The form
- */
-function wampum_get_password_form( $args = array() ) {
-	// return Wampum_Forms_Builder()->forms->password_form_callback( $args );
-}
-
-/**
- * Get a subscribe form
- *
- * @param  array   $args	 Args to configure form
- *
- * @return string  The form
- */
-function wampum_get_subscribe_form( $args = array() ) {
-	// return Wampum_Forms_Builder()->forms->subscribe_form_callback( $args );
-}
-
-
-/**
- * Get a membership form
- *
- * @param  array   $args	 Args to configure form
- *
- * @return string  The form
- */
-function wampum_get_membership_form( $args = array() ) {
-	// return Wampum_Forms_Builder()->forms->membership_form_callback( $args );
-}
 
 if ( ! class_exists( 'Wampum_Forms_Setup' ) ) :
 /**
@@ -186,7 +119,7 @@ final class Wampum_Forms_Setup {
 	private function setup_constants() {
 		// Plugin version.
 		if ( ! defined( 'WAMPUM_FORMS_VERSION' ) ) {
-			define( 'WAMPUM_FORMS_VERSION', '1.0.0' );
+			define( 'WAMPUM_FORMS_VERSION', '1.1.0' );
 		}
 		// Plugin Folder Path.
 		if ( ! defined( 'WAMPUM_FORMS_PLUGIN_DIR' ) ) {
