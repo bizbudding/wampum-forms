@@ -771,6 +771,8 @@ final class Wampum_Forms_Rest_API {
 				$contact['last_name'] = sanitize_text_field( $data['last_name'] );
 			}
 
+			$list_ids = explode( ',', $data['ac_list_ids'] );
+
 			// If we have list(s)
 			if ( ! empty( $list_ids ) ) {
 				// Add user to existing ActiveCampaign lists
@@ -779,6 +781,8 @@ final class Wampum_Forms_Rest_API {
 					$contact["status[{$list_id}]"] = 1; // "Active" status
 				}
 			}
+
+			$tags = explode( ',', $data['ac_tags'] );
 
 			// If we have tags
 			if ( ! empty( $tags ) ) {
