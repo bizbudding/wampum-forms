@@ -848,6 +848,15 @@ final class Wampum_Forms {
 			return;
 		}
 
+		// Bail if logged in user is already a member
+		if ( is_user_logged_in() && wc_memberships_is_user_member( get_current_user_id(), absint($args['plan_id']) ) ) {
+			// Show message if we have one
+			if ( ! empty( $args['member_message'] ) ) {
+				return sprintf( '<div class="wampum-form"><p class="member-message">%s</p></div>', sanitize_text_field($args['member_message']) );
+			}
+			return;
+		}
+
 		$html = '';
 
 		/**
@@ -920,12 +929,6 @@ final class Wampum_Forms {
 
 			}
 
-			// Redirect
-			$user_available->add_field( 'hidden', array(
-				'name'	=> 'redirect',
-				'value'	=> $args['redirect'],
-			));
-
 			// Submit
 			$user_available->add_field( 'submit', array(
 				'name'	=> 'submit',
@@ -949,6 +952,19 @@ final class Wampum_Forms {
 		 * Join Membership
 		 */
 		$join = new Wampum_Form();
+
+		// Default vars
+		$logged_in  = false;
+		$first_name = $last_name = $email = '';
+
+		// Logged in vars
+		if ( is_user_logged_in() ) {
+			$logged_in 		= true;
+			$current_user	= wp_get_current_user();
+			$first_name		= $current_user->first_name;
+			$last_name		= $current_user->last_name;
+			$email			= $current_user->user_email;
+		}
 
 		// Settings
 		if ( ! is_user_logged_in() ) {
@@ -1000,6 +1016,8 @@ final class Wampum_Forms {
 			'name'		=> 'email',
 			'class'		=> 'email',
 			'required'	=> true,
+			'value'		=> $email,
+			'readonly' 	=> $logged_in ? true : false,
 		), array(
 			'label'	=> __( 'Email', 'wampum' ),
 		) );

@@ -15,8 +15,15 @@
 	margin-left: 2px;
 }
 
-.wampum-form .wampum-field.readonly,
-.wampum-form .wampum-field.disabled {
+/* Autoprefixer wants these on their own, arghh */
+.wampum-form .wampum-field input:-moz-read-only,
+.wampum-form .wampum-field input:disabled {
+	cursor: not-allowed;
+	opacity: 0.6;
+}
+.wampum-form .wampum-field input:read-only,
+.wampum-form .wampum-field input:disabled {
+	cursor: not-allowed;
 	opacity: 0.6;
 }
 

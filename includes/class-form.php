@@ -83,7 +83,7 @@ class Wampum_Form {
 
 		// Default form attributes
 		$defaults = array(
-			'hidden' 	=> $this->settings['hidden'],
+			'style' 	=> '',
 			'action'	=> '',
 			'method'	=> 'post',
 			'enctype'	=> '',
@@ -91,6 +91,11 @@ class Wampum_Form {
 			'id'		=> '',
 		);
 		$atts = wp_parse_args( $atts, $defaults );
+
+		// If hidden, add inline style
+		if ( filter_var( $this->settings['hidden'], FILTER_VALIDATE_BOOLEAN ) ) {
+			$atts['style'] .= 'display:none;';
+		}
 
 		// Opening form HTML
 		$this->form .= sprintf( '<form %s>', wampum_attr( $atts ) );

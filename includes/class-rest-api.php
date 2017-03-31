@@ -145,10 +145,10 @@ final class Wampum_Forms_Rest_API {
 	 *
 	 *      Associative array of data to process
 	 *
-	 * 		@type  string  $user_login 		Username
-	 * 		@type  string  $user_password 	Password
-	 * 		@type  string  $remember 		Stay logged in
-	 * 		@type  string  $say_what   		Honeypot
+	 * 		@type  string  $username  Username
+	 * 		@type  string  $password  Password
+	 * 		@type  string  $remember  Stay logged in
+	 * 		@type  string  $say_what  Honeypot
 	 * }
 	 *
 	 * @return  array
@@ -263,14 +263,14 @@ final class Wampum_Forms_Rest_API {
 	 *
 	 *      Associative array of data to process
 	 *
-	 * 		@type  string  		$user_email 		Email (required)
+	 * 		@type  string  		$email 				Email (required)
 	 * 		@type  string  		$username 	 		Username
 	 * 		@type  string  		$first_name 		First Name
 	 * 		@type  string  		$last_name 			Last Name
 	 * 		@type  string  		$password 	 		Password
 	 * 		@type  bool    		$log_in 			Whether to auto log user in after registration
-	 * 		@type  stringint 	$ac_list_ids 		The list IDs to add
-	 * 		@type  stringint 	$ac_tags 			The Tags to add
+	 * 		@type  string 		$ac_list_ids 		Comma separated list IDs to add
+	 * 		@type  string 		$ac_tags 			Comma separated tags to add
 	 * 		@type  string   	$say_what   		Honeypot
 	 *
 	 * }
@@ -295,8 +295,19 @@ final class Wampum_Forms_Rest_API {
 			);
 		}
 
-		// Bail and return error if passwords don't match
-		if ( ! empty( $data['password'] ) && ! empty( $data['password_confirm'] ) ) {
+		/**
+		 * If password and password_confirm are set.
+		 * Need to check if isset because this is also called from membership flow
+		 * and there is no password confirm there.
+		 */
+		if ( isset($data['password']) && isset($data['password_confirm']) ) {
+			if ( empty($data['password']) && empty($data['password_confirm']) ) {
+				return array(
+					'success' => false,
+					'message' => __( 'Please enter a password', 'wampum' ),
+				);
+			}
+			// Bail and return error if passwords don't match.
 			if ( $data['password'] != $data['password_confirm'] ) {
 				return array(
 					'success' => false,
@@ -368,12 +379,14 @@ final class Wampum_Forms_Rest_API {
 		// Success
 		return array(
 			'success' => true,
+			'user_id' => $user_id, // return user ID for use in membership flow
 		);
 
 	}
 
 	/**
-	 * Verify a user account doesn't already exist
+	 * Subscribe a user to something.
+	 * Currently only ActiveCampaign supported.
 	 *
 	 * @since 	1.1.0
 	 *
@@ -383,12 +396,12 @@ final class Wampum_Forms_Rest_API {
 	 *
 	 *      Associative array of data to process
 	 *
-	 * 		@type  string  		$user_email 		Email (required)
-	 * 		@type  string  		$first_name 		First Name
-	 * 		@type  string  		$last_name 			Last Name
-	 * 		@type  stringint 	$ac_list_ids 		The list IDs to add
-	 * 		@type  stringint 	$ac_tags 			The Tags to add
-	 * 		@type  string   	$say_what   		Honeypot
+	 * 		@type  string  		$email 			Email (required)
+	 * 		@type  string  		$first_name 	First Name
+	 * 		@type  string  		$last_name 		Last Name
+	 * 		@type  string 		$ac_list_ids 	Comma separated list IDs to add
+	 * 		@type  string 		$ac_tags 		Comma separated tags to add
+	 * 		@type  string   	$say_what   	Honeypot
 	 *
 	 * }
 	 *
@@ -399,8 +412,6 @@ final class Wampum_Forms_Rest_API {
 
         // ActiveCampaign
         $ac = $this->maybe_do_active_campaign( $data );
-
-        trace( $ac );
 
         if ( true == $ac['success'] ) {
 
@@ -429,9 +440,10 @@ final class Wampum_Forms_Rest_API {
 	 *
 	 *      Associative array of data to process
 	 *
-	 * 		@type  string   $user_email 	(required) User email
-	 * 		@type  string   $user_login 	Username
+	 * 		@type  string   $email 			(required) User email
+	 * 		@type  string   $username 		Username
 	 * 		@type  string   $say_what   	Honeypot
+	 * 		@type  string   $current_url  	Current URL set in wp_localize_script() because calling here returns WP-API endpoing URL
 	 * }
 	 *
 	 *
@@ -490,14 +502,16 @@ final class Wampum_Forms_Rest_API {
 	 *      Associative array of data to process
 	 *
 	 * 		@type  integer  $plan_id 		(required) The WooCommerce Memberships ID
-	 * 		@type  string   $user_email 	(required) User email
-	 * 		@type  string   $user_login 	Username
-	 * 		@type  string   $user_pass 		Password
+	 * 		@type  string   $email 			(required) User email
 	 * 		@type  string   $first_name 	First name
 	 * 		@type  string   $last_name	 	Last name
-	 * 		@type  string   $note 		 	Note to add to membership during save
+	 * 		@type  string   $username 		Username
+	 * 		@type  string   $password 		Password
 	 * 		@type  string   $notifications 	Comma-separated list of emails to notify upons successful submission
+	 * 		@type  string 	$ac_list_ids 	Comma separated list IDs to add
+	 * 		@type  string 	$ac_tags 		Comma separated tags to add
 	 * 		@type  string   $say_what 		Honeypot field
+	 * 		@type  string   $current_url  	Current URL set in wp_localize_script() because calling here returns WP-API endpoing URL
 	 * }
 	 *
 	 *
@@ -520,7 +534,7 @@ final class Wampum_Forms_Rest_API {
 	    }
 
 	    // Minimum data we need is a plan ID and user email
-	    if ( ! ( $data['plan_id'] || $data['email'] ) ) {
+	    if ( empty($data['plan_id']) || empty($data['email']) ) {
 			return array(
 				'success' => false,
 				'message' => __( 'Email or membership plan is missing', 'wampum' ),
@@ -569,7 +583,11 @@ final class Wampum_Forms_Rest_API {
 				);
 		    }
 
-		    // Register a user, maybe logging them in.
+		    /**
+		     * Register a user
+		     * and log them in.
+		     */
+		    $data['log_in'] = true;
 	        $register = $this->register( $data );
 
 	        // Bail if unsuccessful
@@ -577,9 +595,12 @@ final class Wampum_Forms_Rest_API {
 	        	return $register;
 	        }
 
+	        $user_id = $register['user_id'];
+
 	    }
 
     	$plan_id = absint($data['plan_id']);
+    	$user_id = absint($user_id);
 
         // If user is not an existing member of the plan
         if ( ! wc_memberships_is_user_member( $user_id, $plan_id ) ) {
@@ -594,13 +615,13 @@ final class Wampum_Forms_Rest_API {
             // Get the new membership
             $user_membership = wc_memberships_get_user_membership( $user_id, $membership_args['plan_id'] );
             // Get the note
-            $note = $data['note'] ? $data['note'] : 'Membership added via Wampum form at ' . esc_url($data['current_url']);
+            $note = 'Membership added via Wampum form at ' . esc_url($data['current_url']);
             // Add a note so we know how this was registered.
             $user_membership->add_note( sanitize_text_field($note) );
         }
 
         // If email notifications set, let's send away!
-        if ( $data['notifications'] ) {
+        if ( isset($data['notifications']) && ! empty($data['notifications']) ) {
 
 			// Make an array and trim spaces around each email
 			$notifications = array_map( 'trim', ( explode( ',', $data['notifications'] ) ) );
