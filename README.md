@@ -187,7 +187,7 @@ Change title wrapping element
 
 (string) 'Fill out the form below'
 
-**Default** `{empty}`
+**Default** `null`
 
 Add a description below the form title
 
@@ -435,7 +435,7 @@ Membership ID that this form will add the user to
 
 (string) true|false
 
-**Default** `{empty}`
+**Default** `null`
 
 Display a message in place of the form if a logged in user is already a member
 
