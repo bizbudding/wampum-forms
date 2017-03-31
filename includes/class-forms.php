@@ -235,13 +235,13 @@ final class Wampum_Forms {
 	 * 		@type  bool 	$password 					Whether to show password field
 	 * 		@type  bool 	$password_confirm   		Whether to show password confirm field
 	 * 		@type  bool 	$password_strength  		Whether to show password strength meter
-	 * 		@type  string 	$label_first_name 			The label of the first name field
-	 * 		@type  string 	$label_last_name	 		The label of the last name field
-	 * 		@type  string 	$label_email  	 	 		The label of the email field
-	 * 		@type  string 	$label_username 	 	 	The label of the username field
-	 * 		@type  string 	$label_password 			The label of the password field
-	 * 		@type  string 	$label_password_confirm   	The label of the password confirm field
-	 * 		@type  string 	$label_password_strength  	The label of the password strength meter
+	 * 		@type  string 	$first_name_label 			The label of the first name field
+	 * 		@type  string 	$last_name_label	 		The label of the last name field
+	 * 		@type  string 	$email_label  	 	 		The label of the email field
+	 * 		@type  string 	$username_label 	 	 	The label of the username field
+	 * 		@type  string 	$password_label 			The label of the password field
+	 * 		@type  string 	$password_confirm_label   	The label of the password confirm field
+	 * 		@type  string 	$password_strength_label  	The label of the password strength meter
 	 * 		@type  string 	$button	 		 			The button text to display
 	 * 		@type  string   $notifications 	 			Comma-separated list of emails to notify upons successful submission
 	 * 		@type  string   $redirect 		 			URL to redirect after form submission
@@ -251,7 +251,7 @@ final class Wampum_Forms {
 	 * 		// Login-specific form params
 	 *
 	 * 		@type  bool  	$remember 		 			Whether to remember the values and stay logged in
-	 * 		@type  string 	$label_username 			The label of the username field
+	 * 		@type  string 	$username_label 			The label of the username field
 	 * 		@type  bool  	$value_remember	 			Whether to start the 'remember' checkbox as checked
 	 *
 	 * 		// Register-specific form params
@@ -288,13 +288,13 @@ final class Wampum_Forms {
 			'password'					=> false,
 			'password_confirm'			=> false,
 			'password_strength'			=> false,
-			'label_first_name'			=> '',
-			'label_last_name'			=> '',
-			'label_email'				=> '',
-			'label_username'			=> '',
-			'label_password'			=> '',
-			'label_password_confirm'	=> '',
-			'label_password_strength'	=> '',
+			'first_name_label'			=> '',
+			'last_name_label'			=> '',
+			'email_label'				=> '',
+			'username_label'			=> '',
+			'password_label'			=> '',
+			'password_confirm_label'	=> '',
+			'password_strength_label'	=> '',
 			'button'					=> __( 'Submit', 'wampum' ),
 			'notifications'				=> '',
 			'redirect'					=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], // a url or null
@@ -323,13 +323,13 @@ final class Wampum_Forms {
 			'password'					=> filter_var( $args['password'], FILTER_VALIDATE_BOOLEAN ),
 			'password_confirm'			=> filter_var( $args['password_confirm'], FILTER_VALIDATE_BOOLEAN ),
 			'password_strength'			=> filter_var( $args['password_strength'], FILTER_VALIDATE_BOOLEAN ),
-			'label_first_name'			=> sanitize_text_field( $args['label_first_name'] ),
-			'label_last_name'			=> sanitize_text_field( $args['label_last_name'] ),
-			'label_email'				=> sanitize_text_field( $args['label_email'] ),
-			'label_username'			=> sanitize_text_field( $args['label_username'] ),
-			'label_password'			=> sanitize_text_field( $args['label_password'] ),
-			'label_password_confirm'	=> sanitize_text_field( $args['label_password_confirm'] ),
-			'label_password_strength'	=> sanitize_text_field( $args['label_password_strength'] ),
+			'first_name_label'			=> sanitize_text_field( $args['first_name_label'] ),
+			'last_name_label'			=> sanitize_text_field( $args['last_name_label'] ),
+			'email_label'				=> sanitize_text_field( $args['email_label'] ),
+			'username_label'			=> sanitize_text_field( $args['username_label'] ),
+			'password_label'			=> sanitize_text_field( $args['password_label'] ),
+			'password_confirm_label'	=> sanitize_text_field( $args['password_confirm_label'] ),
+			'password_strength_label'	=> sanitize_text_field( $args['password_strength_label'] ),
 			'button'					=> sanitize_text_field( $args['button'] ),
 			'notifications'				=> sanitize_text_field( $args['notifications'] ),
 			'redirect'					=> sanitize_text_field( $args['redirect'] ), // Can't esc_url() cause we may allow strings to check against,
@@ -427,7 +427,7 @@ final class Wampum_Forms {
 			'class'		=> 'username',
 			'required'	=> true,
 		), array(
-			'label'	=> ! empty( $args['label_username'] ) ? $args['label_username'] : __( 'Email/Username', 'wampum' ),
+			'label'	=> ! empty( $args['username_label'] ) ? $args['username_label'] : __( 'Email/Username', 'wampum' ),
 		) );
 
 		// Password
@@ -436,7 +436,7 @@ final class Wampum_Forms {
 			'class'		=> 'password',
 			'required'	=> true,
 		), array(
-			'label'	=> ! empty( $args['label_password'] ) ? $args['label_password'] : __( 'Password', 'wampum' ),
+			'label'	=> ! empty( $args['password_label'] ) ? $args['password_label'] : __( 'Password', 'wampum' ),
 		) );
 
 		// Remember
@@ -520,7 +520,7 @@ final class Wampum_Forms {
 			'class'		=> 'password',
 			'required'	=> true,
 		), array(
-			'label'	=> ! empty( $args['label_password'] ) ? $args['label_password'] : __( 'Password', 'wampum' ),
+			'label'	=> ! empty( $args['password_label'] ) ? $args['password_label'] : __( 'Password', 'wampum' ),
 		) );
 
 		// Password confirm
@@ -529,7 +529,7 @@ final class Wampum_Forms {
 			'class'		=> 'password-confirm',
 			'required'	=> true,
 		), array(
-			'label'	=> ! empty( $args['label_password_confirm'] ) ? $args['label_password_confirm'] : __( 'Confirm Password', 'wampum' ),
+			'label'	=> ! empty( $args['password_confirm_label'] ) ? $args['password_confirm_label'] : __( 'Confirm Password', 'wampum' ),
 		) );
 
 		// Load password strength script
@@ -541,7 +541,7 @@ final class Wampum_Forms {
 			'class'	=> 'password-strength',
 			'style'	=> 'display:none;',
 		), array(
-			'label'	=> ! empty( $args['label_password_strength'] ) ? $args['label_password_strength'] : __( 'Strength', 'wampum' ),
+			'label'	=> ! empty( $args['password_strength_label'] ) ? $args['password_strength_label'] : __( 'Strength', 'wampum' ),
 		) );
 
 		// Redirect
@@ -606,14 +606,14 @@ final class Wampum_Forms {
 		if ( $args['first_name'] ) {
 
 			// Default label
-			$label_first_name = __( 'Name', 'wampum' );
+			$first_name_label = __( 'Name', 'wampum' );
 			// If we have a custom label
-			if ( $args['label_first_name'] ) {
-				$label_first_name = $args['label_first_name'];
+			if ( $args['first_name_label'] ) {
+				$first_name_label = $args['first_name_label'];
 			}
 			// Else if we are showing the last name
 			elseif ( $args['last_name'] ) {
-				$label_first_name = __( 'First Name', 'wampum' );
+				$first_name_label = __( 'First Name', 'wampum' );
 			}
 
 			$form->add_field( 'text', array(
@@ -621,7 +621,7 @@ final class Wampum_Forms {
 				'class'	=> 'first-name',
 				'value'	=> $first_name,
 			), array(
-				'label'	=> $label_first_name,
+				'label'	=> $first_name_label,
 			) );
 
 		}
@@ -634,7 +634,7 @@ final class Wampum_Forms {
 				'class'	=> 'last-name',
 				'value'	=> $last_name,
 			), array(
-				'label'	=> ! empty( $args['label_last_name'] ) ? $args['label_last_name'] : __( 'Last Name', 'wampum' ),
+				'label'	=> ! empty( $args['last_name_label'] ) ? $args['last_name_label'] : __( 'Last Name', 'wampum' ),
 			) );
 
 		}
@@ -645,7 +645,7 @@ final class Wampum_Forms {
 			'class'		=> 'email',
 			'required'	=> true,
 		), array(
-			'label'	=> ! empty( $args['label_email'] ) ? $args['label_email'] : __( 'Email', 'wampum' ),
+			'label'	=> ! empty( $args['email_label'] ) ? $args['email_label'] : __( 'Email', 'wampum' ),
 		) );
 
 		// Username
@@ -657,7 +657,7 @@ final class Wampum_Forms {
 				'class'		=> 'username',
 				'required'	=> true,
 			), array(
-				'label'	=> ! empty( $args['label_username'] ) ? $args['label_username'] : __( 'Username', 'wampum' ),
+				'label'	=> ! empty( $args['username_label'] ) ? $args['username_label'] : __( 'Username', 'wampum' ),
 			) );
 
 		}
@@ -671,7 +671,7 @@ final class Wampum_Forms {
 				'class'		=> 'password',
 				'required'	=> true,
 			), array(
-				'label'	=> ! empty( $args['label_password'] ) ? $args['label_password'] : __( 'Password', 'wampum' ),
+				'label'	=> ! empty( $args['password_label'] ) ? $args['password_label'] : __( 'Password', 'wampum' ),
 			) );
 
 			// Password confirm
@@ -683,7 +683,7 @@ final class Wampum_Forms {
 					'class'		=> 'password-confirm',
 					'required'	=> true,
 				), array(
-					'label'	=> ! empty( $args['label_password_confirm'] ) ? $args['label_password_confirm'] : __( 'Password Confirm', 'wampum' ),
+					'label'	=> ! empty( $args['password_confirm_label'] ) ? $args['password_confirm_label'] : __( 'Password Confirm', 'wampum' ),
 				) );
 
 			}
@@ -694,7 +694,7 @@ final class Wampum_Forms {
 				'class'	=> 'password-strength',
 				'style'	=> 'display:none;',
 			), array(
-				'label'	=> ! empty( $args['label_password_strength'] ) ? $args['label_password_strength'] : __( 'Strength', 'wampum' ),
+				'label'	=> ! empty( $args['password_strength_label'] ) ? $args['password_strength_label'] : __( 'Strength', 'wampum' ),
 			) );
 
 		}
@@ -810,14 +810,14 @@ final class Wampum_Forms {
 		if ( $args['first_name'] ) {
 
 			// Default label
-			$label_first_name = __( 'Name', 'wampum' );
+			$first_name_label = __( 'Name', 'wampum' );
 			// If we have a custom label
-			if ( $args['label_first_name'] ) {
-				$label_first_name = $args['label_first_name'];
+			if ( $args['first_name_label'] ) {
+				$first_name_label = $args['first_name_label'];
 			}
 			// Else if we are showing the last name
 			elseif ( $args['last_name'] ) {
-				$label_first_name = __( 'First Name', 'wampum' );
+				$first_name_label = __( 'First Name', 'wampum' );
 			}
 
 			$form->add_field( 'text', array(
@@ -825,7 +825,7 @@ final class Wampum_Forms {
 				'class'	=> 'first-name',
 				'value'	=> $first_name,
 			), array(
-				'label'	=> $label_first_name,
+				'label'	=> $first_name_label,
 			) );
 
 		}
@@ -838,7 +838,7 @@ final class Wampum_Forms {
 				'class'	=> 'last-name',
 				'value'	=> $last_name,
 			), array(
-				'label'	=> ! empty( $args['label_last_name'] ) ? $args['label_last_name'] : __( 'Last Name', 'wampum' ),
+				'label'	=> ! empty( $args['last_name_label'] ) ? $args['last_name_label'] : __( 'Last Name', 'wampum' ),
 			) );
 
 		}
@@ -850,7 +850,7 @@ final class Wampum_Forms {
 			'required'	=> true,
 			'value'		=> $email,
 		), array(
-			'label'	=> ! empty( $args['label_email'] ) ? $args['label_email'] : __( 'Email', 'wampum' ),
+			'label'	=> ! empty( $args['email_label'] ) ? $args['email_label'] : __( 'Email', 'wampum' ),
 		) );
 
 		// Active Campaign List IDs
@@ -961,21 +961,21 @@ final class Wampum_Forms {
 			if ( $args['first_name'] ) {
 
 				// Default label
-				$label_first_name = __( 'Name', 'wampum' );
+				$first_name_label = __( 'Name', 'wampum' );
 				// If we have a custom label
-				if ( $args['label_first_name'] ) {
-					$label_first_name = $args['label_first_name'];
+				if ( $args['first_name_label'] ) {
+					$first_name_label = $args['first_name_label'];
 				}
 				// Else if we are showing the last name
 				elseif ( $args['last_name'] ) {
-					$label_first_name = __( 'First Name', 'wampum' );
+					$first_name_label = __( 'First Name', 'wampum' );
 				}
 
 				$user_available->add_field( 'text', array(
 					'name'	=> 'first_name',
 					'class'	=> 'first-name',
 				), array(
-					'label'	=> $label_first_name,
+					'label'	=> $first_name_label,
 				) );
 
 			}
@@ -987,7 +987,7 @@ final class Wampum_Forms {
 					'name'	=> 'last_name',
 					'class'	=> 'last-name',
 				), array(
-					'label'	=> ! empty( $args['label_last_name'] ) ? $args['label_last_name'] : __( 'Last Name', 'wampum' ),
+					'label'	=> ! empty( $args['last_name_label'] ) ? $args['last_name_label'] : __( 'Last Name', 'wampum' ),
 				) );
 
 			}
@@ -998,7 +998,7 @@ final class Wampum_Forms {
 				'class'		=> 'email',
 				'required'	=> true,
 			), array(
-				'label'	=> ! empty( $args['label_email'] ) ? $args['label_email'] : __( 'Email', 'wampum' ),
+				'label'	=> ! empty( $args['email_label'] ) ? $args['email_label'] : __( 'Email', 'wampum' ),
 			) );
 
 			// Username
@@ -1010,7 +1010,7 @@ final class Wampum_Forms {
 					'class'		=> 'username',
 					'required'	=> true,
 				), array(
-					'label'	=> ! empty( $args['label_username'] ) ? $args['label_username'] : __( 'Username', 'wampum' ),
+					'label'	=> ! empty( $args['username_label'] ) ? $args['username_label'] : __( 'Username', 'wampum' ),
 				) );
 
 			}
@@ -1079,7 +1079,7 @@ final class Wampum_Forms {
 				'class'	=> 'first-name',
 				'value'	=> $first_name,
 			), array(
-				'label'	=> $label_first_name,
+				'label'	=> $first_name_label,
 			) );
 
 		}
@@ -1092,7 +1092,7 @@ final class Wampum_Forms {
 				'class'	=> 'last-name',
 				'value'	=> $last_name,
 			), array(
-				'label'	=> ! empty( $args['label_last_name'] ) ? $args['label_last_name'] : __( 'Last Name', 'wampum' ),
+				'label'	=> ! empty( $args['last_name_label'] ) ? $args['last_name_label'] : __( 'Last Name', 'wampum' ),
 			) );
 
 		}
@@ -1105,7 +1105,7 @@ final class Wampum_Forms {
 			'value'		=> $email,
 			'readonly' 	=> $logged_in ? true : false,
 		), array(
-			'label'	=> ! empty( $args['label_email'] ) ? $args['label_email'] : __( 'Email', 'wampum' ),
+			'label'	=> ! empty( $args['email_label'] ) ? $args['email_label'] : __( 'Email', 'wampum' ),
 		) );
 
 		// If not logged in
@@ -1120,7 +1120,7 @@ final class Wampum_Forms {
 					'class'		=> 'username',
 					'required'	=> true,
 				), array(
-					'label'	=> ! empty( $args['label_username'] ) ? $args['label_username'] : __( 'Username', 'wampum' ),
+					'label'	=> ! empty( $args['username_label'] ) ? $args['username_label'] : __( 'Username', 'wampum' ),
 				) );
 
 			}
@@ -1131,7 +1131,7 @@ final class Wampum_Forms {
 				'class'		=> 'password',
 				'required'	=> true,
 			), array(
-				'label'	=> ! empty( $args['label_password'] ) ? $args['label_password'] : __( 'Password', 'wampum' ),
+				'label'	=> ! empty( $args['password_label'] ) ? $args['password_label'] : __( 'Password', 'wampum' ),
 			) );
 
 			// Load password strength script
@@ -1143,7 +1143,7 @@ final class Wampum_Forms {
 				'class'	=> 'password-strength',
 				'style'	=> 'display:none;',
 			), array(
-				'label'	=> ! empty( $args['label_password_strength'] ) ? $args['label_password_strength'] : __( 'Strength', 'wampum' ),
+				'label'	=> ! empty( $args['password_strength_label'] ) ? $args['password_strength_label'] : __( 'Strength', 'wampum' ),
 			) );
 
 		}
@@ -1236,7 +1236,7 @@ final class Wampum_Forms {
 			'class'		=> 'username',
 			'required'	=> true,
 		), array(
-			'label'	=> ! empty( $args['label_username'] ) ? $args['label_username'] : __( 'Email/Username', 'wampum' ),
+			'label'	=> ! empty( $args['username_label'] ) ? $args['username_label'] : __( 'Email/Username', 'wampum' ),
 		) );
 
 		// Password
@@ -1245,7 +1245,7 @@ final class Wampum_Forms {
 			'class'		=> 'password',
 			'required'	=> true,
 		), array(
-			'label'	=> ! empty( $args['label_password'] ) ? $args['label_password'] : __( 'Password', 'wampum' ),
+			'label'	=> ! empty( $args['password_label'] ) ? $args['password_label'] : __( 'Password', 'wampum' ),
 		) );
 
 		// Remember

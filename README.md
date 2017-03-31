@@ -13,6 +13,146 @@ Create login, password, register, subscribe, and free membership (w/ user regist
 
 ###Shortcode Parameters###
 
+####hidden####
+
+(boolean) true|false
+
+**Default** `false`
+
+Whether to hide (adds display:none;) the form
+
+Mostly used internally for membership form
+
+---
+
+####inline####
+
+(boolean) true|false
+
+**Default** `false`
+
+Whether to display the form fields as inline columns
+
+[_requires Flexington_](https://github.com/JiveDig/flexington)
+
+---
+
+####title####
+
+(string) 'My Form Title'
+
+**Default** `{different per form]`
+
+Change the heading of the form
+
+---
+
+####title_wrap####
+
+(string) 'h4'
+
+**Default** `'h3'`
+
+Change title wrapping element
+
+---
+
+####desc####
+
+(string) 'Fill out the form below'
+
+**Default** `{empty}`
+
+Add a description below the form title
+
+---
+
+####button####
+
+(string) 'Submit'
+
+**Default** `'Log In'`
+
+Submit button text
+
+---
+
+####first_name####
+
+(boolean) true|false
+
+**Default** `false`
+
+Whether to show the first name field
+
+---
+
+####first_name_label####
+
+(string) 'Name' or 'First Name {if last name fields is used}'
+
+**Default** `'Name' or 'First Name {if last name fields is used}'`
+
+First name field label
+
+---
+
+####last_name####
+
+(boolean) true|false
+
+**Default** `false`
+
+Whether to show the last name field
+
+---
+
+####last_name_label####
+
+(string) 'Last Name'
+
+**Default** `'Last Name'`
+
+Last name field label
+
+---
+
+####email####
+
+(boolean) true|false
+
+**Default** `false`
+
+Whether to show the email field
+
+---
+
+####email_label####
+
+(string) 'Email'
+
+**Default** `'Email'`
+
+Email field label
+
+---
+
+
+####redirect####
+
+(string) 'https://bizbudding.com'
+
+**Default** `{current page URL}`
+
+Where to redirect after successful submission
+
+---
+
+
+
+
+
+
 
 
 ###Login Form###

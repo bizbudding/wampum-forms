@@ -3,6 +3,8 @@
 /**
  * Get a login form
  *
+ * @since  1.0.0
+ *
  * @param  array   $args	 Args to configure form
  *
  * @return string  The form
@@ -13,6 +15,8 @@ function wampum_get_form( $args = array() ) {
 
 /**
  * Get a login form
+ *
+ * @since  1.0.0
  *
  * @param  array   $args	 Args to configure form
  *
@@ -25,6 +29,8 @@ function wampum_get_login_form( $args = array() ) {
 /**
  * Get a registration form
  *
+ * @since  1.0.0
+ *
  * @param  array   $args	 Args to configure form
  *
  * @return string  The form
@@ -36,6 +42,8 @@ function wampum_get_register_form( $args = array() ) {
 /**
  * Get a password form
  *
+ * @since  1.0.0
+ *
  * @param  array   $args	 Args to configure form
  *
  * @return string  The form
@@ -46,6 +54,8 @@ function wampum_get_password_form( $args = array() ) {
 
 /**
  * Get a subscribe form
+ *
+ * @since  1.0.0
  *
  * @param  array   $args	 Args to configure form
  *
@@ -59,6 +69,8 @@ function wampum_get_subscribe_form( $args = array() ) {
 /**
  * Get a membership form
  *
+ * @since  1.0.0
+ *
  * @param  array   $args	 Args to configure form
  *
  * @return string  The form
@@ -71,6 +83,8 @@ function wampum_get_membership_form( $args = array() ) {
  * Build list of attributes into a string and apply contextual filter on string.
  *
  * The contextual filter is of the form `genesis_attr_{context}_output`.
+ *
+ * @since  1.1.0
  *
  * @param  array   $attributes  Optional. Extra attributes to merge with defaults.
  *
