@@ -1,14 +1,19 @@
-# Wampum User Forms
-Create login, password, and free membership (w/ user registration) forms that use the WP-API form processing
+# Wampum Forms
+Create login, password, register, subscribe, and free membership (w/ user registration) forms that use the WP-API form processing
 * Use a simple shortcode (or PHP function) to create forms throughout your website
 * Elegant error/success notices
-* Membership form requires WooCommerce and WooCommerce Memberships and includes support for SharpSpring marketing automation
+* Membership form requires WooCommerce and WooCommerce Memberships
+* ActiveCampaign integration
 * Works well with Wampum Popups plugin
 * Easy plugin updates in the WordPress Dashboard via [GitHub Updater plugin](https://github.com/afragen/github-updater)
 
-![Wampum User Forms example](assets/wampum-user-forms.jpg)
+![Wampum Forms example](assets/wampum-user-forms.jpg)
 
 ##Basic Usage##
+
+###Shortcode Parameters###
+
+
 
 ###Login Form###
 
