@@ -254,10 +254,10 @@ class Wampum_Form {
        		return;
        	}
         // trace( $field );
-        return $this->get_field_open( $atts, $args ) . $field . $this->get_field_close( $atts, $args );
+        return $this->get_field_open( $type, $atts, $args ) . $field . $this->get_field_close( $type, $atts, $args );
 	}
 
-	function get_field_open( $atts, $args ) {
+	function get_field_open( $type, $atts, $args ) {
 		// New atts array so atts meant for the field itself don't get applied to the wrap
 		$new_atts = array();
 		$classes  = '';
@@ -272,13 +272,18 @@ class Wampum_Form {
 		$new_atts['class'] = trim( 'wampum-field ' . $atts['class'] );
 		// If form is inline
 		if ( $this->settings['inline'] ) {
+			$sm = 'col-sm';
+			// Auto width for inline submit button
+			if ( 'submit' == $type ) {
+				$sm = 'col-sm-auto';
+			}
 			// Add Flexington classes
-			$new_atts['class'] = $new_atts['class'] . ' col col-xs-12 col-sm';
+			$new_atts['class'] = $new_atts['class'] . ' col col-xs-12 ' . $sm;
 		}
 		return sprintf( '<p %s>', wampum_attr( $new_atts ) );
 	}
 
-	function get_field_close( $atts, $args ) {
+	function get_field_close( $type, $atts, $args ) {
 		return '</p>';
 	}
 
