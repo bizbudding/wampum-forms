@@ -187,7 +187,7 @@ final class Wampum_Forms_Rest_API {
 			}
 
 	        // Notifications
-	        $this->maybe_do_notifications( $data, $message );
+	        $this->maybe_do_notifications( 'Login', $data, $message );
 
 	        // ActiveCampaign
 	        $this->maybe_do_active_campaign( $data );
@@ -261,7 +261,7 @@ final class Wampum_Forms_Rest_API {
 		}
 
         // Notifications
-        $this->maybe_do_notifications( $data, $message );
+        $this->maybe_do_notifications( 'Password', $data, $message );
 
         // ActiveCampaign
         $this->maybe_do_active_campaign( $data );
@@ -392,7 +392,7 @@ final class Wampum_Forms_Rest_API {
         }
 
         // Notifications
-        $this->maybe_do_notifications( $data, $message );
+        $this->maybe_do_notifications( 'Register', $data, $message );
 
         // ActiveCampaign
         $this->maybe_do_active_campaign( $data );
@@ -438,7 +438,7 @@ final class Wampum_Forms_Rest_API {
         if ( true == $ac['success'] ) {
 
 	        // Notifications
-	        $this->maybe_do_notifications( $data );
+	        $this->maybe_do_notifications( 'Subscribe', $data );
 
 	        // Success!
 			return array(
@@ -653,7 +653,7 @@ final class Wampum_Forms_Rest_API {
         $message .= ' - ' .  $email;
 
         // Notifications
-        $this->maybe_do_notifications( $data, $message );
+        $this->maybe_do_notifications( 'Membership', $data, $message );
 
         // ActiveCampaign
         $this->maybe_do_active_campaign( $data );
@@ -697,7 +697,7 @@ final class Wampum_Forms_Rest_API {
 	 *
 	 * @return  void
 	 */
-	function maybe_do_notifications( $data, $message = '' ) {
+	function maybe_do_notifications( $type, $data, $message = '' ) {
 
         // Bail if no notifications
         if ( ! isset($data['notifications']) || empty($data['notifications']) ) {
@@ -711,7 +711,7 @@ final class Wampum_Forms_Rest_API {
 		$notifications = array_map( 'sanitize_email', $notifications );
 
 		$to		 = $notifications;
-		$subject = sprintf( '%s - New Wampum %s form submission', get_bloginfo('name'), ucwords($data['type']) );
+		$subject = sprintf( '%s - New Wampum %s form submission', get_bloginfo('name'), $type );
 		$body	 = $message;
 
 		if ( empty($body) ) {
