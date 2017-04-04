@@ -433,7 +433,7 @@ Membership ID that this form will add the user to
 
 ####member_message####
 
-(string) true|false
+(string) 'You are already a member!'
 
 **Default** `null`
 
