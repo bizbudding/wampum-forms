@@ -169,6 +169,14 @@ final class Wampum_Forms_Rest_API {
 			return $spam;
 		}
 
+	    // Validate submission
+	    $valid = $this->validate_submission( 'login', $data );
+
+	    // Return with message if not a valid submission
+	    if ( ! $valid['success'] ) {
+	    	return $valid;
+	    }
+
 		$user = wp_signon( $data );
 
 		// If error
@@ -191,6 +199,12 @@ final class Wampum_Forms_Rest_API {
 
 	        // ActiveCampaign
 	        $this->maybe_do_active_campaign( $data );
+
+	        // Hook to run custom code after successful submission (login forms only)
+	        do_action( 'wampum_form_after_login_submission', $data );
+
+	        // Hook to run custom code after successful submission (all forms)
+	        do_action( 'wampum_form_after_submission', $data );
 
 			return array(
 				'success' => true,
@@ -246,6 +260,14 @@ final class Wampum_Forms_Rest_API {
 			);
 		}
 
+	    // Validate submission
+	    $valid = $this->validate_submission( 'password', $data );
+
+	    // Return with message if not a valid submission
+	    if ( ! $valid['success'] ) {
+	    	return $valid;
+	    }
+
 		$user_data = array(
 			'ID'		=> get_current_user_id(),
 			'user_pass'	=> $data['password']
@@ -265,6 +287,12 @@ final class Wampum_Forms_Rest_API {
 
         // ActiveCampaign
         $this->maybe_do_active_campaign( $data );
+
+        // Hook to run custom code after successful submission (password forms only)
+        do_action( 'wampum_form_after_password_submission', $data );
+
+        // Hook to run custom code after successful submission (all forms)
+        do_action( 'wampum_form_after_submission', $data );
 
 		// Success
 		return array(
@@ -334,6 +362,14 @@ final class Wampum_Forms_Rest_API {
 			}
 		}
 
+	    // Validate submission
+	    $valid = $this->validate_submission( 'register', $data );
+
+	    // Return with message if not a valid submission
+	    if ( ! $valid['success'] ) {
+	    	return $valid;
+	    }
+
         /**
          * Start the new user data
          * Email is the only field required to exist in the form
@@ -397,6 +433,12 @@ final class Wampum_Forms_Rest_API {
         // ActiveCampaign
         $this->maybe_do_active_campaign( $data );
 
+        // Hook to run custom code after successful submission (register forms only)
+        do_action( 'wampum_form_after_register_submission', $data );
+
+        // Hook to run custom code after successful submission (all forms)
+        do_action( 'wampum_form_after_submission', $data );
+
 		// Success
 		return array(
 			'success' => true,
@@ -437,8 +479,22 @@ final class Wampum_Forms_Rest_API {
 
         if ( true == $ac['success'] ) {
 
+		    // Validate submission
+		    $valid = $this->validate_submission( 'subscribe', $data );
+
+		    // Return with message if not a valid submission
+		    if ( ! $valid['success'] ) {
+		    	return $valid;
+		    }
+
 	        // Notifications
 	        $this->maybe_do_notifications( 'Subscribe', $data );
+
+	        // Hook to run custom code after successful submission (subscribe forms only)
+	        do_action( 'wampum_form_after_subscribe_submission', $data );
+
+	        // Hook to run custom code after successful submission (all forms)
+	        do_action( 'wampum_form_after_submission', $data );
 
 	        // Success!
 			return array(
@@ -563,6 +619,14 @@ final class Wampum_Forms_Rest_API {
 			);
 	    }
 
+	    // Validate submission
+	    $valid = $this->validate_submission( 'membership', $data );
+
+	    // Return with message if not a valid submission
+	    if ( ! $valid['success'] ) {
+	    	return $valid;
+	    }
+
 	    // TODO: Check and set all variables here. Sanitize too?
 
 	    $email = sanitize_email($data['email']);
@@ -658,6 +722,12 @@ final class Wampum_Forms_Rest_API {
         // ActiveCampaign
         $this->maybe_do_active_campaign( $data );
 
+        // Hook to run custom code after successful submission (membership forms only)
+        do_action( 'wampum_form_after_membership_submission', $data );
+
+        // Hook to run custom code after successful submission (all forms)
+        do_action( 'wampum_form_after_submission', $data );
+
         // Success!
 		return array(
 			'success' => true,
@@ -685,6 +755,62 @@ final class Wampum_Forms_Rest_API {
 		return array(
 			'success' => true,
 		);
+	}
+
+    /**
+     * Allow custom validation.
+     * e.g. Return success false if not a valid submission based on custom data processing.
+     *
+     * @since   1.1.0
+     *
+     * @param   string  $form_type  The form type to validate
+     * @param   array   $data  		Form data submitted
+     *
+     * @return  array   The validation return data
+     */
+	function validate_submission( $form_type, $data ) {
+	    switch ( $form_type ) {
+	        case 'login':
+	            $filter = 'wampum_forms_is_valid_login_submission';
+	            break;
+	        case 'password':
+	            $filter = 'wampum_forms_is_valid_password_submission';
+	            break;
+	        case 'register':
+	            $filter = 'wampum_forms_is_valid_register_submission';
+	            break;
+	        case 'subscribe':
+	            $filter = 'wampum_forms_is_valid_subscribe_submission';
+	            break;
+	        case 'membership':
+	            $filter = 'wampum_forms_is_valid_membership_submission';
+	            break;
+	        default:
+	            $filter = '';
+	            break;
+	    }
+	    // Default is valid submission
+	    $valid_return = array(
+	    	'success' => true,
+    	);
+	    // If no filter, nothing to validate. Return successsful.
+	    if ( empty( $filter ) ) {
+	    	return $valid_return;
+	    }
+	    /**
+	     * All filters via these methods use the following:
+	     *
+	     * @param   array  $valid_return  {
+	     *
+	     *		Associative array of 'success' and 'message'
+	     *
+	     * 		@type  bool   $success  Whether the user is valid or not
+	     * 		@type  array  $message  The error message to display if success if false
+	     *
+	     * }
+	     * @param   array  $data  Form data submitted
+	     */
+	    return apply_filters( $filter, $valid_return, $data );
 	}
 
 	/**
