@@ -752,7 +752,7 @@ final class Wampum_Forms {
 		// Log In
 		$form->add_field( 'hidden', array(
 			'name'	=> 'log_in',
-			'value'	=> $args['log_in'],
+			'value' => intval($args['log_in']), // use integers cause boolean won't show value via wampum_attr
 		));
 
 		// Redirect
@@ -1172,6 +1172,12 @@ final class Wampum_Forms {
 		$join->add_field( 'hidden', array(
 			'name'	=> 'plan_id',
 			'value'	=> $args['plan_id'],
+		));
+
+		// Log In
+		$join->add_field( 'hidden', array(
+			'name'	=> 'log_in',
+			'value' => intval($args['log_in']), // use integers cause boolean won't show value via wampum_attr
 		));
 
 		// Active Campaign List IDs

@@ -469,8 +469,8 @@
                         $membershipForm.find( 'input[name="password"]' ).focus();
                     });
 
-
                 } else {
+
                     // Display error message
                     displayNotice( $userAvailableForm, 'error', response.message );
 
@@ -533,6 +533,7 @@
                 last_name: $membershipForm.find( 'input[name="last_name"]' ).val(),
                 username: $membershipForm.find( 'input[name="username"]' ).val(),
                 password: $membershipForm.find( 'input[name="password"]' ).val(),
+                log_in: $membershipForm.find( 'input[name="log_in"]' ).val(),
                 notifications: $membershipForm.find( 'input[name="notifications"]').val(),
                 ac_list_ids: $membershipForm.find( 'input[name="ac_list_ids"]' ).val(),
                 ac_tags: $membershipForm.find( 'input[name="ac_tags"]' ).val(),
