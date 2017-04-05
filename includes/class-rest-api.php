@@ -170,11 +170,14 @@ final class Wampum_Forms_Rest_API {
 		}
 
 	    // Validate submission
-	    $valid = $this->validate_submission( 'login', $data );
+	    $valid = $this->valid_submission( 'login', $data );
 
 	    // Return with message if not a valid submission
-	    if ( ! $valid['success'] ) {
-	    	return $valid;
+	    if ( true !== $valid ) {
+	    	return array(
+	    		'success' => false,
+	    		'message' => $valid,
+    		);
 	    }
 
 		$user = wp_signon( $data );
@@ -261,11 +264,14 @@ final class Wampum_Forms_Rest_API {
 		}
 
 	    // Validate submission
-	    $valid = $this->validate_submission( 'password', $data );
+	    $valid = $this->valid_submission( 'password', $data );
 
 	    // Return with message if not a valid submission
-	    if ( ! $valid['success'] ) {
-	    	return $valid;
+	    if ( true !== $valid ) {
+	    	return array(
+	    		'success' => false,
+	    		'message' => $valid,
+    		);
 	    }
 
 		$user_data = array(
@@ -363,11 +369,14 @@ final class Wampum_Forms_Rest_API {
 		}
 
 	    // Validate submission
-	    $valid = $this->validate_submission( 'register', $data );
+	    $valid = $this->valid_submission( 'register', $data );
 
 	    // Return with message if not a valid submission
-	    if ( ! $valid['success'] ) {
-	    	return $valid;
+	    if ( true !== $valid ) {
+	    	return array(
+	    		'success' => false,
+	    		'message' => $valid,
+    		);
 	    }
 
         /**
@@ -418,6 +427,7 @@ final class Wampum_Forms_Rest_API {
 
         // If log_in is true
 		if ( filter_var( $data['log_in'], FILTER_VALIDATE_BOOLEAN ) ) {
+
 	        // Log them in!
 	        $signon_data = array(
 				'user_login'	=> $username,
@@ -425,6 +435,7 @@ final class Wampum_Forms_Rest_API {
 				'remember'		=> true,
 	    	);
 			$user = wp_signon( $signon_data );
+
         }
 
         // Notifications
@@ -480,11 +491,14 @@ final class Wampum_Forms_Rest_API {
         if ( true == $ac['success'] ) {
 
 		    // Validate submission
-		    $valid = $this->validate_submission( 'subscribe', $data );
+		    $valid = $this->valid_submission( 'subscribe', $data );
 
 		    // Return with message if not a valid submission
-		    if ( ! $valid['success'] ) {
-		    	return $valid;
+		    if ( true !== $valid ) {
+		    	return array(
+		    		'success' => false,
+		    		'message' => $valid,
+	    		);
 		    }
 
 	        // Notifications
@@ -535,12 +549,24 @@ final class Wampum_Forms_Rest_API {
 			return $spam;
 		}
 
+
 	    // Email is required
 	    if ( ! ( isset($data['email']) || $data['email'] ) ) {
 			return array(
 				'success' => false,
 				'message' => __( 'Please enter your email address', 'wampum' ),
 			);
+	    }
+
+	    // Validate submission
+	    $valid = $this->valid_submission( 'membership', $data );
+
+	    // Return with message if not a valid submission
+	    if ( true !== $valid ) {
+	    	return array(
+	    		'success' => false,
+	    		'message' => $valid,
+    		);
 	    }
 
 		$email = sanitize_email($data['email']);
@@ -585,6 +611,7 @@ final class Wampum_Forms_Rest_API {
 	 * 		@type  string   $last_name	 	Last name
 	 * 		@type  string   $username 		Username
 	 * 		@type  string   $password 		Password
+	 * 		@type  string   $login  		'yes' or 'no'
 	 * 		@type  string   $notifications 	Comma-separated list of emails to notify upons successful submission
 	 * 		@type  string 	$ac_list_ids 	Comma separated list IDs to add
 	 * 		@type  string 	$ac_tags 		Comma separated tags to add
@@ -619,14 +646,6 @@ final class Wampum_Forms_Rest_API {
 			);
 	    }
 
-	    // Validate submission
-	    $valid = $this->validate_submission( 'membership', $data );
-
-	    // Return with message if not a valid submission
-	    if ( ! $valid['success'] ) {
-	    	return $valid;
-	    }
-
 	    // TODO: Check and set all variables here. Sanitize too?
 
 	    $email = sanitize_email($data['email']);
@@ -651,6 +670,17 @@ final class Wampum_Forms_Rest_API {
 	    // Not logged in
 	    else {
 
+		    // Validate submission, if logged in they would have been validated in user_available()
+		    $valid = $this->valid_submission( 'membership', $data );
+
+		    // Return with message if not a valid submission
+		    if ( true !== $valid ) {
+		    	return array(
+		    		'success' => false,
+		    		'message' => $valid,
+	    		);
+		    }
+
 			$email_exists = email_exists( $email );
 			// Username is not required, so check it first
 			$username_exists = isset($data['username']) ? username_exists( $data['username'] ) : false;
@@ -671,9 +701,9 @@ final class Wampum_Forms_Rest_API {
 
 		    /**
 		     * Register a user
-		     * and log them in.
+		     * and maybe log them in.
 		     */
-		    $data['log_in'] = true;
+		    // $data['log_in'] = true;
 	        $register = $this->register( $data );
 
 	        // Bail if unsuccessful
@@ -768,7 +798,7 @@ final class Wampum_Forms_Rest_API {
      *
      * @return  array   The validation return data
      */
-	function validate_submission( $form_type, $data ) {
+	function valid_submission( $form_type, $data ) {
 	    switch ( $form_type ) {
 	        case 'login':
 	            $filter = 'wampum_forms_is_valid_login_submission';
@@ -789,27 +819,21 @@ final class Wampum_Forms_Rest_API {
 	            $filter = '';
 	            break;
 	    }
+
 	    // If no filter, nothing to validate. Return successsful.
 	    if ( empty( $filter ) ) {
-	    	return array(
-		    	'success' => true,
-	    	);
+	    	return true;
 	    }
+
 	    /**
 	     * All filters via these methods use the following:
 	     *
-	     * @param   array  $data  Form data submitted
+	     * @param    bool|string  $return  false or the error message
+	     * @param    array  	  $data    Form data submitted
 	     *
-	     * @return   associative array   {
-	     *
-	     *		Associative array of 'success' and 'message'
-	     *
-	     * 		@type  bool   $success  Whether the user is valid or not
-	     * 		@type  array  $message  The error message to display if success if false
-	     *
-	     * }
+	     * @return   bool|string  $return  false or the error message
 	     */
-	    return apply_filters( $filter, $data );
+	    return apply_filters( $filter, true, $data );
 	}
 
 	/**
