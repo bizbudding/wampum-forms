@@ -789,18 +789,18 @@ final class Wampum_Forms_Rest_API {
 	            $filter = '';
 	            break;
 	    }
-	    // Default is valid submission
-	    $valid_return = array(
-	    	'success' => true,
-    	);
 	    // If no filter, nothing to validate. Return successsful.
 	    if ( empty( $filter ) ) {
-	    	return $valid_return;
+	    	return array(
+		    	'success' => true,
+	    	);
 	    }
 	    /**
 	     * All filters via these methods use the following:
 	     *
-	     * @param   array  $valid_return  {
+	     * @param   array  $data  Form data submitted
+	     *
+	     * @return   associative array   {
 	     *
 	     *		Associative array of 'success' and 'message'
 	     *
@@ -808,9 +808,8 @@ final class Wampum_Forms_Rest_API {
 	     * 		@type  array  $message  The error message to display if success if false
 	     *
 	     * }
-	     * @param   array  $data  Form data submitted
 	     */
-	    return apply_filters( $filter, $valid_return, $data );
+	    return apply_filters( $filter, $data );
 	}
 
 	/**
