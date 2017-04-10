@@ -97,6 +97,378 @@ class Wampum_Form_Settings {
                 submit_button();
                 ?>
             </form>
+            <hr>
+            <h1>Instructions</h1>
+            <h2>Description</h2>
+            <p>Wampum forms creates login, password, register, subscribe, and free membership (w/ user registration) forms that use the WP-API form processing. With Wampum forms:</p>
+            <ul>
+                <li>Use simple shortcodes to create forms throughout your website</li>
+                <li>Use multiple global parameters and form specific parameters to customize your forms</li>
+                <li>Displays elegant error/success notices</li>
+                <li>Integrate forms with ActiveCampaign - subscribe users to lists and add tags</li>
+                <li>Use forms with the Wampum Popups plugin, available at https://github.com/JiveDig/wampum-popups</li>
+                <li>Automatically update in the WordPress Dashboard via the GitHub Updater plugin available at https://github.com/afragen/github-updater</li>
+            </ul>
+            <h2>Shortcodes</h2>
+            <table class="widefat">
+                <thead>
+                <thead>
+                    <tr>
+                        <th>Shortcode</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>[wampum_login_form]</td>
+                        <td>Allows a logged out user to login.</td>
+                    </tr>
+                    <tr>
+                        <td>wampum_register_form]</td>
+                        <td>Allows a user to register.</td>
+                    </tr>
+                    <tr>
+                        <td>[wampum_password_form]</td>
+                        <td>Allows a logged in user to change their password.</td>
+                    </tr>
+                    <tr>
+                        <td>[wampum_subscribe_form]</td>
+                        <td>Allows a user to subscribe. Commonly used with ActiveCampaign to subscribe to a list.</td>
+                    </tr>
+                    <tr>
+                        <td>* [wampum_membership_form]</td>
+                        <td>Creates a clean and efficient onboarding flow for adding users to a WooCommerce membership.
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th>Shortcode</th>
+                        <th>Description</th>
+                    </tr>
+                </tfoot>
+            </table>
+            <p>* Membership form requires WooCommerce and WooCommerce Memberships</p>
+            <h2>Global Parameters</h2>
+            <p>The following parameters are available to most forms. No parameters are required. Form specific parameters are covered in the following section</p>
+            <table class="widefat">
+                <thead>
+                    <tr>
+                        <th>Parameter Name</th>
+                        <th>Expected Value</th>
+                        <th>Default State</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>hidden</td>
+                        <td>true, false</td>
+                        <td>false</td>
+                        <td>Whether to hide the form by default (display:none; inline style)</td>
+                        <td>hidden="true"</td>
+                    </tr>
+                    <tr>
+                        <td>* inline</td>
+                        <td>true, false</td>
+                        <td>false</td>
+                        <td>Display the form fields in a row
+                        </td>
+                        <td>inline="false"</td>
+                    </tr>
+                    <tr>
+                        <td>title</td>
+                        <td>string</td>
+                        <td>null</td>
+                        <td>The form title to display</td>
+                        <td>title="Form Title"</td>
+                    </tr>
+                    <tr>
+                        <td>title_wrap</td>
+                        <td>string</td>
+                        <td>"h4"</td>
+                        <td>The title wrap element</td>
+                        <td>title_wrap="h4"</td>
+                    </tr>
+                    <tr>
+                        <td>desc</td>
+                        <td>string</td>
+                        <td>null</td>
+                        <td>The form description to display</td>
+                        <td>desc="Form Description"</td>
+                    </tr>
+                    <tr>
+                        <td>first_name</td>
+                        <td>true, false</td>
+                        <td>false</td>
+                        <td>Whether to show first name field</td>
+                        <td>first_name="true"</td>
+                    </tr>
+                    <tr>
+                        <td>last_name</td>
+                        <td>true, false</td>
+                        <td>false</td>
+                        <td>Whether to show last name field</td>
+                        <td>last_name="false"</td>
+                    </tr>
+                    <tr>
+                        <td>email</td>
+                        <td>true, false</td>
+                        <td>false</td>
+                        <td>Whether to show email field</td>
+                        <td>email="true"</td>
+                    </tr>
+                    <tr>
+                        <td>username</td>
+                        <td>true, false</td>
+                        <td>false</td>
+                        <td>Whether to show username field</td>
+                        <td>username="false"</td>
+                    </tr>
+                    <tr>
+                        <td>password</td>
+                        <td>true, false</td>
+                        <td>false</td>
+                        <td>Whether to show password field</td>
+                        <td>password="true"</td>
+                    </tr>
+                    <tr>
+                        <td>password_confirm</td>
+                        <td>true, false</td>
+                        <td>false</td>
+                        <td>Whether to show password confirm field</td>
+                        <td>password_confirm="false"</td>
+                    </tr>
+                    <tr>
+                        <td>password_strength</td>
+                        <td>true, false</td>
+                        <td>false</td>
+                        <td>Whether to show password strength meter</td>
+                        <td>password_strength="true"</td>
+                    </tr>
+                    <tr>
+                        <td>first_name_label</td>
+                        <td>string</td>
+                        <td>"Name" or "First Name" (if last name field is used)</td>
+                        <td>The label of the first name field</td>
+                        <td>first_name_label="Please enter your first name"</td>
+                    </tr>
+                    <tr>
+                        <td>last_name_label</td>
+                        <td>string</td>
+                        <td>"Last Name"</td>
+                        <td>The label of the last name field</td>
+                        <td>last_name_label="Please enter your last name"</td>
+                    </tr>
+                    <tr>
+                        <td>email_label</td>
+                        <td>string</td>
+                        <td>"Email"</td>
+                        <td>The label of the email field</td>
+                        <td>email_label="Please enter your email address"</td>
+                    </tr>
+                    <tr>
+                        <td>username_label</td>
+                        <td>string</td>
+                        <td>"Username"</td>
+                        <td>The label of the username field</td>
+                        <td>username_label="Please choose a username"</td>
+                    </tr>
+                    <tr>
+                        <td>password_label</td>
+                        <td>string</td>
+                        <td>"Password"</td>
+                        <td>The label of the password field</td>
+                        <td>password_label="Please choose a secure password"</td>
+                    </tr>
+                    <tr>
+                        <td>password_confirm_label</td>
+                        <td>string</td>
+                        <td>"Confirm Password"</td>
+                        <td>The label of the password confirm field</td>
+                        <td>password_confirm_label="Please confirm your password"</td>
+                    </tr>
+                    <tr>
+                        <td>password_strength_label</td>
+                        <td>string</td>
+                        <td>"Strength"</td>
+                        <td>The label of the password strength meter</td>
+                        <td>password_strength_label="Your password strength is"</td>
+                    </tr>
+                    <tr>
+                        <td>button</td>
+                        <td>string</td>
+                        <td>"Submit"</td>
+                        <td>The button text to display</td>
+                        <td>button="Join Now!"</td>
+                    </tr>
+                    <tr>
+                        <td>notifications</td>
+                        <td>string</td>
+                        <td>null</td>
+                        <td>Comma-separated list of emails to notify upon successful submission</td>
+                        <td>notifications="joe@example.com, jane@example.com"</td>
+                    </tr>
+                    <tr>
+                        <td>redirect</td>
+                        <td>string</td>
+                        <td>Current URL</td>
+                        <td>URL to redirect after form submission</td>
+                        <td>redirect="https://www.example.com"</td>
+                    </tr>
+                    <tr>
+                        <td>** ac_list_ids</td>
+                        <td>integer</td>
+                        <td>null</td>
+                        <td>Comma-separated list of ActiveCampaign list IDs to add a contact to (list must exist in ActiveCampaign)</td>
+                        <td>ac_list_ids="1,2,3,4"</td>
+                    </tr>
+                    <tr>
+                        <td>** ac_tags</td>
+                        <td>integer</td>
+                        <td>null</td>
+                        <td>Comma-separated list of ActiveCampaign tag IDs to add a contact to</td>
+                        <td>ac_tags="Tags, More Tags"</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th>Parameter Name</th>
+                        <th>Expected Value</th>
+                        <th>Default State</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                </tfoot>
+            </table>
+            <p>* requires <a target="_blank" href="https://github.com/JiveDig/flexington">Flexington</a></p>
+            <p>** Requires valid credentials in Settings > Wampum Forms</p>
+            <h2>Form Specific Parameters</h2>
+            <h3>Login Form</h3>
+            <table class="widefat">
+                <thead>
+                    <tr>
+                        <th>Parameter Name</th>
+                        <th>Expected Value</th>
+                        <th>Default State</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>remember</td>
+                        <td>true, false</td>
+                        <td>true</td>
+                        <td>Shows the "Remember Me" checkbox</td>
+                        <td>remember="false"</td>
+                    </tr>
+                    <tr>
+                        <td>value_remember</td>
+                        <td>true, false</td>
+                        <td>true</td>
+                        <td>Default "Remember Me" checked or unchecked</td>
+                        <td>value_remember="false"</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th>Parameter Name</th>
+                        <th>Expected Value</th>
+                        <th>Default State</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                </tfoot>
+            </table>
+            <h3>Register Form</h3>
+            <table class="widefat">
+                <thead>
+                    <tr>
+                        <th>Parameter Name</th>
+                        <th>Expected Value</th>
+                        <th>Default State</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>log_in</td>
+                        <td>true, false</td>
+                        <td>false</td>
+                        <td>
+                            <p>Whether to auto log in the user after successful registration</p>
+                            <p><strong>Logged Out Users</strong></p>
+                            <ul>
+                                <li>&middot; If user tries to login with an existing username/email, they are asked to login first.</li>
+                                <li>&middot; If they click the login link it displays the login form.</li>
+                                <li>&middot; After successful login, the membership form is loaded and username/email is prefilled.</li>
+                                <li>&middot; After successful submission a user account is created and (if password fields were not used) the password form is loaded.</li>
+                                <li>&middot; The user must change their password (password was auto-generated) then they are redirected.</li>
+                                <li><strong>Logged in users</strong></li>
+                                <li>&middot; User fields are pre-filled, and username/email fields are readonly</li>
+                                <li>&middot; After submission, user is redirected</li>
+                            </ul>
+                        </td>
+                        <td>log_in="true"</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th>Parameter Name</th>
+                        <th>Expected Value</th>
+                        <th>Default State</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                </tfoot>
+            </table>
+            <h3>Membership Form</h3>
+            <table class="widefat">
+                <thead>
+                    <tr>
+                        <th>Parameter Name</th>
+                        <th>Expected Value</th>
+                        <th>Default State</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Plan_id (required)</td>
+                        <td>integer</td>
+                        <td>null</td>
+                        <td>Membership ID that this form will add the user to</td>
+                        <td>plan_id="1234"</td>
+                    </tr>
+                </tbody>
+                <tr>
+                    <td>member_message</td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Display a message in place of the form if a logged in user is already a member</td>
+                    <td>member_message="Looks like you’re already a member."</td>
+                </tr>
+                <tfoot>
+                    <tr>
+                        <th>Parameter Name</th>
+                        <th>Expected Value</th>
+                        <th>Default State</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                </tfoot>
+            </table>
+            <h2>Usage Examples</h2>
+            <h3>Login Form</h3>
+            <p><pre>[wampum_login_form title="Login Now!" redirect="https://bizbudding.com"]</pre></p>
+            <h3>Password Form</h3>
+            <p><pre>[wampum_password_form title="Set A New Password"]</pre></p>
+            <h3>Membership Form</h3>
+            <p><pre>[wampum_membership_form plan_id="26180" title="Join Now!" title_wrap="h3" desc="Fill out this form to get instant access." first_name=true last_name=false username=false member_message="Woot! You are already a member!" button="Join Now" notifications="mike@email.com, david@email.com" redirect="https://bizbudding.com/my-account/"]</pre></p>
         </div>
         <?php
     }
