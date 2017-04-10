@@ -438,7 +438,7 @@ class Wampum_Form_Settings {
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Plan_id (required)</td>
+                        <td>plan_id (required)</td>
                         <td>integer</td>
                         <td>null</td>
                         <td>Membership ID that this form will add the user to</td>
