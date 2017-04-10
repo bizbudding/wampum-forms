@@ -1,4 +1,4 @@
-#Wampum Forms#
+# Wampum Forms
 Create login, password, register, subscribe, and free membership (w/ user registration) forms that use the WP-API form processing
 * Use a simple shortcode (or PHP function) to create forms throughout your website
 * Elegant error/success notices
@@ -9,13 +9,13 @@ Create login, password, register, subscribe, and free membership (w/ user regist
 
 ![Wampum Forms example](assets/wampum-user-forms.jpg)
 
-##Basic Usage##
+## Basic Usage
 
-###Login Form###
+### Login Form
 
 Allows a logged out user to login.
 
-####Shortcode####
+#### Shortcode
 
 **Default:**
 ```
@@ -27,7 +27,7 @@ Allows a logged out user to login.
 [wampum_login_form title="Login Now!" redirect="https://bizbudding.com"]
 ```
 
-####PHP####
+#### PHP
 
 **Default:**
 ```
@@ -43,11 +43,11 @@ $args = array(
 echo wampum_get_login_form( $args );
 ```
 
-###Password Form###
+### Password Form
 
 Allows a logged in user to change their password.
 
-####Shortcode####
+#### Shortcode
 
 **Default:**
 ```
@@ -59,7 +59,7 @@ Allows a logged in user to change their password.
 [wampum_password_form title="Set A New Password"]
 ```
 
-####PHP###
+#### PHP
 
 **Default:**
 ```
@@ -75,11 +75,11 @@ $args = array(
 echo wampum_get_password_form( $args );
 ```
 
-###Membership Form###
+### Membership Form
 
 Creates a clean and efficient onboarding flow for adding users to a WooCommerce membership.
 
-####Shortcode####
+#### Shortcode
 
 ```
 [wampum_membership_form plan_id="26180" title="Join Now!" redirect="https://bizbudding.com/my-account/"]
@@ -91,7 +91,7 @@ Creates a clean and efficient onboarding flow for adding users to a WooCommerce 
 [wampum_membership_form plan_id="26180" title="Join Now!" title_wrap="h2" desc="Fill out this form to get instant access." first_name=true last_name=false username=false member_message="Woot! You are already a member!" button="Join Now" notifications="mike@bizbudding.com, david@bizbudding.com" redirect="https://bizbudding.com/my-account/"]
 ```
 
-####PHP####
+#### PHP
 
 ```
 $args = array(
@@ -121,7 +121,7 @@ $args = array(
 echo wampum_get_membership_form( $args );
 ```
 
-####Logged out users###
+#### Logged out users
 
 * If user tries to login with an existing username/email, they are asked to login first.
 If they click the login link it displays the login form.
@@ -130,16 +130,16 @@ After successful login, the membership form is loaded and username/email is pref
 The user must change their password (password was auto-generated) then they are redirected.
 * If SharpSpring parameters are used, the submission is sent to SS during processing.
 
-####Logged in users####
+#### Logged in users
 
 * User fields are pre-filled, and username/email fields are readonly
 * After submission, user is redirected
 
-##Shortcode parameters & PHP args##
+## Shortcode parameters & PHP args
 
 Most of these parameters work with all form types. Form specific parameters listed below.
 
-####hidden####
+#### hidden
 
 (boolean) true|false
 
@@ -151,7 +151,7 @@ Mostly used internally for membership form
 
 ---
 
-####inline####
+#### inline
 
 (boolean) true|false
 
@@ -163,7 +163,7 @@ Whether to display the form fields as inline columns
 
 ---
 
-####title####
+#### title
 
 (string) 'My Form Title'
 
@@ -173,7 +173,7 @@ Change the heading of the form
 
 ---
 
-####title_wrap####
+#### title_wrap
 
 (string) 'h4'
 
@@ -183,7 +183,7 @@ Change title wrapping element
 
 ---
 
-####desc####
+#### desc
 
 (string) 'Fill out the form below'
 
@@ -193,7 +193,7 @@ Add a description below the form title
 
 ---
 
-####first_name####
+#### first_name
 
 (boolean) true|false
 
@@ -203,7 +203,7 @@ Whether to show the first name field
 
 ---
 
-####first_name_label####
+#### first_name_label
 
 (string) 'Name' or 'First Name {if last name fields is used}'
 
@@ -213,7 +213,7 @@ First name field label
 
 ---
 
-####last_name####
+#### last_name
 
 (boolean) true|false
 
@@ -223,7 +223,7 @@ Whether to show the last name field
 
 ---
 
-####last_name_label####
+#### last_name_label
 
 (string) 'Last Name'
 
@@ -233,7 +233,7 @@ Last name field label
 
 ---
 
-####email####
+#### email
 
 (boolean) true|false
 
@@ -243,7 +243,7 @@ Whether to show the email field
 
 ---
 
-####email_label####
+#### email_label
 
 (string) 'Email'
 
@@ -253,7 +253,7 @@ Email field label
 
 ---
 
-####username####
+#### username
 
 (boolean) true|false
 
@@ -263,7 +263,7 @@ Whether to show the username field
 
 ---
 
-####username_label####
+#### username_label
 
 (string) 'Username'
 
@@ -273,7 +273,7 @@ Username field label
 
 ---
 
-####password####
+#### password
 
 (boolean) true|false
 
@@ -283,7 +283,7 @@ Whether to show the password field
 
 ---
 
-####password_label####
+#### password_label
 
 (string) 'Password'
 
@@ -293,7 +293,7 @@ Password field label
 
 ---
 
-####password_confirm####
+#### password_confirm
 
 (boolean) true|false
 
@@ -303,7 +303,7 @@ Whether to show the confirm password field
 
 ---
 
-####password_confirm_label####
+#### password_confirm_label
 
 (string) 'Password'
 
@@ -313,7 +313,7 @@ Password field label
 
 ---
 
-####password_strength####
+#### password_strength
 
 (boolean) true|false
 
@@ -323,7 +323,7 @@ Whether to show the password strength field
 
 ---
 
-####password_strength_label####
+#### password_strength_label
 
 (string) 'Password'
 
@@ -333,7 +333,7 @@ Password strength field label
 
 ---
 
-####notifications####
+#### notifications
 
 (string) 'mike@email.com,david@email.com'
 
@@ -343,7 +343,7 @@ Where to send email notifications after successful submission
 
 ---
 
-####redirect####
+#### redirect
 
 (string) 'https://bizbudding.com'
 
@@ -353,7 +353,7 @@ Where to redirect after successful submission
 
 ---
 
-####ac_list_ids####
+#### ac_list_ids
 
 (string) '1,3,12'
 
@@ -365,7 +365,7 @@ _Requires valid credentials in Settings > Wampum Forms_
 
 ---
 
-####ac_tags####
+#### ac_tags
 
 (string) 'some tag,leads'
 
@@ -377,7 +377,7 @@ _Requires valid credentials in Settings > Wampum Forms_
 
 ---
 
-####button####
+#### button
 
 (string) 'Submit'
 
@@ -387,9 +387,9 @@ Submit button text
 
 ---
 
-###Login Form###
+### Login Form
 
-####remember####
+#### remember
 
 (boolean) true|false
 
@@ -399,7 +399,7 @@ Show the remember me checkbox
 
 ---
 
-####value_remember####
+#### value_remember
 
 (boolean) true|false
 
@@ -409,9 +409,9 @@ Default "Remember Me" checked or unchecked
 
 ---
 
-###Register Form###
+### Register Form
 
-####log_in####
+#### log_in
 
 (boolean) true|false
 
@@ -419,9 +419,9 @@ Default "Remember Me" checked or unchecked
 
 Whether to auto log in the user after successful registration
 
-###Membership Form###
+### Membership Form
 
-####plan_id (**required**)####
+#### plan_id (**required**)
 
 (integer) 1234
 
@@ -431,7 +431,7 @@ Membership ID that this form will add the user to
 
 ---
 
-####member_message####
+#### member_message
 
 (string) 'You are already a member!'
 
