@@ -1094,6 +1094,12 @@ final class Wampum_Forms {
 		// First Name
 		if ( $args['first_name'] ) {
 
+			// Default label
+			$first_name_label = __( 'Name', 'wampum' );
+			// If we have a custom label
+			if ( $args['first_name_label'] ) {
+				$first_name_label = $args['first_name_label'];
+			}
 			$join->add_field( 'text', array(
 				'name'	=> 'first_name',
 				'class'	=> 'first-name',
