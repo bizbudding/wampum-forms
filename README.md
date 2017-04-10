@@ -1,4 +1,4 @@
-# Wampum Forms
+# Wampum Forms#
 Create login, password, register, subscribe, and free membership (w/ user registration) forms that use the WP-API form processing
 * Use a simple shortcode (or PHP function) to create forms throughout your website
 * Elegant error/success notices
