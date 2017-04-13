@@ -1159,17 +1159,21 @@ final class Wampum_Forms {
 				'label'	=> ! empty( $args['password_label'] ) ? $args['password_label'] : __( 'Password', 'wampum' ),
 			) );
 
-			// Load password strength script
-			$this->password_meter = true;
+			if ( $args['password_strength'] ) {
 
-			// Password strength
-			$join->add_field( 'password_strength', array(
-				'name'	=> 'password_strength',
-				'class'	=> 'password-strength',
-				'style'	=> 'display:none;',
-			), array(
-				'label'	=> ! empty( $args['password_strength_label'] ) ? $args['password_strength_label'] : __( 'Strength', 'wampum' ),
-			) );
+				// Load password strength script
+				$this->password_meter = true;
+
+				// Password strength
+				$join->add_field( 'password_strength', array(
+					'name'	=> 'password_strength',
+					'class'	=> 'password-strength',
+					'style'	=> 'display:none;',
+				), array(
+					'label'	=> ! empty( $args['password_strength_label'] ) ? $args['password_strength_label'] : __( 'Strength', 'wampum' ),
+				) );
+
+			}
 
 		}
 

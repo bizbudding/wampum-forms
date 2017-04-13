@@ -1,3 +1,6 @@
+#### 1.1.3
+* Allow password_strength parameter in membership form
+
 #### 1.1.2
 * Fix empty first name label when logged in and viewing [wampum_membership_form]
 
