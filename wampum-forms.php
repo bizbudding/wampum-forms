@@ -9,14 +9,16 @@
  * @wordpress-plugin
  * Plugin Name:        Wampum - Forms
  * Description: 	   Create login, password, and free membership (w/ user registration) forms that use the WP-API form processing
- * Plugin URI:         https://github.com/JiveDig/wampum-forms
+ * Plugin URI:         https://github.com/bizbudding/wampum-forms
  * Author:             Mike Hemberger
  * Author URI:         https://bizbudding.com
  * Text Domain:        wampum
  * License:            GPL-2.0+
  * License URI:        http://www.gnu.org/licenses/gpl-2.0.txt
+ *
  * Version:            1.1.4
- * GitHub Plugin URI:  https://github.com/JiveDig/wampum-forms
+ *
+ * GitHub Plugin URI:  https://github.com/bizbudding/wampum-forms
  * GitHub Branch:	   master
  */
 
