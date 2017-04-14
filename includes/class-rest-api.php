@@ -436,6 +436,16 @@ final class Wampum_Forms_Rest_API {
 	    	);
 			$user = wp_signon( $signon_data );
 
+			if ( ! is_wp_error( $user ) ) {
+				/**
+				 * Set the current wp user.
+				 * When using incognito window (or other situation i'm sure),
+				 * the user wasn't fully logged in and would hit Content Restricted
+				 * error when landing on a protected page (Woo Memberships).
+				 */
+			    wp_set_current_user($user_id);
+			}
+
         }
 
         // Notifications
