@@ -8,7 +8,7 @@
  *
  * @wordpress-plugin
  * Plugin Name:        Wampum - Forms
- * Description: 	   Create login, password, and free membership (w/ user registration) forms that use the WP-API form processing
+ * Description:        Create login, password, and free membership (w/ user registration) forms that use the WP-API form processing
  * Plugin URI:         https://github.com/bizbudding/wampum-forms
  * Author:             Mike Hemberger
  * Author URI:         https://bizbudding.com
@@ -16,10 +16,10 @@
  * License:            GPL-2.0+
  * License URI:        http://www.gnu.org/licenses/gpl-2.0.txt
  *
- * Version:            1.1.4
+ * Version:            1.2.0
  *
  * GitHub Plugin URI:  https://github.com/bizbudding/wampum-forms
- * GitHub Branch:	   master
+ * GitHub Branch:      master
  */
 
 
@@ -80,7 +80,7 @@ final class Wampum_Forms_Setup {
 			self::$instance->setup_constants();
 			self::$instance->includes();
 			// Instantiate Classes
-			self::$instance->forms 	  = Wampum_Forms::instance();
+			self::$instance->forms    = Wampum_Forms::instance();
 			self::$instance->rest_api = Wampum_Forms_Rest_API::instance();
 			self::$instance->settings = Wampum_Form_Settings::instance();
 		}
@@ -121,7 +121,7 @@ final class Wampum_Forms_Setup {
 	private function setup_constants() {
 		// Plugin version.
 		if ( ! defined( 'WAMPUM_FORMS_VERSION' ) ) {
-			define( 'WAMPUM_FORMS_VERSION', '1.1.4' );
+			define( 'WAMPUM_FORMS_VERSION', '1.2.0' );
 		}
 		// Plugin Folder Path.
 		if ( ! defined( 'WAMPUM_FORMS_PLUGIN_DIR' ) ) {
@@ -158,8 +158,8 @@ final class Wampum_Forms_Setup {
 		require_once WAMPUM_FORMS_INCLUDES_DIR . 'class-rest-api.php';
 		require_once WAMPUM_FORMS_INCLUDES_DIR . 'class-settings.php';
 		require_once WAMPUM_FORMS_INCLUDES_DIR . 'helpers.php';
-    	// Vendor
-    	require_once WAMPUM_FORMS_INCLUDES_DIR . 'vendor/activecampaign-api-php/includes/ActiveCampaign.class.php';
+		// Vendor
+		require_once WAMPUM_FORMS_INCLUDES_DIR . 'vendor/activecampaign-api-php/includes/ActiveCampaign.class.php';
 
 	}
 
