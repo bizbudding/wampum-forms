@@ -167,7 +167,7 @@ Whether to display the form fields as inline columns
 
 (string) 'My Form Title'
 
-**Default** `{different per form]`
+**Default** `null`
 
 Change the heading of the form
 
