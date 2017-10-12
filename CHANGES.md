@@ -1,3 +1,6 @@
+#### 1.2.2 (10/12/17)
+* Added: Included updater script.
+
 #### 1.2.1 (10/12/17)
 * Fixed: Scripts were not loading when using form in a Gravity Forms confirmation.
 
