@@ -1,3 +1,6 @@
+#### 1.2.1 (10/12/17)
+* Fixed: Scripts were not loading when using form in a Gravity Forms confirmation.
+
 #### 1.2.0
 * Changed: Form titles no longer show by default. You have to specify the title="Some Title" in the shortcode parameters now.
 
