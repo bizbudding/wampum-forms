@@ -53,9 +53,8 @@ final class Wampum_Forms {
 	 */
 	function setup() {
 
-		// Register styles and scripts
-		add_action( 'wp_enqueue_scripts', array( $this, 'register_stylesheets' ) );
-		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
+		// Enqueue styles and scripts
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 
 		// Shortcodes
 		add_shortcode( 'wampum_form',            array( $this, 'get_form' ) );
@@ -68,22 +67,6 @@ final class Wampum_Forms {
 	}
 
 	/**
-	 * Register stylesheets for later use
-	 *
-	 * Use via wp_enqueue_style('wampum-forms'); in a template
-	 *
-	 * @since  1.0.0
-	 *
-	 * @return void
-	 */
-	function register_stylesheets() {
-		if ( ( $this->form_counter > 0 ) ) {
-			// CSS
-			wp_enqueue_style( 'wampum-forms', WAMPUM_FORMS_PLUGIN_URL . 'css/wampum-forms.min.css', array(), WAMPUM_FORMS_VERSION );
-		}
-	}
-
-	/**
 	 * Register scripts for later use
 	 *
 	 * Use via wp_enqueue_script('wampum-login'); in a template
@@ -92,8 +75,10 @@ final class Wampum_Forms {
 	 *
 	 * @return void
 	 */
-	function register_scripts() {
+	function enqueue_scripts() {
 		if ( ( $this->form_counter > 0 ) ) {
+			// CSS
+			wp_enqueue_style( 'wampum-forms', WAMPUM_FORMS_PLUGIN_URL . 'css/wampum-forms.min.css', array(), WAMPUM_FORMS_VERSION );
 			// JS
 			if ( $this->password_meter ) {
 				wp_enqueue_script( 'wampum-zxcvbn', WAMPUM_FORMS_PLUGIN_URL . 'js/zxcvbn.js', array('jquery'), '4.4.2', true );
@@ -112,27 +97,6 @@ final class Wampum_Forms {
 					'mismatch' => __( 'Passwords do not match', 'wampum' ),
 				),
 			) );
-		}
-	}
-
-	/**
-	 * Enqueue scripts if there are forms present
-	 * This needs to be called right in the form method
-	 * Since it will be too early on 'wp_enqueue_scripts' hook
-	 *
-	 * @since  1.0.0
-	 *
-	 * @return void
-	 */
-	function enqueue_scripts() {
-		if ( ( $this->form_counter > 0 ) ) {
-			// CSS
-			wp_enqueue_style('wampum-forms');
-			// JS
-			if ( $this->password_meter ) {
-				wp_enqueue_script('wampum-zxcvbn');
-			}
-			wp_enqueue_script('wampum-forms');
 		}
 	}
 
