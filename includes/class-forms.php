@@ -53,31 +53,17 @@ final class Wampum_Forms {
 	 */
 	function setup() {
 
-		// Register styles and scripts
-		add_action( 'wp_enqueue_scripts', array( $this, 'register_stylesheets' ) );
-		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
+		// Enqueue styles and scripts
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 
 		// Shortcodes
-		add_shortcode( 'wampum_form', 				array( $this, 'get_form' ) );
-		add_shortcode( 'wampum_login_form', 		array( $this, 'login_form_callback' ) );
-		add_shortcode( 'wampum_register_form', 		array( $this, 'register_form_callback' ) );
-		add_shortcode( 'wampum_password_form', 		array( $this, 'password_form_callback' ) );
-		add_shortcode( 'wampum_subscribe_form', 	array( $this, 'subscribe_form_callback' ) );
-		add_shortcode( 'wampum_membership_form', 	array( $this, 'membership_form_callback' ) );
+		add_shortcode( 'wampum_form',            array( $this, 'get_form' ) );
+		add_shortcode( 'wampum_login_form',      array( $this, 'login_form_callback' ) );
+		add_shortcode( 'wampum_register_form',   array( $this, 'register_form_callback' ) );
+		add_shortcode( 'wampum_password_form',   array( $this, 'password_form_callback' ) );
+		add_shortcode( 'wampum_subscribe_form',  array( $this, 'subscribe_form_callback' ) );
+		add_shortcode( 'wampum_membership_form', array( $this, 'membership_form_callback' ) );
 
-	}
-
-	/**
-	 * Register stylesheets for later use
-	 *
-	 * Use via wp_enqueue_style('wampum-forms'); in a template
-	 *
-	 * @since  1.0.0
-	 *
-	 * @return void
-	 */
-	function register_stylesheets() {
-	    wp_register_style( 'wampum-forms', WAMPUM_FORMS_PLUGIN_URL . 'css/wampum-forms.min.css', array(), WAMPUM_FORMS_VERSION );
 	}
 
 	/**
@@ -89,42 +75,28 @@ final class Wampum_Forms {
 	 *
 	 * @return void
 	 */
-	function register_scripts() {
-		// All Forms
-        wp_register_script( 'wampum-zxcvbn', WAMPUM_FORMS_PLUGIN_URL . 'js/zxcvbn.js', array('jquery'), '4.4.2', true );
-        wp_register_script( 'wampum-forms', WAMPUM_FORMS_PLUGIN_URL . 'js/wampum-forms.min.js', array('jquery'), WAMPUM_FORMS_VERSION, true );
-        wp_localize_script( 'wampum-forms', 'wampumFormVars', array(
-			'root'				=> esc_url_raw( rest_url() ),
-			'nonce'				=> wp_create_nonce( 'wp_rest' ),
-			'failure'			=> __( 'Something went wrong, please try again.', 'wampum' ),
-			'current_url'		=> ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], // For login URL if email/username exists and SharpSpring
-			'login'	=> array(
-				'empty'	=> __( 'Username and password fields are empty', 'wampum' ),
-			),
-			'password' => array(
-				'mismatch'	=> __( 'Passwords do not match', 'wampum' ),
-			),
-        ) );
-	}
-
-	/**
-	 * Enqueue scripts if there are forms present
-	 * This needs to be called right in the form method
-	 * Since it will be too early on 'wp_enqueue_scripts' hook
-	 *
-	 * @since  1.0.0
-	 *
-	 * @return void
-	 */
 	function enqueue_scripts() {
 		if ( ( $this->form_counter > 0 ) ) {
 			// CSS
-			wp_enqueue_style('wampum-forms');
+			wp_enqueue_style( 'wampum-forms', WAMPUM_FORMS_PLUGIN_URL . 'css/wampum-forms.min.css', array(), WAMPUM_FORMS_VERSION );
 			// JS
 			if ( $this->password_meter ) {
-				wp_enqueue_script('wampum-zxcvbn');
+				wp_enqueue_script( 'wampum-zxcvbn', WAMPUM_FORMS_PLUGIN_URL . 'js/zxcvbn.js', array('jquery'), '4.4.2', true );
 			}
-			wp_enqueue_script('wampum-forms');
+			// All Forms
+			wp_enqueue_script( 'wampum-forms', WAMPUM_FORMS_PLUGIN_URL . 'js/wampum-forms.min.js', array('jquery'), WAMPUM_FORMS_VERSION, true );
+			wp_localize_script( 'wampum-forms', 'wampumFormVars', array(
+				'root'        => esc_url_raw( rest_url() ),
+				'nonce'       => wp_create_nonce( 'wp_rest' ),
+				'failure'     => __( 'Something went wrong, please try again.', 'wampum' ),
+				'current_url' => ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], // For login URL if email/username exists and SharpSpring
+				'login'       => array(
+					'empty' => __( 'Username and password fields are empty', 'wampum' ),
+				),
+				'password' => array(
+					'mismatch' => __( 'Passwords do not match', 'wampum' ),
+				),
+			) );
 		}
 	}
 
@@ -215,52 +187,52 @@ final class Wampum_Forms {
 	/**
 	 * Get a form, by type.
 	 *
-	 * @since 	1.1.0
+	 * @since  1.1.0
 	 *
-	 * @param 	array  $args  {
+	 * @param  array  $args  {
 	 *
 	 *      Associative array of args to build form.
 	 *
-	 * 		@type  string   $type 		 	 			(required) The type of form to return
-	 * 		@type  bool 	$hidden			 			Whether to hide the form by default (display:none; inline style)
-	 * 		@type  bool 	$inline			 			Display the form fields in a row
-	 * 		@type  string   $title 			 			The form title to display
-	 * 		@type  string   $title_wrap 	 			The title wrap element
-	 * 		@type  string   $desc 			 			The form description to display
-	 * 		@type  bool 	$first_name 	 			Whether to show first name field
-	 * 		@type  bool 	$last_name	 	 			Whether to show last name field
-	 * 		@type  bool 	$email  	 	 			Whether to show email field
-	 * 		@type  bool 	$username 	 	 			Whether to show username field
-	 * 		@type  bool 	$password 					Whether to show password field
-	 * 		@type  bool 	$password_confirm   		Whether to show password confirm field
-	 * 		@type  bool 	$password_strength  		Whether to show password strength meter
-	 * 		@type  string 	$first_name_label 			The label of the first name field
-	 * 		@type  string 	$last_name_label	 		The label of the last name field
-	 * 		@type  string 	$email_label  	 	 		The label of the email field
-	 * 		@type  string 	$username_label 	 	 	The label of the username field
-	 * 		@type  string 	$password_label 			The label of the password field
-	 * 		@type  string 	$password_confirm_label   	The label of the password confirm field
-	 * 		@type  string 	$password_strength_label  	The label of the password strength meter
-	 * 		@type  string 	$button	 		 			The button text to display
-	 * 		@type  string   $notifications 	 			Comma-separated list of emails to notify upons successful submission
-	 * 		@type  string   $redirect 		 			URL to redirect after form submission
-	 * 		@type  integer 	$ac_list_ids	 			Comma-separated list of ActiveCampaign list IDs to add a contact to
-	 * 		@type  integer 	$ac_tags	 	 			Comma-separated list of ActiveCampaign tag IDs to add a contact to
+	 *      @type  string   $type                       (required) The type of form to return
+	 *      @type  bool     $hidden                     Whether to hide the form by default (display:none; inline style)
+	 *      @type  bool     $inline                     Display the form fields in a row
+	 *      @type  string   $title                      The form title to display
+	 *      @type  string   $title_wrap                 The title wrap element
+	 *      @type  string   $desc                       The form description to display
+	 *      @type  bool     $first_name                 Whether to show first name field
+	 *      @type  bool     $last_name                  Whether to show last name field
+	 *      @type  bool     $email                      Whether to show email field
+	 *      @type  bool     $username                   Whether to show username field
+	 *      @type  bool     $password                   Whether to show password field
+	 *      @type  bool     $password_confirm           Whether to show password confirm field
+	 *      @type  bool     $password_strength          Whether to show password strength meter
+	 *      @type  string   $first_name_label           The label of the first name field
+	 *      @type  string   $last_name_label            The label of the last name field
+	 *      @type  string   $email_label                The label of the email field
+	 *      @type  string   $username_label             The label of the username field
+	 *      @type  string   $password_label             The label of the password field
+	 *      @type  string   $password_confirm_label     The label of the password confirm field
+	 *      @type  string   $password_strength_label    The label of the password strength meter
+	 *      @type  string   $button                     The button text to display
+	 *      @type  string   $notifications              Comma-separated list of emails to notify upons successful submission
+	 *      @type  string   $redirect                   URL to redirect after form submission
+	 *      @type  integer  $ac_list_ids                Comma-separated list of ActiveCampaign list IDs to add a contact to
+	 *      @type  integer  $ac_tags                    Comma-separated list of ActiveCampaign tag IDs to add a contact to
 	 *
-	 * 		// Login-specific form params
+	 *      // Login-specific form params
 	 *
-	 * 		@type  bool  	$remember 		 			Whether to remember the values and stay logged in
-	 * 		@type  string 	$username_label 			The label of the username field
-	 * 		@type  bool  	$value_remember	 			Whether to start the 'remember' checkbox as checked
+	 *      @type  bool     $remember                   Whether to remember the values and stay logged in
+	 *      @type  string   $username_label             The label of the username field
+	 *      @type  bool     $value_remember             Whether to start the 'remember' checkbox as checked
 	 *
-	 * 		// Register-specific form params
+	 *      // Register-specific form params
 	 *
-	 * 		@type  bool  	$log_in	 		 			Whether to log user in after registration
+	 *      @type  bool     $log_in                     Whether to log user in after registration
 	 *
-	 * 		// Membership-specific form params
+	 *      // Membership-specific form params
 	 *
-	 * 		@type  integer  $plan_id 		 			(required) The WooCommerce Memberships ID
-	 * 		@type  string  	$member_message	 			Message to display in place of the form if a logged in user is already a member
+	 *      @type  integer  $plan_id                    (required) The WooCommerce Memberships ID
+	 *      @type  string   $member_message             Message to display in place of the form if a logged in user is already a member
 	 *
 	 * }
 	 *
@@ -353,31 +325,31 @@ final class Wampum_Forms {
 		}
 
 		// Get the form by type
-        switch ( $type ) {
-            case 'login':
-                $form = $this->get_login_form( $args );
-                break;
-            case 'password':
-                $form = $this->get_password_form( $args );
-                break;
-            case 'register':
-                $form = $this->get_register_form( $args );
-                break;
-            case 'subscribe':
-                $form = $this->get_subscribe_form( $args );
-                break;
-            case 'membership':
-                $form = $this->get_membership_form( $args );
-                break;
-            default:
-                $form = '';
-                break;
-        }
+		switch ( $type ) {
+			case 'login':
+				$form = $this->get_login_form( $args );
+			break;
+			case 'password':
+				$form = $this->get_password_form( $args );
+			break;
+			case 'register':
+				$form = $this->get_register_form( $args );
+			break;
+			case 'subscribe':
+				$form = $this->get_subscribe_form( $args );
+			break;
+			case 'membership':
+				$form = $this->get_membership_form( $args );
+			break;
+			default:
+				$form = '';
+			break;
+		}
 
-        // Bail if no form
-        if ( empty($form) ) {
-        	return;
-        }
+		// Bail if no form
+		if ( empty($form) ) {
+			return;
+		}
 
 		// Enqueue Scripts
 		$this->enqueue_scripts();
@@ -411,8 +383,8 @@ final class Wampum_Forms {
 
 		// Honeypot
 		$form->add_field( 'text', array(
-			'name'	=> 'say_what',
-			'class'	=> 'say-what',
+			'name'  => 'say_what',
+			'class' => 'say-what',
 		));
 
 		// Username
