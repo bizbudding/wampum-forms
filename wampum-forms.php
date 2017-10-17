@@ -16,7 +16,7 @@
  * License:            GPL-2.0+
  * License URI:        http://www.gnu.org/licenses/gpl-2.0.txt
  *
- * Version:            1.2.2
+ * Version:            1.2.3
  *
  * GitHub Plugin URI:  https://github.com/bizbudding/wampum-forms
  * GitHub Branch:      master
@@ -121,7 +121,7 @@ final class Wampum_Forms_Setup {
 	private function setup_constants() {
 		// Plugin version.
 		if ( ! defined( 'WAMPUM_FORMS_VERSION' ) ) {
-			define( 'WAMPUM_FORMS_VERSION', '1.2.2' );
+			define( 'WAMPUM_FORMS_VERSION', '1.2.3' );
 		}
 		// Plugin Folder Path.
 		if ( ! defined( 'WAMPUM_FORMS_PLUGIN_DIR' ) ) {
@@ -171,7 +171,6 @@ final class Wampum_Forms_Setup {
 			require_once WAMPUM_FORMS_INCLUDES_DIR . 'vendor/plugin-update-checker/plugin-update-checker.php';
 		}
 		$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/bizbudding/wampum-forms/', __FILE__, 'wampum-forms' );
-
 	}
 
 }
