@@ -1,3 +1,6 @@
+#### 1.2.4 (10/31/17)
+* Fixed: Allow #hash in form redirect.
+
 #### 1.2.3 (10/12/17)
 * Fixed: Align labels to the left, so Mai Pro sections with centered content won't center labels.
 

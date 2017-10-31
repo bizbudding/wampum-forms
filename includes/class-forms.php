@@ -84,7 +84,7 @@ final class Wampum_Forms {
 				wp_enqueue_script( 'wampum-zxcvbn', WAMPUM_FORMS_PLUGIN_URL . 'js/zxcvbn.js', array('jquery'), '4.4.2', true );
 			}
 			// All Forms
-			wp_enqueue_script( 'wampum-forms', WAMPUM_FORMS_PLUGIN_URL . 'js/wampum-forms.min.js', array('jquery'), WAMPUM_FORMS_VERSION, true );
+			wp_enqueue_script( 'wampum-forms', WAMPUM_FORMS_PLUGIN_URL . 'js/wampum-forms.js', array('jquery'), WAMPUM_FORMS_VERSION, true );
 			wp_localize_script( 'wampum-forms', 'wampumFormVars', array(
 				'root'        => esc_url_raw( rest_url() ),
 				'nonce'       => wp_create_nonce( 'wp_rest' ),
