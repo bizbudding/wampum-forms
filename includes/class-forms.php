@@ -176,7 +176,7 @@ final class Wampum_Forms {
 	 * @return string  the form HTML
 	 */
 	function membership_form_callback( $args ) {
-		// Bail if WooCommerce Memberships is not active
+		// Bail if WooCommerce Memberships is not active.
 		if ( ! function_exists( 'wc_memberships' ) ) {
 			return;
 		}
@@ -382,9 +382,11 @@ final class Wampum_Forms {
 		), $args );
 
 		// Honeypot
-		$form->add_field( 'text', array(
+		$form->add_field( 'url', array(
 			'name'  => 'say_what',
 			'class' => 'say-what',
+		), array(
+			'label' => 'URL',
 		));
 
 		// Username
@@ -480,9 +482,11 @@ final class Wampum_Forms {
 		), $args );
 
 		// Honeypot
-		$form->add_field( 'text', array(
+		$form->add_field( 'url', array(
 			'name'  => 'say_what',
 			'class' => 'say-what',
+		), array(
+			'label' => 'URL',
 		));
 
 		// Password
@@ -573,9 +577,11 @@ final class Wampum_Forms {
 		), $args );
 
 		// Honeypot
-		$form->add_field( 'text', array(
+		$form->add_field( 'url', array(
 			'name'  => 'say_what',
 			'class' => 'say-what',
+		), array(
+			'label' => 'URL',
 		));
 
 		// First Name
@@ -772,9 +778,11 @@ final class Wampum_Forms {
 		), $args );
 
 		// Honeypot
-		$form->add_field( 'text', array(
+		$form->add_field( 'url', array(
 			'name'  => 'say_what',
 			'class' => 'say-what',
+		), array(
+			'label' => 'URL',
 		));
 
 		// First Name
@@ -923,9 +931,11 @@ final class Wampum_Forms {
 			), $args );
 
 			// Honeypot
-			$user_available->add_field( 'text', array(
+			$user_available->add_field( 'url', array(
 				'name'  => 'say_what',
 				'class' => 'say-what',
+			), array(
+				'label' => 'URL',
 			));
 
 			// First Name
@@ -1037,9 +1047,11 @@ final class Wampum_Forms {
 		), $args );
 
 		// Honeypot
-		$join->add_field( 'text', array(
+		$join->add_field( 'url', array(
 			'name'  => 'say_what',
 			'class' => 'say-what',
+		), array(
+			'label' => 'URL',
 		));
 
 		// First Name
@@ -1212,9 +1224,11 @@ final class Wampum_Forms {
 		), $args );
 
 		// Honeypot
-		$login->add_field( 'text', array(
+		$login->add_field( 'url', array(
 			'name'  => 'say_what',
 			'class' => 'say-what',
+		), array(
+			'label' => 'URL',
 		));
 
 		// Username
