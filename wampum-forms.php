@@ -27,12 +27,14 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 if ( ! class_exists( 'Wampum_Forms_Setup' ) ) :
+
 /**
  * Main Wampum_Forms_Setup Class.
  *
  * @since 1.0.0
  */
 final class Wampum_Forms_Setup {
+
 	/**
 	 * Singleton
 	 * @var   Wampum_Forms_Setup The one true Wampum_Forms_Setup
@@ -50,13 +52,13 @@ final class Wampum_Forms_Setup {
 	public $forms;
 
 	/**
-	 * Wampum Rest API Object
+	 * Wampum Submissions Object
 	 *
 	 * @since 1.0.0
 	 *
-	 * @var object | Wampum_Forms_Rest_API
+	 * @var object | Wampum_Forms_Submissions
 	 */
-	public $rest_api;
+	public $submissions;
 
 	/**
 	 * Main Wampum_Forms_Setup Instance.
@@ -80,9 +82,9 @@ final class Wampum_Forms_Setup {
 			self::$instance->setup_constants();
 			self::$instance->includes();
 			// Instantiate Classes
-			self::$instance->forms    = Wampum_Forms::instance();
-			self::$instance->rest_api = Wampum_Forms_Rest_API::instance();
-			self::$instance->settings = Wampum_Form_Settings::instance();
+			self::$instance->forms       = Wampum_Forms::instance();
+			self::$instance->submissions = Wampum_Forms_Submissions::instance();
+			self::$instance->settings    = Wampum_Form_Settings::instance();
 		}
 		return self::$instance;
 	}
@@ -155,11 +157,12 @@ final class Wampum_Forms_Setup {
 	private function includes() {
 		require_once WAMPUM_FORMS_INCLUDES_DIR . 'class-form.php';
 		require_once WAMPUM_FORMS_INCLUDES_DIR . 'class-forms.php';
-		require_once WAMPUM_FORMS_INCLUDES_DIR . 'class-rest-api.php';
+		require_once WAMPUM_FORMS_INCLUDES_DIR . 'class-submissions.php';
 		require_once WAMPUM_FORMS_INCLUDES_DIR . 'class-settings.php';
 		require_once WAMPUM_FORMS_INCLUDES_DIR . 'helpers.php';
+		require_once WAMPUM_FORMS_INCLUDES_DIR . 'integrations.php';
 		// Vendor
-		require_once WAMPUM_FORMS_INCLUDES_DIR . 'vendor/activecampaign-api-php/includes/ActiveCampaign.class.php';
+		require_once WAMPUM_FORMS_INCLUDES_DIR . 'vendor/activecampaign-api-php/includes/ActiveCampaign.class.php'; // v2.0.2
 		/**
 		 * Setup the updater.
 		 *

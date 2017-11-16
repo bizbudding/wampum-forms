@@ -5,7 +5,7 @@
  *
  * @since  1.0.0
  *
- * @param  array   $args	 Args to configure form
+ * @param  array   $args  Args to configure form
  *
  * @return string  The form
  */
@@ -18,7 +18,7 @@ function wampum_get_form( $args = array() ) {
  *
  * @since  1.0.0
  *
- * @param  array   $args	 Args to configure form
+ * @param  array   $args  Args to configure form
  *
  * @return string  The form
  */
@@ -31,7 +31,7 @@ function wampum_get_login_form( $args = array() ) {
  *
  * @since  1.0.0
  *
- * @param  array   $args	 Args to configure form
+ * @param  array   $args  Args to configure form
  *
  * @return string  The form
  */
@@ -44,7 +44,7 @@ function wampum_get_register_form( $args = array() ) {
  *
  * @since  1.0.0
  *
- * @param  array   $args	 Args to configure form
+ * @param  array   $args  Args to configure form
  *
  * @return string  The form
  */
@@ -57,7 +57,7 @@ function wampum_get_password_form( $args = array() ) {
  *
  * @since  1.0.0
  *
- * @param  array   $args	 Args to configure form
+ * @param  array   $args  Args to configure form
  *
  * @return string  The form
  */
@@ -71,7 +71,7 @@ function wampum_get_subscribe_form( $args = array() ) {
  *
  * @since  1.0.0
  *
- * @param  array   $args	 Args to configure form
+ * @param  array   $args  Args to configure form
  *
  * @return string  The form
  */
@@ -108,4 +108,64 @@ function wampum_attr( $attributes = array() ) {
 		}
 	}
 	return trim( $output );
+}
+
+/**
+ * Setup the Active Campaign contact data array.
+ * We need a helper function to help sanitize fields,
+ * and properly format comma separated IDs and tags to the way AC expects the data.
+ *
+ * @since   1.3.0
+ *
+ * @param   array  $data  The contact data array.
+ *
+ * @return  array        [description]
+ */
+function wampum_forms_setup_ac_contact( $data ) {
+
+	$contact = array();
+
+	if ( isset( $data['email'] ) && $data['email'] ) {
+		$contact = array( 'email' => sanitize_email( $data['email'] ) );
+	}
+
+	if ( isset( $data['first_name'] ) && $data['first_name'] ) {
+		$contact['first_name'] = sanitize_text_field( $data['first_name'] );
+	}
+
+	if ( isset( $data['last_name'] ) && $data['last_name'] ) {
+		$contact['last_name'] = sanitize_text_field( $data['last_name'] );
+	}
+
+	if ( isset( $data['ac_list_ids'] ) && $data['ac_list_ids'] ) {
+
+		$list_ids = explode( ',', $data['ac_list_ids'] );
+
+		// If we have list(s)
+		if ( ! empty( $list_ids ) ) {
+			// Add user to existing ActiveCampaign lists
+			foreach( $list_ids as $list_id ) {
+				$list_id = trim( $list_id );
+				$contact["p[{$list_id}]"]      = $list_id;
+				$contact["status[{$list_id}]"] = 1; // "Active" status
+			}
+		}
+
+	}
+
+	if ( isset( $data['ac_tags'] ) && $data['ac_tags'] ) {
+
+		$tags = explode( ',', $data['ac_tags'] );
+
+		// If we have tags
+		if ( ! empty( $tags ) ) {
+			// Add tags to user
+			foreach( $tags as $tag ) {
+				$tag = trim( $tag );
+				$contact["tags[{$tag}]"] = sanitize_text_field( $tag );
+			}
+		}
+	}
+
+	return $contact;
 }

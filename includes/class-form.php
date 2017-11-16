@@ -105,12 +105,12 @@ class Wampum_Form {
 
 		// Default form attributes
 		$defaults = array(
-			'style' 	=> '',
-			'action'	=> '',
-			'method'	=> 'post',
-			'enctype'	=> '',
-			'class'		=> '',
-			'id'		=> '',
+			'style'   => '',
+			'action'  => '',
+			'method'  => 'post',
+			'enctype' => '',
+			'class'   => '',
+			'id'      => '',
 		);
 		$atts = wp_parse_args( $atts, $defaults );
 
@@ -155,19 +155,19 @@ class Wampum_Form {
 	 * Add an input field to the form for outputting later
 	 *
 	 * $form->add_field( 'text', array(
-	 * 		'name'			=> 'wampum_field_name',
-	 * 		'id'			=> '',
-	 * 		'class'			=> 'wampum-field',
-	 * 		'style'			=> '',
-	 * 		'placeholder'	=> false,
-	 * 		'autofocus'		=> false,
-	 * 		'checked'		=> false,
-	 * 		'required'		=> false,
-	 * 		'selected'		=> false,
-	 * 	), array(
-	 * 		'label'	=> __( 'Field Label', 'wampum' ),
-	 * 		'value'	=> '',
-	 * 	) );
+	 *      'name'        => 'wampum_field_name',
+	 *      'id'          => '',
+	 *      'class'       => 'wampum-field',
+	 *      'style'       => '',
+	 *      'placeholder' => false,
+	 *      'autofocus'   => false,
+	 *      'checked'     => false,
+	 *      'required'    => false,
+	 *      'selected'    => false,
+	 * ), array(
+	 *      'label' => __( 'Field Label', 'wampum' ),
+	 *      'value' => '',
+	 * ) );
 	 *
 	 * @since   1.1.0
 	 *
@@ -186,15 +186,15 @@ class Wampum_Form {
 
 		// Parse attributes
 		$defaults = array(
-			'name'			=> '',
-			'id'			=> '',
-			'class'			=> '',
-			'style'			=> '',
-			'placeholder'	=> false, // false or string
-			'autofocus'		=> false, // bool
-			'checked'		=> false, // bool
-			'required'		=> false, // bool
-			'selected'		=> false, // bool
+			'name'        => '',
+			'id'          => '',
+			'class'       => '',
+			'style'       => '',
+			'placeholder' => false, // false or string
+			'autofocus'   => false, // bool
+			'checked'     => false, // bool
+			'required'    => false, // bool
+			'selected'    => false, // bool
 		);
 		$atts = wp_parse_args( $atts, $defaults );
 
@@ -241,6 +241,7 @@ class Wampum_Form {
 			'password',
 			'password_strength',
 			'text',
+			'url', // For spam.
 			'submit',
 		);
 	}
@@ -254,42 +255,45 @@ class Wampum_Form {
 	 */
 	function get_field_html( $type, $atts, $args ) {
 
-        switch ( $type ) {
-            case 'checkbox':
-                $field = $this->get_field_checkbox( $atts, $args );
-                break;
-            case 'email':
-                $field = $this->get_field_email( $atts, $args );
-                break;
-            case 'hidden':
-                $field = $this->get_field_hidden( $atts, $args );
-                break;
-            case 'password':
-                $field = $this->get_field_password( $atts, $args );
-                break;
-            case 'password_strength':
-                $field = $this->get_field_password_strength( $atts, $args );
-                break;
-            case 'text':
-                $field = $this->get_field_text( $atts, $args );
-                break;
-            case 'submit':
-                $field = $this->get_field_submit( $atts, $args );
-                break;
-            default:
-                $field = '';
-                break;
-        }
-        // Bail if no value
-        if ( empty( $field ) ) {
-        	return;
-        }
-        // Bail if hidden field as these get added in submit field wrap
-       	if ( 'hidden' == $type ) {
-       		return;
-       	}
+		switch ( $type ) {
+			case 'checkbox':
+				$field = $this->get_field_checkbox( $atts, $args );
+			break;
+			case 'email':
+				$field = $this->get_field_email( $atts, $args );
+			break;
+			case 'hidden':
+				$field = $this->get_field_hidden( $atts, $args );
+			break;
+			case 'password':
+				$field = $this->get_field_password( $atts, $args );
+			break;
+			case 'password_strength':
+				$field = $this->get_field_password_strength( $atts, $args );
+			break;
+			case 'text':
+				$field = $this->get_field_text( $atts, $args );
+			break;
+			case 'url':
+				$field = $this->get_field_url( $atts, $args );
+			break;
+			case 'submit':
+				$field = $this->get_field_submit( $atts, $args );
+			break;
+			default:
+				$field = '';
+			break;
+		}
+		// Bail if no value
+		if ( empty( $field ) ) {
+			return;
+		}
+		// Bail if hidden field as these get added in submit field wrap
+		if ( 'hidden' === $type ) {
+			return;
+		}
 
-        return $this->get_field_open( $type, $atts, $args ) . $field . $this->get_field_close( $type, $atts, $args );
+		return $this->get_field_open( $type, $atts, $args ) . $field . $this->get_field_close( $type, $atts, $args );
 	}
 
 	/**
@@ -410,6 +414,18 @@ class Wampum_Form {
 	 */
 	function get_field_text( $atts, $args ) {
 		$atts['type'] = 'text';
+		return $this->get_field_label( $atts, $args ) . $this->get_field_input( $atts, $args );
+	}
+
+	/**
+	 * Get url field HTML.
+	 *
+	 * @since   1.3.0
+	 *
+	 * @return  string  The field HTML
+	 */
+	function get_field_url( $atts, $args ) {
+		$atts['type'] = 'url';
 		return $this->get_field_label( $atts, $args ) . $this->get_field_input( $atts, $args );
 	}
 

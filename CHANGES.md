@@ -1,3 +1,6 @@
+#### 1.3.0 (11/16/17)
+* Added: Event Organiser Pro integration to send Active Campaign data via Booking forms. Set list IDs via 'AC List IDs' and tags via 'AC Tags' taxonomy metaboxes.
+
 #### 1.2.4 (10/31/17)
 * Fixed: Allow #hash in form redirect.
 
