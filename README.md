@@ -75,6 +75,39 @@ $args = array(
 echo wampum_get_password_form( $args );
 ```
 
+### Register Form
+
+Allows a user to register for the site.
+
+#### Shortcode
+
+**Default:**
+```
+[wampum_register_form]
+```
+
+**Custom:**
+```
+[wampum_register_form email=true username=false password="true" button="Join Now!"]
+```
+
+#### PHP
+
+**Default:**
+```
+echo wampum_get_register_form();
+```
+
+**Custom:**
+```
+$args = array(
+	'title'		=> 'Join Now!',
+	'redirect'	=> 'https://bizbudding.com/',
+);
+echo wampum_get_register_form( $args );
+```
+
+
 ### Membership Form
 
 Creates a clean and efficient onboarding flow for adding users to a WooCommerce membership.
