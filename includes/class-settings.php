@@ -135,9 +135,12 @@ class Wampum_Form_Settings {
 						<td>Allows a user to subscribe. Commonly used with ActiveCampaign to subscribe to a list.</td>
 					</tr>
 					<tr>
+						<td>[wampum_register_form]</td>
+						<td>Allows a user to register for the site.</td>
+					</tr>
+					<tr>
 						<td>* [wampum_membership_form]</td>
-						<td>Creates a clean and efficient onboarding flow for adding users to a WooCommerce membership.
-						</td>
+						<td>Creates a clean and efficient onboarding flow for adding users to a WooCommerce membership.</td>
 					</tr>
 				</tbody>
 				<tfoot>

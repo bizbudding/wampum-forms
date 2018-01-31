@@ -670,14 +670,27 @@ final class Wampum_Forms {
 
 			}
 
+			// If password strength not set, use it.
+			if ( empty( $args['password_strength'] ) ) {
+				$args['password_strength'] = true;
+			}
+
 			// Password strength
-			$form->add_field( 'password_strength', array(
-				'name'  => 'password_strength',
-				'class' => 'password-strength',
-				'style' => 'display:none;',
-			), array(
-				'label' => ! empty( $args['password_strength_label'] ) ? $args['password_strength_label'] : __( 'Strength', 'wampum' ),
-			) );
+			if ( $args['password_strength'] ) {
+
+				// Load password strength script
+				$this->password_meter = true;
+
+				// Password strength
+				$form->add_field( 'password_strength', array(
+					'name'  => 'password_strength',
+					'class' => 'password-strength',
+					'style' => 'display:none;',
+				), array(
+					'label' => ! empty( $args['password_strength_label'] ) ? $args['password_strength_label'] : __( 'Strength', 'wampum' ),
+				) );
+
+			}
 
 		}
 

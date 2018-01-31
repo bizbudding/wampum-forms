@@ -1,3 +1,8 @@
+# Changelog
+
+#### 1.3.1 (1/31/18)
+* Fixed: Password strength script not being loaded on registration forms.
+
 #### 1.3.0 (11/16/17)
 * Added: Event Organiser Pro integration to send Active Campaign data via Booking forms. Set list IDs via 'AC List IDs' and tags via 'AC Tags' taxonomy metaboxes.
 
