@@ -601,7 +601,7 @@ final class Wampum_Forms {
 			$form->add_field( 'text', array(
 				'name'  => 'first_name',
 				'class' => 'first-name',
-				'value' => $first_name,
+				'value' => '',
 			), array(
 				'label' => $first_name_label,
 			) );
@@ -614,7 +614,7 @@ final class Wampum_Forms {
 			$form->add_field( 'text', array(
 				'name'  => 'last_name',
 				'class' => 'last-name',
-				'value' => $last_name,
+				'value' => '',
 			), array(
 				'label' => ! empty( $args['last_name_label'] ) ? $args['last_name_label'] : __( 'Last Name', 'wampum' ),
 			) );
@@ -1075,6 +1075,10 @@ final class Wampum_Forms {
 			// If we have a custom label
 			if ( $args['first_name_label'] ) {
 				$first_name_label = $args['first_name_label'];
+			}
+			// Else if we are showing the last name
+			elseif ( $args['last_name'] ) {
+				$first_name_label = __( 'First Name', 'wampum' );
 			}
 			$join->add_field( 'text', array(
 				'name'  => 'first_name',

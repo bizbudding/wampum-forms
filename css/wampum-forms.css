@@ -16,6 +16,15 @@
 	margin-left: 2px;
 }
 
+.wampum-form .row input[type="text"],
+.wampum-form .row input[type="email"],
+.wampum-form .row input[type="password"],
+.wampum-form .row button[type="submit"] {
+	height: 42px;
+	padding-top: 4px;
+	padding-bottom: 4px;
+}
+
 /* Autoprefixer wants these on their own, arghh */
 .wampum-form .wampum-field input:-moz-read-only,
 .wampum-form .wampum-field input:disabled {
