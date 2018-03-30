@@ -1,5 +1,8 @@
 # Changelog
 
+* Fixed: Undefined variable in register form.
+* Fixed: first_name_label default if last_name field is showing.
+
 #### 1.3.1 (1/31/18)
 * Fixed: Password strength script not being loaded on registration forms.
 
