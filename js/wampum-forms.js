@@ -140,11 +140,11 @@
 					// Display error message
 					displayNotice( $loginForm, 'error', response.message );
 				}
-			},
-			fail: function( response ) {
-				// Not sure when this would happen, but fallbacks!
-				displayNotice( $loginForm, 'error', response.failure );
 			}
+
+		}).fail( function( response ) {
+			// Not sure when this would happen, but fallbacks!
+			displayNotice( $loginForm, 'error', response.failure );
 		}).done( function( response )  {
 			// Remove form processing CSS
 			$loginForm.removeClass('processing');
@@ -219,11 +219,11 @@
 					displayNotice( $passwordForm, 'error', response.message );
 				}
 
-			},
-			fail: function( response ) {
-				// Not sure when this would happen, but fallbacks!
-				displayNotice( $passwordForm, 'error', wampumFormVars.failure );
 			}
+
+		}).fail( function( response ) {
+			// Not sure when this would happen, but fallbacks!
+			displayNotice( $passwordForm, 'error', wampumFormVars.failure );
 		}).done( function( response )  {
 			// Remove form processing CSS
 			$passwordForm.removeClass('processing');
@@ -291,11 +291,11 @@
 					// Display error message
 					displayNotice( $registerForm, 'error', response.message );
 				}
-			},
-			fail: function( response ) {
-				// Not sure when this would happen, but fallbacks!
-				displayNotice( $registerForm, 'error', response.failure );
 			}
+
+		}).fail( function( response ) {
+			// Not sure when this would happen, but fallbacks!
+			displayNotice( $registerForm, 'error', response.failure );
 		}).done( function( response )  {
 			// Remove form processing CSS
 			$registerForm.removeClass('processing');
@@ -359,11 +359,11 @@
 					// Display error message
 					displayNotice( $subscribeForm, 'error', response.message );
 				}
-			},
-			fail: function( response ) {
-				// Not sure when this would happen, but fallbacks!
-				displayNotice( $subscribeForm, 'error', response.failure );
 			}
+
+		}).fail( function( response ) {
+			// Not sure when this would happen, but fallbacks!
+			displayNotice( $subscribeForm, 'error', response.failure );
 		}).done( function( response )  {
 			// Remove form processing CSS
 			$subscribeForm.removeClass('processing');
@@ -482,11 +482,11 @@
 
 				}
 
-			},
-			fail: function( response ) {
-				// Not sure when this would happen, but fallbacks!
-				displayNotice( $userAvailableForm, 'error', wampumFormVars.failure );
 			}
+
+		}).fail( function( response ) {
+			// Not sure when this would happen, but fallbacks!
+			displayNotice( $userAvailableForm, 'error', wampumFormVars.failure );
 		}).done( function( response )  {
 			// Remove form processing CSS
 			$userAvailableForm.removeClass('processing');
@@ -609,11 +609,11 @@
 					});
 
 				}
-			},
-			fail: function( response ) {
-				// Not sure when this would happen, but fallbacks!
-				displayNotice( $membershipForm, 'error', wampumFormVars.failure );
 			}
+
+		}).fail( function( response ) {
+			// Not sure when this would happen, but fallbacks!
+			displayNotice( $membershipForm, 'error', wampumFormVars.failure );
 		}).done( function( response )  {
 			// Remove form processing CSS
 			$membershipForm.removeClass('processing');
