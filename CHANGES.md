@@ -1,5 +1,9 @@
 # Changelog
 
+#### 1.3.3 (4/2/18)
+* Fixed: Undefined variable when sending notifications causing form to hang in some scenarios.
+* Fixed: Properly chain ajax fail for debugging.
+
 #### 1.3.2 (3/30/18)
 * Added: Force equal height fields when inline is true.
 * Fixed: Undefined variable in register form.
