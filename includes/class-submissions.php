@@ -43,7 +43,6 @@ final class Wampum_Forms_Submissions {
 		// Register WP-API endpoint
 		add_action( 'rest_api_init', array( $this, 'register_rest_endpoints' ) );
 
-
 	}
 
 	/**
@@ -198,7 +197,7 @@ final class Wampum_Forms_Submissions {
 			}
 
 			// Notifications
-			$this->maybe_do_notifications( 'Login', $data, $message );
+			$this->maybe_do_notifications( 'Login', $data );
 
 			// ActiveCampaign
 			$this->maybe_do_active_campaign( $data );
@@ -289,7 +288,7 @@ final class Wampum_Forms_Submissions {
 		}
 
 		// Notifications
-		$this->maybe_do_notifications( 'Password', $data, $message );
+		$this->maybe_do_notifications( 'Password', $data );
 
 		// ActiveCampaign
 		$this->maybe_do_active_campaign( $data );
@@ -444,12 +443,17 @@ final class Wampum_Forms_Submissions {
 				 * error when landing on a protected page (Woo Memberships).
 				 */
 				wp_set_current_user($user_id);
+			} else {
+				return array(
+					'success' => false,
+					'message' => $user->get_error_message(),
+				);
 			}
 
 		}
 
 		// Notifications
-		$this->maybe_do_notifications( 'Register', $data, $message );
+		$this->maybe_do_notifications( 'Register', $data );
 
 		// ActiveCampaign
 		$this->maybe_do_active_campaign( $data );
@@ -931,7 +935,6 @@ final class Wampum_Forms_Submissions {
 			}
 
 		}
-
 		return array(
 			'success' => false,
 			'message' => __( 'Uh oh! Looks like there was an error.', 'wampum' ),
