@@ -16,7 +16,7 @@
  * License:            GPL-2.0+
  * License URI:        http://www.gnu.org/licenses/gpl-2.0.txt
  *
- * Version:            1.3.3
+ * Version:            1.4.0
  *
  * GitHub Plugin URI:  https://github.com/bizbudding/wampum-forms
  * GitHub Branch:      master
@@ -81,6 +81,7 @@ final class Wampum_Forms_Setup {
 			// Methods
 			self::$instance->setup_constants();
 			self::$instance->includes();
+			self::$instance->hooks();
 			// Instantiate Classes
 			self::$instance->forms       = Wampum_Forms::instance();
 			self::$instance->submissions = Wampum_Forms_Submissions::instance();
@@ -123,7 +124,7 @@ final class Wampum_Forms_Setup {
 	private function setup_constants() {
 		// Plugin version.
 		if ( ! defined( 'WAMPUM_FORMS_VERSION' ) ) {
-			define( 'WAMPUM_FORMS_VERSION', '1.3.3' );
+			define( 'WAMPUM_FORMS_VERSION', '1.4.0' );
 		}
 		// Plugin Folder Path.
 		if ( ! defined( 'WAMPUM_FORMS_PLUGIN_DIR' ) ) {
@@ -155,27 +156,51 @@ final class Wampum_Forms_Setup {
 	 * @return void
 	 */
 	private function includes() {
-		require_once WAMPUM_FORMS_INCLUDES_DIR . 'class-form.php';
-		require_once WAMPUM_FORMS_INCLUDES_DIR . 'class-forms.php';
-		require_once WAMPUM_FORMS_INCLUDES_DIR . 'class-submissions.php';
-		require_once WAMPUM_FORMS_INCLUDES_DIR . 'class-settings.php';
-		require_once WAMPUM_FORMS_INCLUDES_DIR . 'helpers.php';
-		require_once WAMPUM_FORMS_INCLUDES_DIR . 'integrations.php';
-		// Vendor
-		require_once WAMPUM_FORMS_INCLUDES_DIR . 'vendor/activecampaign-api-php/includes/ActiveCampaign.class.php'; // v2.0.2
-		/**
-		 * Setup the updater.
-		 *
-		 * @uses    https://github.com/YahnisElsts/plugin-update-checker/
-		 *
-		 * @return  void
-		 */
-		if ( ! class_exists( 'Puc_v4_Factory' ) ) {
-			require_once WAMPUM_FORMS_INCLUDES_DIR . 'vendor/plugin-update-checker/plugin-update-checker.php';
-		}
-		$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/bizbudding/wampum-forms/', __FILE__, 'wampum-forms' );
+		// Include vendor libraries.
+		require_once __DIR__ . '/vendor/autoload.php';
+		// Includes.
+		foreach ( glob( WAMPUM_FORMS_INCLUDES_DIR . '*.php' ) as $file ) { include $file; }
 	}
 
+	/**
+	 * Run the hooks.
+	 *
+	 * @since   1.4.0
+	 * @return  void
+	 */
+	public function hooks() {
+		add_action( 'admin_init', [ $this, 'updater' ] );
+	}
+
+	/**
+	 * Setup the updater.
+	 *
+	 * composer require yahnis-elsts/plugin-update-checker
+	 *
+	 * @uses    https://github.com/YahnisElsts/plugin-update-checker/
+	 *
+	 * @return  void
+	 */
+	public function updater() {
+
+		// Bail if current user cannot manage plugins.
+		if ( ! current_user_can( 'install_plugins' ) ) {
+			return;
+		}
+
+		// Bail if plugin updater is not loaded.
+		if ( ! class_exists( 'Puc_v4_Factory' ) ) {
+			return;
+		}
+
+		// Setup the updater.
+		$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/bizbudding/wampum-forms/', __FILE__, 'wampum-forms' );
+
+		// Maybe set github api token.
+		if ( defined( 'MAI_GITHUB_API_TOKEN' ) ) {
+			$updater->setAuthentication( MAI_GITHUB_API_TOKEN );
+		}
+	}
 }
 endif; // End if class_exists check.
 
