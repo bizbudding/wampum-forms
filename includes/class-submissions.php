@@ -59,38 +59,45 @@ final class Wampum_Forms_Submissions {
 		 * *** */
 
 		register_rest_route( 'wampum/v1', '/login/', array(
-			'methods'  => 'GET',
-			'callback' => array( $this, 'status' ),
+			'methods'             => 'GET',
+			'callback'            => array( $this, 'status' ),
+			'permission_callback' => '__return_true',
 		));
 
 		register_rest_route( 'wampum/v1', '/password/', array(
-			'methods'  => 'GET',
-			'callback' => array( $this, 'status' ),
+			'methods'             => 'GET',
+			'callback'            => array( $this, 'status' ),
+			'permission_callback' => '__return_true',
 		));
 
 		register_rest_route( 'wampum/v1', '/register/', array(
-			'methods'  => 'GET',
-			'callback' => array( $this, 'status' ),
+			'methods'             => 'GET',
+			'callback'            => array( $this, 'status' ),
+			'permission_callback' => '__return_true',
 		));
 
 		register_rest_route( 'wampum/v1', '/subscribe/', array(
-			'methods'  => 'GET',
-			'callback' => array( $this, 'status' ),
+			'methods'             => 'GET',
+			'callback'            => array( $this, 'status' ),
+			'permission_callback' => '__return_true',
 		));
 
 		register_rest_route( 'wampum/v1', '/user-available/', array(
-			'methods'  => 'GET',
-			'callback' => array( $this, 'status' ),
+			'methods'             => 'GET',
+			'callback'            => array( $this, 'status' ),
+			'permission_callback' => '__return_true',
 		));
 
 		register_rest_route( 'wampum/v1', '/membership-add/', array(
-			'methods'  => 'GET',
-			'callback' => array( $this, 'status' ),
+			'methods'             => 'GET',
+			'callback'            => array( $this, 'status' ),
+			'permission_callback' => '__return_true',
 		));
 
 		register_rest_route( 'wampum/v1', '/active-campaign/', array(
-			'methods'  => 'GET',
-			'callback' => array( $this, 'is_active_campaign_connected' ),
+			'methods'             => 'GET',
+			'callback'            => array( $this, 'is_active_campaign_connected' ),
+			'permission_callback' => '__return_true',
 		));
 
 		/* **** *
@@ -98,33 +105,39 @@ final class Wampum_Forms_Submissions {
 		 * **** */
 
 		register_rest_route( 'wampum/v1', '/login/', array(
-			'methods'  => 'POST',
-			'callback' => array( $this, 'login' ),
+			'methods'             => 'POST',
+			'callback'            => array( $this, 'login' ),
+			'permission_callback' => '__return_true',
 		));
 
 		register_rest_route( 'wampum/v1', '/password/', array(
-			'methods'  => 'POST',
-			'callback' => array( $this, 'save_password' ),
+			'methods'             => 'POST',
+			'callback'            => array( $this, 'save_password' ),
+			'permission_callback' => '__return_true',
 		));
 
 		register_rest_route( 'wampum/v1', '/register/', array(
-			'methods'  => 'POST',
-			'callback' => array( $this, 'register' ),
+			'methods'             => 'POST',
+			'callback'            => array( $this, 'register' ),
+			'permission_callback' => '__return_true',
 		));
 
 		register_rest_route( 'wampum/v1', '/subscribe/', array(
-			'methods'  => 'POST',
-			'callback' => array( $this, 'subscribe' ),
+			'methods'             => 'POST',
+			'callback'            => array( $this, 'subscribe' ),
+			'permission_callback' => '__return_true',
 		));
 
 		register_rest_route( 'wampum/v1', '/user-available/', array(
-			'methods'  => 'POST',
-			'callback' => array( $this, 'user_available' ),
+			'methods'             => 'POST',
+			'callback'            => array( $this, 'user_available' ),
+			'permission_callback' => '__return_true',
 		));
 
 		register_rest_route( 'wampum/v1', '/membership-add/', array(
-			'methods'  => 'POST',
-			'callback' => array( $this, 'membership_add' ),
+			'methods'             => 'POST',
+			'callback'            => array( $this, 'membership_add' ),
+			'permission_callback' => '__return_true',
 		));
 
 	}
