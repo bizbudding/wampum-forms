@@ -1,0 +1,6 @@
+{
+    "require": {
+        "yahnis-elsts/plugin-update-checker": "^4.10",
+        "activecampaign/api-php": ">2.0.0"
+    }
+}
