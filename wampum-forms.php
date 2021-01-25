@@ -124,7 +124,7 @@ final class Wampum_Forms_Setup {
 	private function setup_constants() {
 		// Plugin version.
 		if ( ! defined( 'WAMPUM_FORMS_VERSION' ) ) {
-			define( 'WAMPUM_FORMS_VERSION', '1.3.3' );
+			define( 'WAMPUM_FORMS_VERSION', '1.4.0' );
 		}
 		// Plugin Folder Path.
 		if ( ! defined( 'WAMPUM_FORMS_PLUGIN_DIR' ) ) {
