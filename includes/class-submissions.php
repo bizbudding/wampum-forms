@@ -38,10 +38,10 @@ final class Wampum_Forms_Submissions {
 		return self::$instance;
 	}
 
-	function setup() {
+	public function setup() {
 
 		// Register WP-API endpoint
-		add_action( 'rest_api_init', array( $this, 'register_rest_endpoints' ) );
+		add_action( 'rest_api_init', [ $this, 'register_rest_endpoints' ] );
 
 	}
 
@@ -52,93 +52,93 @@ final class Wampum_Forms_Submissions {
 	 *
 	 * @return void
 	 */
-	function register_rest_endpoints() {
+	public function register_rest_endpoints() {
 
 		/* *** *
 		 * GET *
 		 * *** */
 
-		register_rest_route( 'wampum/v1', '/login/', array(
+		register_rest_route( 'wampum/v1', '/login/', [
 			'methods'             => 'GET',
-			'callback'            => array( $this, 'status' ),
+			'callback'            => [ $this, 'status' ],
 			'permission_callback' => '__return_true',
-		));
+		]);
 
-		register_rest_route( 'wampum/v1', '/password/', array(
+		register_rest_route( 'wampum/v1', '/password/', [
 			'methods'             => 'GET',
-			'callback'            => array( $this, 'status' ),
+			'callback'            => [ $this, 'status' ],
 			'permission_callback' => '__return_true',
-		));
+		]);
 
-		register_rest_route( 'wampum/v1', '/register/', array(
+		register_rest_route( 'wampum/v1', '/register/', [
 			'methods'             => 'GET',
-			'callback'            => array( $this, 'status' ),
+			'callback'            => [ $this, 'status' ],
 			'permission_callback' => '__return_true',
-		));
+		]);
 
-		register_rest_route( 'wampum/v1', '/subscribe/', array(
+		register_rest_route( 'wampum/v1', '/subscribe/', [
 			'methods'             => 'GET',
-			'callback'            => array( $this, 'status' ),
+			'callback'            => [ $this, 'status' ],
 			'permission_callback' => '__return_true',
-		));
+		]);
 
-		register_rest_route( 'wampum/v1', '/user-available/', array(
+		register_rest_route( 'wampum/v1', '/user-available/', [
 			'methods'             => 'GET',
-			'callback'            => array( $this, 'status' ),
+			'callback'            => [ $this, 'status' ],
 			'permission_callback' => '__return_true',
-		));
+		]);
 
-		register_rest_route( 'wampum/v1', '/membership-add/', array(
+		register_rest_route( 'wampum/v1', '/membership-add/', [
 			'methods'             => 'GET',
-			'callback'            => array( $this, 'status' ),
+			'callback'            => [ $this, 'status' ],
 			'permission_callback' => '__return_true',
-		));
+		]);
 
-		register_rest_route( 'wampum/v1', '/active-campaign/', array(
+		register_rest_route( 'wampum/v1', '/active-campaign/', [
 			'methods'             => 'GET',
-			'callback'            => array( $this, 'is_active_campaign_connected' ),
+			'callback'            => [ $this, 'is_active_campaign_connected' ],
 			'permission_callback' => '__return_true',
-		));
+		]);
 
 		/* **** *
 		 * POST *
 		 * **** */
 
-		register_rest_route( 'wampum/v1', '/login/', array(
+		register_rest_route( 'wampum/v1', '/login/', [
 			'methods'             => 'POST',
-			'callback'            => array( $this, 'login' ),
+			'callback'            => [ $this, 'login' ],
 			'permission_callback' => '__return_true',
-		));
+		]);
 
-		register_rest_route( 'wampum/v1', '/password/', array(
+		register_rest_route( 'wampum/v1', '/password/', [
 			'methods'             => 'POST',
-			'callback'            => array( $this, 'save_password' ),
+			'callback'            => [ $this, 'save_password' ],
 			'permission_callback' => '__return_true',
-		));
+		]);
 
-		register_rest_route( 'wampum/v1', '/register/', array(
+		register_rest_route( 'wampum/v1', '/register/', [
 			'methods'             => 'POST',
-			'callback'            => array( $this, 'register' ),
+			'callback'            => [ $this, 'register' ],
 			'permission_callback' => '__return_true',
-		));
+		]);
 
-		register_rest_route( 'wampum/v1', '/subscribe/', array(
+		register_rest_route( 'wampum/v1', '/subscribe/', [
 			'methods'             => 'POST',
-			'callback'            => array( $this, 'subscribe' ),
+			'callback'            => [ $this, 'subscribe' ],
 			'permission_callback' => '__return_true',
-		));
+		]);
 
-		register_rest_route( 'wampum/v1', '/user-available/', array(
+		register_rest_route( 'wampum/v1', '/user-available/', [
 			'methods'             => 'POST',
-			'callback'            => array( $this, 'user_available' ),
+			'callback'            => [ $this, 'user_available' ],
 			'permission_callback' => '__return_true',
-		));
+		]);
 
-		register_rest_route( 'wampum/v1', '/membership-add/', array(
+		register_rest_route( 'wampum/v1', '/membership-add/', [
 			'methods'             => 'POST',
-			'callback'            => array( $this, 'membership_add' ),
+			'callback'            => [ $this, 'membership_add' ],
 			'permission_callback' => '__return_true',
-		));
+		]);
 
 	}
 
@@ -149,11 +149,11 @@ final class Wampum_Forms_Submissions {
 	 *
 	 * @return array
 	 */
-	function status() {
-		return array(
+	public function status() {
+		return [
 			'success' => true,
 			'message' => 'All is well in the world of Wampum',
-		);
+		];
 	}
 
 	/**
@@ -173,11 +173,11 @@ final class Wampum_Forms_Submissions {
 	 *
 	 * @return  array
 	 */
-	function login( $data = array() ) {
+	public function login( $data = [] ) {
 
 		// Honeypot
 		$spam = $this->validate_say_what($data);
-		if ( false == $spam['success'] ) {
+		if ( false === $spam['success'] ) {
 			return $spam;
 		}
 
@@ -186,26 +186,26 @@ final class Wampum_Forms_Submissions {
 
 		// Return with message if not a valid submission
 		if ( true !== $valid ) {
-			return array(
+			return [
 				'success' => false,
 				'message' => $valid,
-			);
+			];
 		}
 
 		$user = wp_signon( $data );
 
 		// If error
 		if ( is_wp_error( $user ) ) {
-			return array(
+			return [
 				'success' => false,
 				'message' => $user->get_error_message(),
-			);
+			];
 		}
 		// Success
 		else {
 
 			wp_set_current_user( $user->ID );
-			if ( wp_validate_auth_cookie( '', 'logged_in' ) != $user->ID ) {
+			if ( wp_validate_auth_cookie( '', 'logged_in' ) !== $user->ID ) {
 				wp_set_auth_cookie( $user->ID, true );
 			}
 
@@ -221,9 +221,9 @@ final class Wampum_Forms_Submissions {
 			// Hook to run custom code after successful submission (all forms)
 			do_action( 'wampum_form_after_submission', $data );
 
-			return array(
+			return [
 				'success' => true,
-			);
+			];
 		}
 	}
 
@@ -243,36 +243,36 @@ final class Wampum_Forms_Submissions {
 	 *
 	 * @return  array
 	 */
-	function save_password( $data = array() ) {
+	public function save_password( $data = [] ) {
 
 		// Honeypot
 		$spam = $this->validate_say_what($data);
-		if ( false == $spam['success'] ) {
+		if ( false === $spam['success'] ) {
 			return $spam;
 		}
 
 		// Bail if not logged in. Not sure how anyone would get here, but let's be safe
 		if ( ! is_user_logged_in() ) {
-			return array(
+			return [
 				'success' => false,
 				'message' => __( 'You must be logged in to save a password', 'wampum' ),
-			);
+			];
 		}
 
 		// If both fields are empty
-		if ( $data['password'] == '' || $data['password_confirm'] == '' ) {
-			return array(
+		if ( ($data['password'] ?? '') === '' || ($data['password_confirm'] ?? '') === '' ) {
+			return [
 				'success' => false,
 				'message' => __( 'Please enter a password and confirm it', 'wampum' ),
-			);
+			];
 		}
 
 		// If passwords do not match
-		if ( $data['password'] != $data['password_confirm'] ) {
-			return array(
+		if ( ($data['password'] ?? '') !== ($data['password_confirm'] ?? '') ) {
+			return [
 				'success' => false,
 				'message' => __( 'Passwords do not match', 'wampum' ),
-			);
+			];
 		}
 
 		// Validate submission
@@ -280,24 +280,24 @@ final class Wampum_Forms_Submissions {
 
 		// Return with message if not a valid submission
 		if ( true !== $valid ) {
-			return array(
+			return [
 				'success' => false,
 				'message' => $valid,
-			);
+			];
 		}
 
-		$user_data = array(
+		$user_data = [
 			'ID'        => get_current_user_id(),
 			'user_pass' => $data['password']
-		);
+		];
 		$user_id = wp_update_user($user_data);
 
 		// If error
 		if ( is_wp_error( $user_id ) ) {
-			return array(
+			return [
 				'success' => false,
 				'message' => $user_id->get_error_message(),
-			);
+			];
 		}
 
 		// Notifications
@@ -313,9 +313,9 @@ final class Wampum_Forms_Submissions {
 		do_action( 'wampum_form_after_submission', $data );
 
 		// Success
-		return array(
+		return [
 			'success' => true,
-		);
+		];
 	}
 
 	/**
@@ -341,11 +341,11 @@ final class Wampum_Forms_Submissions {
 	 *
 	 * @return  array
 	 */
-	function register( $data = array() ) {
+	public function register( $data = [] ) {
 
 		// Honeypot
 		$spam = $this->validate_say_what($data);
-		if ( false == $spam['success'] ) {
+		if ( false === $spam['success'] ) {
 			return $spam;
 		}
 
@@ -353,10 +353,10 @@ final class Wampum_Forms_Submissions {
 		if ( isset( $data['email'] ) && ! empty( $data['email'] ) ) {
 			$email = $data['email'];
 		} else {
-			return array(
+			return [
 				'success' => false,
 				'message' => __( 'Email is missing', 'wampum' ),
-			);
+			];
 		}
 
 		/**
@@ -366,17 +366,17 @@ final class Wampum_Forms_Submissions {
 		 */
 		if ( isset($data['password']) && isset($data['password_confirm']) ) {
 			if ( empty($data['password']) && empty($data['password_confirm']) ) {
-				return array(
+				return [
 					'success' => false,
 					'message' => __( 'Please enter a password', 'wampum' ),
-				);
+				];
 			}
 			// Bail and return error if passwords don't match.
-			if ( $data['password'] != $data['password_confirm'] ) {
-				return array(
+			if ( ($data['password'] ?? '') !== ($data['password_confirm'] ?? '') ) {
+				return [
 					'success' => false,
 					'message' => __( 'Passwords do not match', 'wampum' ),
-				);
+				];
 			}
 		}
 
@@ -385,19 +385,19 @@ final class Wampum_Forms_Submissions {
 
 		// Return with message if not a valid submission
 		if ( true !== $valid ) {
-			return array(
+			return [
 				'success' => false,
 				'message' => $valid,
-			);
+			];
 		}
 
 		/**
 		 * Start the new user data
 		 * Email is the only field required to exist in the form
 		 */
-		$userdata = array(
+		$userdata = [
 			'user_email' => $email,
-		);
+		];
 
 		// If we have a first name, set it
 		if ( $data['first_name'] ) {
@@ -414,7 +414,7 @@ final class Wampum_Forms_Submissions {
 		$userdata['user_login'] = $username;
 
 		// Set password. Set as variable first, cause we may need it later for wp_signon()
-		$password = ! empty( $data['password'] ) ? $data['password'] : wp_generate_password( $length = 12, $include_standard_special_chars = true );
+		$password = ! empty( $data['password'] ) ? $data['password'] : wp_generate_password( 12, true );
 		$userdata['user_pass'] = $password;
 
 		/**
@@ -431,21 +431,21 @@ final class Wampum_Forms_Submissions {
 
 		// If it's an error, return it
 		if ( is_wp_error( $user_id ) ) {
-			return array(
+			return [
 				'success' => false,
 				'message' => $user_id->get_error_message(),
-			);
+			];
 		}
 
 		// If log_in is true
 		if ( filter_var( $data['log_in'], FILTER_VALIDATE_BOOLEAN ) ) {
 
 			// Log them in!
-			$signon_data = array(
+			$signon_data = [
 				'user_login'    => $username,
 				'user_password' => $password,
 				'remember'      => true,
-			);
+			];
 			$user = wp_signon( $signon_data );
 
 			if ( ! is_wp_error( $user ) ) {
@@ -457,10 +457,10 @@ final class Wampum_Forms_Submissions {
 				 */
 				wp_set_current_user($user_id);
 			} else {
-				return array(
+				return [
 					'success' => false,
 					'message' => $user->get_error_message(),
-				);
+				];
 			}
 
 		}
@@ -478,10 +478,10 @@ final class Wampum_Forms_Submissions {
 		do_action( 'wampum_form_after_submission', $data );
 
 		// Success
-		return array(
+		return [
 			'success' => true,
 			'user_id' => $user_id, // return user ID for use in membership flow
-		);
+		];
 
 	}
 
@@ -510,22 +510,22 @@ final class Wampum_Forms_Submissions {
 	 *
 	 * @return  bool|WP_Error  Whether a new user was created during the process
 	 */
-	function subscribe( $data = array() ) {
+	public function subscribe( $data = [] ) {
 
 		// ActiveCampaign
 		$ac = $this->maybe_do_active_campaign( $data );
 
-		if ( true == $ac['success'] ) {
+		if ( true === $ac['success'] ) {
 
 			// Validate submission
 			$valid = $this->valid_submission( 'subscribe', $data );
 
 			// Return with message if not a valid submission
 			if ( true !== $valid ) {
-				return array(
+				return [
 					'success' => false,
 					'message' => $valid,
-				);
+				];
 			}
 
 			// Notifications
@@ -538,9 +538,9 @@ final class Wampum_Forms_Submissions {
 			do_action( 'wampum_form_after_submission', $data );
 
 			// Success!
-			return array(
+			return [
 				'success' => true,
-			);
+			];
 
 		}
 
@@ -568,20 +568,20 @@ final class Wampum_Forms_Submissions {
 	 *
 	 * @return  bool|WP_Error  Whether a new user was created during the process
 	 */
-	function user_available( $data ) {
+	public function user_available( $data ) {
 
 		// Honeypot
 		$spam = $this->validate_say_what($data);
-		if ( false == $spam['success'] ) {
+		if ( false === $spam['success'] ) {
 			return $spam;
 		}
 
 		// Email is required
 		if ( ! ( isset($data['email']) || $data['email'] ) ) {
-			return array(
+			return [
 				'success' => false,
 				'message' => __( 'Please enter your email address', 'wampum' ),
-			);
+			];
 		}
 
 		// Validate submission
@@ -589,10 +589,10 @@ final class Wampum_Forms_Submissions {
 
 		// Return with message if not a valid submission
 		if ( true !== $valid ) {
-			return array(
+			return [
 				'success' => false,
 				'message' => $valid,
-			);
+			];
 		}
 
 		$email = sanitize_email($data['email']);
@@ -606,16 +606,16 @@ final class Wampum_Forms_Submissions {
 			// Set in wp_localize_script() because calling here returns WP-API endpoing URL
 			$current_url = $data['current_url'];
 			// return error with link to login
-			return array(
+			return [
 				'success' => false,
 				'message' => __( 'This user account already exists.', 'wampum' ) . ' <a class="login-link" href="' . wp_login_url( $current_url ) . '" title="Log in">Log in?</a>',
-			);
+			];
 		}
 
 		// Success!
-		return array(
+		return [
 			'success' => true,
-		);
+		];
 
 	}
 
@@ -647,28 +647,28 @@ final class Wampum_Forms_Submissions {
 	 *
 	 * @return  bool|WP_Error  Whether a new user was created during the process
 	 */
-	function membership_add( $data ) {
+	public function membership_add( $data ) {
 
 		// Honeypot
 		$spam = $this->validate_say_what($data);
-		if ( false == $spam['success'] ) {
+		if ( false === $spam['success'] ) {
 			return $spam;
 		}
 
 		// Bail if Woo Memberships is not active
 		if ( ! function_exists( 'wc_memberships' ) ) {
-			return array(
+			return [
 				'success' => false,
 				'message' => __( 'Membership is currently inactive', 'wampum' ),
-			);
+			];
 		}
 
 		// Minimum data we need is a plan ID and user email
 		if ( empty($data['plan_id']) || empty($data['email']) ) {
-			return array(
+			return [
 				'success' => false,
 				'message' => __( 'Email or membership plan is missing', 'wampum' ),
-			);
+			];
 		}
 
 		// TODO: Check and set all variables here. Sanitize too?
@@ -682,11 +682,11 @@ final class Wampum_Forms_Submissions {
 			 * Email field should be readonly, but a user may try to change this via dev tools
 			 */
 			$current_user = wp_get_current_user();
-			if ( $email != $current_user->user_email ) {
-				return array(
+			if ( $email !== $current_user->user_email ) {
+				return [
 					'success' => false,
 					'message' => __( 'You must use your current user email', 'wampum' ),
-				);
+				];
 			}
 
 			$user_id = get_current_user_id();
@@ -700,10 +700,10 @@ final class Wampum_Forms_Submissions {
 
 			// Return with message if not a valid submission
 			if ( true !== $valid ) {
-				return array(
+				return [
 					'success' => false,
 					'message' => $valid,
-				);
+				];
 			}
 
 			$email_exists = email_exists( $email );
@@ -718,10 +718,10 @@ final class Wampum_Forms_Submissions {
 				// Set in wp_localize_script() because calling here returns WP-API endpoing URL
 				$current_url = $data['current_url'];
 				// return error with link to login
-				return array(
+				return [
 					'success' => false,
 					'message' => __( 'This user account already exists.', 'wampum' ) . ' <a class="login-link" href="' . wp_login_url( esc_url($current_url) ) . '" title="Log in">Log in?</a>',
-				);
+				];
 			}
 
 			/**
@@ -732,7 +732,7 @@ final class Wampum_Forms_Submissions {
 			$register = $this->register( $data );
 
 			// Bail if unsuccessful
-			if ( false == $register['success'] ) {
+			if ( false === $register['success'] ) {
 				return $register;
 			}
 
@@ -747,10 +747,10 @@ final class Wampum_Forms_Submissions {
 		if ( ! wc_memberships_is_user_member( $user_id, $plan_id ) ) {
 
 			// Add the user to the membership
-			$membership_args = array(
+			$membership_args = [
 				'plan_id' => $plan_id,
 				'user_id' => $user_id,
-			);
+			];
 			wc_memberships_create_user_membership( $membership_args );
 
 			// Get the new membership
@@ -784,10 +784,10 @@ final class Wampum_Forms_Submissions {
 		do_action( 'wampum_form_after_submission', $data );
 
 		// Success!
-		return array(
+		return [
 			'success' => true,
 			'user'    => $user_id, // false|user_id If user was created in the process
-		);
+		];
 
 	}
 
@@ -800,16 +800,16 @@ final class Wampum_Forms_Submissions {
 	 *
 	 * @return  array  The response
 	 */
-	function validate_say_what( $data ) {
+	public function validate_say_what( $data ) {
 		if ( ! empty($data['say_what']) ) {
-			return array(
+			return [
 				'success' => false,
 				'message' => __( 'Spam detected', 'wampum' ),
-			);
+			];
 		}
-		return array(
+		return [
 			'success' => true,
-		);
+		];
 	}
 
 	/**
@@ -823,7 +823,7 @@ final class Wampum_Forms_Submissions {
 	 *
 	 * @return  array   The validation return data
 	 */
-	function valid_submission( $form_type, $data ) {
+	public function valid_submission( $form_type, $data ) {
 		switch ( $form_type ) {
 			case 'login':
 				$filter = 'wampum_forms_is_valid_login_submission';
@@ -871,7 +871,7 @@ final class Wampum_Forms_Submissions {
 	 *
 	 * @return  void
 	 */
-	function maybe_do_notifications( $type, $data, $message = '' ) {
+	public function maybe_do_notifications( $type, $data, $message = '' ) {
 
 		// Bail if no notifications
 		if ( ! isset($data['notifications']) || empty($data['notifications']) ) {
@@ -895,10 +895,10 @@ final class Wampum_Forms_Submissions {
 				$body .= sprintf( 'First Name: %s\r\n', $data['first_name'] );
 			}
 			if ( ! empty( $data['last_name'] ) ) {
-				$body .= sprintf( 'Last Name: %s\r\n', $data['first_name'] );
+				$body .= sprintf( 'Last Name: %s\r\n', $data['last_name'] );
 			}
 			if ( ! empty( $data['email'] ) ) {
-				$body .= sprintf( 'Email: %s\r\n', $data['first_name'] );
+				$body .= sprintf( 'Email: %s\r\n', $data['email'] );
 			}
 		}
 
@@ -917,7 +917,7 @@ final class Wampum_Forms_Submissions {
 	 *
 	 * @return  array  Associative array of success and maybe message
 	 */
-	function maybe_do_active_campaign( $data ) {
+	public function maybe_do_active_campaign( $data ) {
 
 		// Bail if no email
 		if ( ! $data['email'] ) {
@@ -942,16 +942,16 @@ final class Wampum_Forms_Submissions {
 			$contact_sync = $ac->api( 'contact/sync', $contact );
 
 			if ( $contact_sync->success ) {
-				return array(
+				return [
 					'success' => true,
-				);
+				];
 			}
 
 		}
-		return array(
+		return [
 			'success' => false,
 			'message' => __( 'Uh oh! Looks like there was an error.', 'wampum' ),
-		);
+		];
 
 	}
 
@@ -963,7 +963,7 @@ final class Wampum_Forms_Submissions {
 	 *
 	 * @return bool
 	 */
-	function is_active_campaign_connected() {
+	public function is_active_campaign_connected() {
 
 		$ac = $this->get_active_campaign_object();
 
@@ -984,7 +984,7 @@ final class Wampum_Forms_Submissions {
 	 *
 	 * @return  object|bool(false)
 	 */
-	function get_active_campaign_object() {
+	public function get_active_campaign_object() {
 		// Settings
 		$ac = get_option( 'wampum_forms_ac' );
 		// If not what we need
@@ -1010,7 +1010,7 @@ final class Wampum_Forms_Submissions {
 	 *
 	 * @return bool
 	 */
-	function active_campaign_credentials_test( $ac ) {
+	public function active_campaign_credentials_test( $ac ) {
 		return $ac->credentials_test();
 	}
 
@@ -1021,7 +1021,7 @@ final class Wampum_Forms_Submissions {
 	 *
 	 * @since  1.1.0
 	 */
-	function maybe_do_sharpspring( $data ) {
+	public function maybe_do_sharpspring( $data ) {
 
 		// Bail if no email
 		if ( ! $data['email'] ) {

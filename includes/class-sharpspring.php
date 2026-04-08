@@ -23,7 +23,7 @@ class Wampum_Form_Sharpspring {
      *
      * @return  void
      */
-    function __construct() {
+    public function __construct() {
         $this->options = get_option( 'wampum_forms_ss' );
         $this->session_id = session_id();
     }
@@ -37,16 +37,16 @@ class Wampum_Form_Sharpspring {
      */
     public function get_fields() {
 
-        $params = array(
-            'where' => array(
+        $params = [
+            'where' => [
                 'isCustom' => '1',
-            )
-        );
-        $data = array(
+            ]
+        ];
+        $data = [
             'method' => 'getFields',
             'params' => $params,
             'id'     => $this->session_id,
-        );
+        ];
 
         $queryString = $this->get_sharpspring_query_string();
         $url = "http://api.sharpspring.com/pubapi/v1/?$queryString";
@@ -89,14 +89,14 @@ class Wampum_Form_Sharpspring {
         *
         *******************************/
 
-        $params = array(
+        $params = [
            'objects' => $fields_array,
-        );
-        $data = array(
+        ];
+        $data = [
             'method' => 'updateFields',
             'params' => $params,
             'id'     => $this->session_id,
-        );
+        ];
 
         $queryString = $this->get_sharpspring_query_string();
         $url = "http://api.sharpspring.com/pubapi/v1/respond/?$queryString";
@@ -138,18 +138,18 @@ class Wampum_Form_Sharpspring {
         *
         *******************************/
 
-        $params = array(
+        $params = [
            'objects' => $fields_array,
-        );
-        $data = array(
+        ];
+        $data = [
             'method'    => 'createFields',
             'params'    => $params,
             'id'        => $this->session_id,
-            'header'    => array(
+            'header'    => [
                 'accountID' => BB_Sharpspring()->options->get_account_id(),
                 'secretKey' => BB_Sharpspring()->options->get_secret_key(),
-            ),
-        );
+            ],
+        ];
 
         $queryString = $this->get_sharpspring_query_string();
         $url = "http://api.sharpspring.com/pubapi/v1/respond/?$queryString";
@@ -169,7 +169,7 @@ class Wampum_Form_Sharpspring {
      * @return JSON    lead data from sharpspring
      */
     public function get_lead_id_by_email( $email ) {
-        $response = $this->get_leads( '', '', array( 'emailAddress' => $email ) );
+        $response = $this->get_leads( '', '', [ 'emailAddress' => $email ] );
         return isset($response->result->lead[0]->id) && ! empty($response->result->lead[0]->id) ? $response->result->lead[0]->id : '';
     }
 
@@ -183,7 +183,7 @@ class Wampum_Form_Sharpspring {
      * @return JSON    lead data from sharpspring
      */
     public function get_lead_by_email( $email ) {
-        return $this->get_leads( '', '', array( 'emailAddress' => $email ) );
+        return $this->get_leads( '', '', [ 'emailAddress' => $email ] );
     }
 
     /**
@@ -196,18 +196,18 @@ class Wampum_Form_Sharpspring {
      *
      * @return array, i think
      */
-    public function get_leads( $limit = '', $offset = '', $where = array() ) {
+    public function get_leads( $limit = '', $offset = '', $where = [] ) {
 
-        $params = array(
+        $params = [
             'where'  => $where,
             'limit'  => $limit,
             'offset' => $offset,
-        );
-        $data = array(
+        ];
+        $data = [
             'method'    => 'getLeads',
             'params'    => $params,
             'id'        => $this->session_id,
-        );
+        ];
 
         $queryString = $this->get_sharpspring_query_string();
         $url = "http://api.sharpspring.com/pubapi/v1/?$queryString";
@@ -253,14 +253,14 @@ class Wampum_Form_Sharpspring {
         *
         *******************************/
 
-        $params = array(
+        $params = [
             'objects' => $objects,
-        );
-        $data = array(
+        ];
+        $data = [
             'method'    => 'updateLeads',
             'params'    => $params,
             'id'        => $this->session_id,
-        );
+        ];
         $queryString = $this->get_sharpspring_query_string();
         $url = "http://api.sharpspring.com/pubapi/v1/?$queryString";
 
@@ -303,14 +303,14 @@ class Wampum_Form_Sharpspring {
         *
         *******************************/
 
-        $params = array(
+        $params = [
             'objects' => $objects,
-        );
-        $data = array(
+        ];
+        $data = [
             'method'    => 'createLeads',
             'params'    => $params,
             'id'        => $this->session_id,
-        );
+        ];
         $queryString = $this->get_sharpspring_query_string();
         $url = "http://api.sharpspring.com/pubapi/v1/?$queryString";
 
@@ -327,7 +327,7 @@ class Wampum_Form_Sharpspring {
      * @return string
      */
     public function get_sharpspring_query_string() {
-        return http_build_query(array('accountID' => BB_Sharpspring()->options->get_account_id(), 'secretKey' => BB_Sharpspring()->options->get_secret_key()));
+        return http_build_query(['accountID' => BB_Sharpspring()->options->get_account_id(), 'secretKey' => BB_Sharpspring()->options->get_secret_key()]);
     }
 
     /**
@@ -360,10 +360,10 @@ class Wampum_Form_Sharpspring {
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
             'Content-Type: application/json',
             'Content-Length: ' . strlen($data)
-        ));
+        ]);
 
         $result = curl_exec($ch);
         curl_close($ch);

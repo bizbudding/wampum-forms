@@ -9,7 +9,7 @@
  *
  * @return string  The form
  */
-function wampum_get_form( $args = array() ) {
+function wampum_get_form( $args = [] ) {
 	return Wampum_Forms()->forms->get_form( $args );
 }
 
@@ -22,7 +22,7 @@ function wampum_get_form( $args = array() ) {
  *
  * @return string  The form
  */
-function wampum_get_login_form( $args = array() ) {
+function wampum_get_login_form( $args = [] ) {
 	return Wampum_Forms()->forms->login_form_callback( $args );
 }
 
@@ -35,7 +35,7 @@ function wampum_get_login_form( $args = array() ) {
  *
  * @return string  The form
  */
-function wampum_get_register_form( $args = array() ) {
+function wampum_get_register_form( $args = [] ) {
 	return Wampum_Forms()->forms->register_form_callback( $args );
 }
 
@@ -48,7 +48,7 @@ function wampum_get_register_form( $args = array() ) {
  *
  * @return string  The form
  */
-function wampum_get_password_form( $args = array() ) {
+function wampum_get_password_form( $args = [] ) {
 	return Wampum_Forms()->forms->password_form_callback( $args );
 }
 
@@ -61,7 +61,7 @@ function wampum_get_password_form( $args = array() ) {
  *
  * @return string  The form
  */
-function wampum_get_subscribe_form( $args = array() ) {
+function wampum_get_subscribe_form( $args = [] ) {
 	return Wampum_Forms()->forms->subscribe_form_callback( $args );
 }
 
@@ -75,7 +75,7 @@ function wampum_get_subscribe_form( $args = array() ) {
  *
  * @return string  The form
  */
-function wampum_get_membership_form( $args = array() ) {
+function wampum_get_membership_form( $args = [] ) {
 	return Wampum_Forms()->forms->membership_form_callback( $args );
 }
 
@@ -90,7 +90,7 @@ function wampum_get_membership_form( $args = array() ) {
  *
  * @return string  String of HTML attributes and values.
  */
-function wampum_attr( $attributes = array() ) {
+function wampum_attr( $attributes = [] ) {
 	$output	= '';
 	// Cycle through attributes, build tag attribute string.
 	foreach ( $attributes as $key => $value ) {
@@ -123,10 +123,10 @@ function wampum_attr( $attributes = array() ) {
  */
 function wampum_forms_setup_ac_contact( $data ) {
 
-	$contact = array();
+	$contact = [];
 
 	if ( isset( $data['email'] ) && $data['email'] ) {
-		$contact = array( 'email' => sanitize_email( $data['email'] ) );
+		$contact = [ 'email' => sanitize_email( $data['email'] ) ];
 	}
 
 	if ( isset( $data['first_name'] ) && $data['first_name'] ) {

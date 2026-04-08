@@ -15,7 +15,7 @@ function wampum_forms_register_custom_taxonomies() {
 		return;
 	}
 
-	$labels = array(
+	$labels = [
 		'name'                       => _x( 'AC List IDs', 'AC List IDs', 'wampum-forms' ),
 		'singular_name'              => _x( 'AC List ID', 'AC List IDs', 'wampum-forms' ),
 		'menu_name'                  => __( 'AC List IDs', 'wampum-forms' ),
@@ -33,8 +33,8 @@ function wampum_forms_register_custom_taxonomies() {
 		'popular_items'              => __( 'Popular Items', 'wampum-forms' ),
 		'search_items'               => __( 'Search Items', 'wampum-forms' ),
 		'not_found'                  => __( 'Not Found', 'wampum-forms' ),
-	);
-	$args = array(
+	];
+	$args = [
 		'labels'                     => $labels,
 		'hierarchical'               => false,
 		'public'                     => false,
@@ -43,10 +43,10 @@ function wampum_forms_register_custom_taxonomies() {
 		'show_in_nav_menus'          => false,
 		'show_tagcloud'              => false,
 		'description' => 'This show up?',
-	);
-	register_taxonomy( 'ac_list_id', array( 'event' ), $args );
+	];
+	register_taxonomy( 'ac_list_id', [ 'event' ], $args );
 
-	$labels = array(
+	$labels = [
 		'name'                       => _x( 'AC Tags', 'AC Tags', 'wampum-forms' ),
 		'singular_name'              => _x( 'AC Tag', 'AC Tags', 'wampum-forms' ),
 		'menu_name'                  => __( 'AC Tags', 'wampum-forms' ),
@@ -64,8 +64,8 @@ function wampum_forms_register_custom_taxonomies() {
 		'popular_items'              => __( 'Popular Items', 'wampum-forms' ),
 		'search_items'               => __( 'Search Items', 'wampum-forms' ),
 		'not_found'                  => __( 'Not Found', 'wampum-forms' ),
-	);
-	$args = array(
+	];
+	$args = [
 		'labels'                     => $labels,
 		'hierarchical'               => false,
 		'public'                     => false,
@@ -73,8 +73,8 @@ function wampum_forms_register_custom_taxonomies() {
 		'show_admin_column'          => true,
 		'show_in_nav_menus'          => false,
 		'show_tagcloud'              => false,
-	);
-	register_taxonomy( 'ac_tag', array( 'event' ), $args );
+	];
+	register_taxonomy( 'ac_tag', [ 'event' ], $args );
 
 }
 
@@ -104,7 +104,7 @@ function wampum_forms_confirmed_booking( $booking_id ) {
 	}
 
 	// Start the data array.
-	$data = array( 'email' => eo_get_booking_meta( $booking_id, 'bookee_email', true ) );
+	$data = [ 'email' => eo_get_booking_meta( $booking_id, 'bookee_email', true ) ];
 
 	$first_name = eo_get_booking_meta( $booking_id, 'bookee_first_name', true );
 	$last_name  = eo_get_booking_meta( $booking_id, 'bookee_last_name', true );

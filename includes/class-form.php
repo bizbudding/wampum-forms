@@ -17,10 +17,10 @@ class Wampum_Form {
 	public $form = '';
 
 	// The form arguments
-	protected $settings = array();
+	protected $settings = [];
 
 	// Stores all form inputs
-	protected $fields = array();
+	protected $fields = [];
 
 	// Stores hidden fields to be included in submit button wrap
 	protected $hidden_fields = '';
@@ -40,11 +40,11 @@ class Wampum_Form {
 	 *
 	 * @return  void
 	 */
-	function __construct() {
-		$this->settings = array(
+	public function __construct() {
+		$this->settings = [
 			'hidden' => false,
 			'inline' => false,
-		);
+		];
 	}
 
 	/**
@@ -57,7 +57,7 @@ class Wampum_Form {
 	 *
 	 * @return string|HTML
 	 */
-	function render( $args, $echo = true ) {
+	public function render( $args, $echo = true ) {
 
 		// Bail if the form has no fields
 		if ( ! $this->has_fields ) {
@@ -88,7 +88,7 @@ class Wampum_Form {
 	 *
 	 * @return  void
 	 */
-	function set( $property, $value ) {
+	public function set( $property, $value ) {
 		$this->settings[$property] = $value;
 	}
 
@@ -101,17 +101,17 @@ class Wampum_Form {
 	 *
 	 * @return  string  The form opening HTML
 	 */
-	function open( $atts, $args ) {
+	public function open( $atts, $args ) {
 
 		// Default form attributes
-		$defaults = array(
+		$defaults = [
 			'style'   => '',
 			'action'  => '',
 			'method'  => 'post',
 			'enctype' => '',
 			'class'   => '',
 			'id'      => '',
-		);
+		];
 		$atts = wp_parse_args( $atts, $defaults );
 
 		// If hidden, add inline style
@@ -144,7 +144,7 @@ class Wampum_Form {
 	 *
 	 * @return  string  The form closing HTML
 	 */
-	function close() {
+	public function close() {
 		if ( $this->settings['inline'] ) {
 			$this->form .= '</div>';
 		}
@@ -177,7 +177,7 @@ class Wampum_Form {
 	 *
 	 * @return  string  The field HTML
 	 */
-	function add_field( $type, $atts, $args = array() ) {
+	public function add_field( $type, $atts, $args = [] ) {
 
 		// Bail if not a valid field type
 		if ( ! in_array( $type, $this->get_available_field_types() ) ) {
@@ -185,7 +185,7 @@ class Wampum_Form {
 		}
 
 		// Parse attributes
-		$defaults = array(
+		$defaults = [
 			'name'        => '',
 			'id'          => '',
 			'class'       => '',
@@ -195,7 +195,7 @@ class Wampum_Form {
 			'checked'     => false, // bool
 			'required'    => false, // bool
 			'selected'    => false, // bool
-		);
+		];
 		$atts = wp_parse_args( $atts, $defaults );
 
 		// Bail if no field name
@@ -207,10 +207,10 @@ class Wampum_Form {
 		// $atts['name'] = 'wampum_' . $atts['name'];
 
 		// Parse args
-		$defaults = array(
+		$defaults = [
 			'label'	=> '',
 			'value'	=> '',
-		);
+		];
 		$args = wp_parse_args( $args, $defaults );
 
 		// TODO: Sanitize the above arrays?
@@ -233,8 +233,8 @@ class Wampum_Form {
 	 *
 	 * @return  array  Available field types.
 	 */
-	function get_available_field_types() {
-		return array(
+	public function get_available_field_types() {
+		return [
 			'checkbox',
 			'email',
 			'hidden',
@@ -243,7 +243,7 @@ class Wampum_Form {
 			'text',
 			'url', // For spam.
 			'submit',
-		);
+		];
 	}
 
 	/**
@@ -253,7 +253,7 @@ class Wampum_Form {
 	 *
 	 * @return  string  The field HTML
 	 */
-	function get_field_html( $type, $atts, $args ) {
+	public function get_field_html( $type, $atts, $args ) {
 
 		switch ( $type ) {
 			case 'checkbox':
@@ -303,9 +303,9 @@ class Wampum_Form {
 	 *
 	 * @return  string  The field opening HTML
 	 */
-	function get_field_open( $type, $atts, $args ) {
+	public function get_field_open( $type, $atts, $args ) {
 		// New atts array so atts meant for the field itself don't get applied to the wrap
-		$new_atts = array();
+		$new_atts = [];
 		$classes  = '';
 		// If we have inline styles
 		if ( ! empty( $atts['style'] ) ) {
@@ -336,7 +336,7 @@ class Wampum_Form {
 	 *
 	 * @return  string  The field closing HTML
 	 */
-	function get_field_close( $type, $atts, $args ) {
+	public function get_field_close( $type, $atts, $args ) {
 		return '</p>';
 	}
 
@@ -347,7 +347,7 @@ class Wampum_Form {
 	 *
 	 * @return  string  The field HTML
 	 */
-	function get_field_checkbox( $atts, $args ) {
+	public function get_field_checkbox( $atts, $args ) {
 		$atts['type'] = 'checkbox';
 		return $this->get_field_input( $atts, $args ) . $this->get_field_label( $atts, $args );
 	}
@@ -359,7 +359,7 @@ class Wampum_Form {
 	 *
 	 * @return  string  The field HTML
 	 */
-	function get_field_email( $atts, $args ) {
+	public function get_field_email( $atts, $args ) {
 		$atts['type'] = 'email';
 		return $this->get_field_label( $atts, $args ) . $this->get_field_input( $atts, $args );
 	}
@@ -371,7 +371,7 @@ class Wampum_Form {
 	 *
 	 * @return  string  The field HTML
 	 */
-	function get_field_hidden( $atts, $args ) {
+	public function get_field_hidden( $atts, $args ) {
 		$atts['type'] = 'hidden';
 		$this->hidden_fields .= $this->get_field_input( $atts, $args );
 	}
@@ -383,7 +383,7 @@ class Wampum_Form {
 	 *
 	 * @return  string  The field HTML
 	 */
-	function get_field_password( $atts, $args ) {
+	public function get_field_password( $atts, $args ) {
 		$atts['type'] = 'password';
 		return $this->get_field_label( $atts, $args ) . $this->get_field_input( $atts, $args );
 	}
@@ -395,7 +395,7 @@ class Wampum_Form {
 	 *
 	 * @return  string  The field HTML
 	 */
-	function get_field_password_strength( $atts, $args ) {
+	public function get_field_password_strength( $atts, $args ) {
 		$field = '';
 		$field .= '<span class="password-strength-meter" data-strength="">';
 			$field .= '<span class="password-strength-color">';
@@ -412,7 +412,7 @@ class Wampum_Form {
 	 *
 	 * @return  string  The field HTML
 	 */
-	function get_field_text( $atts, $args ) {
+	public function get_field_text( $atts, $args ) {
 		$atts['type'] = 'text';
 		return $this->get_field_label( $atts, $args ) . $this->get_field_input( $atts, $args );
 	}
@@ -424,7 +424,7 @@ class Wampum_Form {
 	 *
 	 * @return  string  The field HTML
 	 */
-	function get_field_url( $atts, $args ) {
+	public function get_field_url( $atts, $args ) {
 		$atts['type'] = 'url';
 		return $this->get_field_label( $atts, $args ) . $this->get_field_input( $atts, $args );
 	}
@@ -436,7 +436,7 @@ class Wampum_Form {
 	 *
 	 * @return  string  The field HTML
 	 */
-	function get_field_submit( $atts, $args ) {
+	public function get_field_submit( $atts, $args ) {
 		$atts['type'] = 'submit';
 		// Return hidden fields plus submit button
 		return $this->hidden_fields . sprintf( '<button %s>%s</button>', wampum_attr( $atts ), $args['label'] );
@@ -451,7 +451,7 @@ class Wampum_Form {
 	 *
 	 * @return  string  Label HTML.
 	 */
-	function get_field_label( $atts, $args ) {
+	public function get_field_label( $atts, $args ) {
 		$label = '';
 		if ( ! empty( $args['label'] ) ) {
 			$label = $args['label'];
@@ -470,7 +470,7 @@ class Wampum_Form {
 	 *
 	 * @return  string  The field input HTML
 	 */
-	function get_field_input( $atts, $args ) {
+	public function get_field_input( $atts, $args ) {
 		return sprintf( '<input %s>', wampum_attr( $atts ) );
 	}
 

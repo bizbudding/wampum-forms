@@ -48,8 +48,8 @@ class Wampum_Form_Settings {
 	 * @return  void
 	 */
 	public function __construct() {
-		add_action( 'admin_menu', array( $this, 'add_plugin_page' ) );
-		add_action( 'admin_init', array( $this, 'page_init' ) );
+		add_action( 'admin_menu', [ $this, 'add_plugin_page' ] );
+		add_action( 'admin_init', [ $this, 'page_init' ] );
 	}
 
 	/**
@@ -66,7 +66,7 @@ class Wampum_Form_Settings {
 			'Wampum Forms',
 			'manage_options',
 			'wampum-forms',
-			array( $this, 'create_admin_page' )
+			[ $this, 'create_admin_page' ]
 		);
 	}
 
@@ -487,20 +487,20 @@ class Wampum_Form_Settings {
 		register_setting(
 			'wampum_forms', // Option group
 			'wampum_forms_ac', // Option name
-			array( $this, 'sanitize_fields' ) // Sanitize
+			[ $this, 'sanitize_fields' ] // Sanitize
 		);
 
 		add_settings_section(
 			'section_active_campaign', // ID
 			'Active Campaign', // Title
-			array( $this, 'section_active_campaign_callback' ), // Callback
+			[ $this, 'section_active_campaign_callback' ], // Callback
 			'wampum-forms' // Page
 		);
 
 		add_settings_field(
 			'base_url', // ID
 			'Base URL', // Title
-			array( $this, 'base_url_callback' ), // Callback
+			[ $this, 'base_url_callback' ], // Callback
 			'wampum-forms', // Page
 			'section_active_campaign' // Section
 		);
@@ -508,7 +508,7 @@ class Wampum_Form_Settings {
 		add_settings_field(
 			'key',
 			'Key',
-			array( $this, 'key_callback' ),
+			[ $this, 'key_callback' ],
 			'wampum-forms',
 			'section_active_campaign'
 		);
@@ -516,7 +516,7 @@ class Wampum_Form_Settings {
 		add_settings_field(
 			'status',
 			'Status',
-			array( $this, 'status_callback' ),
+			[ $this, 'status_callback' ],
 			'wampum-forms',
 			'section_active_campaign'
 		);
@@ -534,7 +534,7 @@ class Wampum_Form_Settings {
 	 */
 	public function sanitize_fields( $input ) {
 
-		$new_input = array();
+		$new_input = [];
 
 		if ( isset( $input['base_url'] ) ) {
 			$new_input['base_url'] = sanitize_text_field( $input['base_url'] );
