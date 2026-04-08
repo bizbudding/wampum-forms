@@ -63,6 +63,15 @@ final class Wampum_Forms_Setup {
 	public $submissions;
 
 	/**
+	 * Wampum Form Settings Object
+	 *
+	 * @since 1.0.0
+	 *
+	 * @var object | Wampum_Form_Settings
+	 */
+	public $settings;
+
+	/**
 	 * Main Wampum_Forms_Setup Instance.
 	 *
 	 * Insures that only one instance of Wampum_Forms_Setup exists in memory at any one
