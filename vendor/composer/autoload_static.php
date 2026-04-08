@@ -7,7 +7,7 @@ namespace Composer\Autoload;
 class ComposerStaticInit504c33e5557270719e9040e37870ded2
 {
     public static $files = array (
-        '689b08b7620712b04324ecd7ed167c6b' => __DIR__ . '/..' . '/yahnis-elsts/plugin-update-checker/load-v4p10.php',
+        'f6d4f6bcee7247df6b777884c3e22f98' => __DIR__ . '/..' . '/yahnis-elsts/plugin-update-checker/load-v5p6.php',
     );
 
     public static $classMap = array (
@@ -32,6 +32,7 @@ class ComposerStaticInit504c33e5557270719e9040e37870ded2
         'AC_User' => __DIR__ . '/..' . '/activecampaign/api-php/includes/User.class.php',
         'AC_Webhook' => __DIR__ . '/..' . '/activecampaign/api-php/includes/Webhook.class.php',
         'ActiveCampaign' => __DIR__ . '/..' . '/activecampaign/api-php/includes/ActiveCampaign.class.php',
+        'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'RequestException' => __DIR__ . '/..' . '/activecampaign/api-php/includes/exceptions/RequestException.php',
     );
 

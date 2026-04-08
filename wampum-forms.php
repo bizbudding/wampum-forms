@@ -28,6 +28,8 @@
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) exit;
 
+use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
+
 if ( ! class_exists( 'Wampum_Forms_Setup' ) ) :
 
 /**
@@ -200,12 +202,12 @@ final class Wampum_Forms_Setup {
 		}
 
 		// Bail if plugin updater is not loaded.
-		if ( ! class_exists( 'Puc_v4_Factory' ) ) {
+		if ( ! class_exists( 'YahnisElsts\PluginUpdateChecker\v5\PucFactory' ) ) {
 			return;
 		}
 
 		// Setup the updater.
-		$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/bizbudding/wampum-forms/', __FILE__, 'wampum-forms' );
+		$updater = PucFactory::buildUpdateChecker( 'https://github.com/bizbudding/wampum-forms/', __FILE__, 'wampum-forms' );
 
 		// Maybe set github api token.
 		if ( defined( 'MAI_GITHUB_API_TOKEN' ) ) {
