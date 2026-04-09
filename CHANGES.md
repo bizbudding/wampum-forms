@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.0 (4/9/26)
+* Changed: PHP 8.4 compatibility.
+* Fixed: Dynamic property deprecation for $settings.
+* Changed: Upgraded plugin-update-checker from v4.10 to v5.6.
+
 ## 1.4.0 (1/25/21)
 * Fixed: Added permission_callback to all registered REST API routes.
 * Changed: Updated dependencies.
