@@ -2,3 +2,5 @@
 .DS_Store
 .AppleDouble
 .LSOverride
+# Regenerates with the current git ref, so tracking it dirties the tree after every commit.
+/vendor/composer/installed.php
