@@ -35,6 +35,10 @@ Split `register()` into the route callback and the internal worker. The route ca
 
 Login and password routes keep working as before, with one addition found while building: both read `notifications` (and login also the ActiveCampaign fields), so they check the signature too. A request that sends none of the signed values is not checked, so a plain login from a page cached before the update still works. No settings screen, no new options.
 
+### Known limit
+
+Anyone who can preview a post (Contributor and up) can render a form with any `plan_id` and get a valid signature. Left as is for 1.5.1, decided November 25, 2026.
+
 ## Verify
 
 Write PHPUnit coverage if the repo gains a harness. It has none today, so at minimum:

@@ -34,3 +34,4 @@ Verified 2026-11-25 on qwikcoach.test (plugin symlinked to this repo), with Acti
 - No PHPUnit harness. Verification is by hand on a local site.
 - Floor is PHP 8.0 and WP 6.0. Do not use 8.1+ syntax.
 - membership_add() runs notifications and ActiveCampaign twice (once in create_user(), once itself). Pre-existing, left alone.
+- Known limit: anyone who can preview a post (Contributor and up) can render a form with any plan_id and get a valid signature. Left as is for 1.5.1 on 2026-11-25. Before 1.5.1 anyone could do it with no account.
