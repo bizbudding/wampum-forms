@@ -3,17 +3,16 @@ Updated: 2026-11-25 by Claude (Opus 5.5)
 
 ## Now
 
-1.5.1 is built and committed on `develop`, not pushed or tagged. It signs the values a form sets (plan_id, ac_list_ids, ac_tags, notifications) in a hidden `wampum_sig` field, and refuses requests that change them. `POST /wampum/v1/register/` refuses unless "Anyone can register" is on or `wampum_forms_allow_register` returns true. Plan: `docs/plans/2026-11-25-close-open-routes.md`.
+1.5.1 is released (tag pushed, master at develop) and pushed by mai-sites to all four sites on 2026-11-25. tesswhaley.com now runs it from `wampum-forms`; the old `wampum-forms-master` folder was deleted. It signs the values a form sets (plan_id, ac_list_ids, ac_tags, notifications) in a hidden `wampum_sig` field, and refuses requests that change them. `POST /wampum/v1/register/` refuses unless "Anyone can register" is on or `wampum_forms_allow_register` returns true. Plan: `docs/plans/2026-11-25-close-open-routes.md`.
 
 ## Next
 
-- Mike's yes to push `develop`, merge to `master` and tag 1.5.1.
-- Roll out to qwikcoach.com, dev.qwikcoach.com, thepaleomom.com and tesswhaley.com (see the plan's Rollout section). tesswhaley.com runs 1.1.4 from a folder named `wampum-forms-master`, so check the updater finds it.
-- Then retire Wampum Forms (TODO.md).
+- Retire Wampum Forms on every site (TODO.md), then archive the GitHub repo. It is public and holds the plan, so archive rather than fix history.
+- tesswhaley.com's domain redirects to a domain-for-sale page, so its form is not reachable anyway.
 
 ## Blocked / waiting on
 
-Mike: "Push and tag 1.5.1?"
+Nothing.
 
 ## Verify
 
