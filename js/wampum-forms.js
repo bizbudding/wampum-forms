@@ -110,6 +110,7 @@
 				user_password: $loginForm.find( 'input[name="password"]' ).val(),
 				remember:      $loginForm.find( 'input[name="rememberme"]' ).val(),
 				notifications: $loginForm.find( 'input[name="notifications"]' ).val(),
+				wampum_sig:    $loginForm.find( 'input[name="wampum_sig"]' ).val(),
 				say_what:      $loginForm.find( 'input[name ="say_what"]' ).val(), // honeypot
 			};
 
@@ -185,6 +186,7 @@
 				password:         $passwordForm.find( 'input[name="password"]' ).val(),
 				password_confirm: $passwordForm.find( 'input[name="password_confirm"]' ).val(),
 				notifications:    $passwordForm.find( 'input[name="notifications"]' ).val(),
+				wampum_sig:       $passwordForm.find( 'input[name="wampum_sig"]' ).val(),
 				say_what:         $passwordForm.find( 'input[name="say_what"]' ).val(), // honeypot
 			};
 
@@ -268,6 +270,7 @@
 				ac_list_ids:      $registerForm.find( 'input[name="ac_list_ids"]' ).val(),
 				ac_tags:          $registerForm.find( 'input[name="ac_tags"]' ).val(),
 				notifications:    $registerForm.find( 'input[name="notifications"]' ).val(),
+				wampum_sig:       $registerForm.find( 'input[name="wampum_sig"]' ).val(),
 				say_what:         $registerForm.find( 'input[name="say_what"]' ).val(), // honeypot
 			};
 
@@ -336,6 +339,7 @@
 				ac_list_ids:   $subscribeForm.find( 'input[name="ac_list_ids"]' ).val(),
 				ac_tags:       $subscribeForm.find( 'input[name="ac_tags"]' ).val(),
 				notifications: $subscribeForm.find( 'input[name="notifications"]' ).val(),
+				wampum_sig:    $subscribeForm.find( 'input[name="wampum_sig"]' ).val(),
 				say_what:      $subscribeForm.find( 'input[name="say_what"]' ).val(), // honeypot
 			};
 
@@ -535,6 +539,7 @@
 				ac_list_ids:   $membershipForm.find( 'input[name="ac_list_ids"]' ).val(),
 				ac_tags:       $membershipForm.find( 'input[name="ac_tags"]' ).val(),
 				notifications: $membershipForm.find( 'input[name="notifications"]' ).val(),
+				wampum_sig:    $membershipForm.find( 'input[name="wampum_sig"]' ).val(),
 				say_what:      $membershipForm.find( 'input[name="say_what"]' ).val(), // honeypot
 				current_url:   wampumFormVars.current_url,
 			};

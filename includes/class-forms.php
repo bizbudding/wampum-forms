@@ -431,6 +431,9 @@ final class Wampum_Forms {
 
 		}
 
+		// Signature for the values this form sets
+		$this->add_signature_field( $form, 'login', $args );
+
 		// Redirect
 		$form->add_field( 'hidden', [
 			'name'  => 'redirect',
@@ -528,6 +531,9 @@ final class Wampum_Forms {
 			]);
 
 		}
+
+		// Signature for the values this form sets
+		$this->add_signature_field( $form, 'password', $args );
 
 		// Redirect
 		$form->add_field( 'hidden', [
@@ -730,6 +736,9 @@ final class Wampum_Forms {
 			'value' => intval($args['log_in']), // use integers cause boolean won't show value via wampum_attr
 		]);
 
+		// Signature for the values this form sets
+		$this->add_signature_field( $form, 'register', $args );
+
 		// Redirect
 		$form->add_field( 'hidden', [
 			'name'  => 'redirect',
@@ -874,6 +883,9 @@ final class Wampum_Forms {
 			]);
 
 		}
+
+		// Signature for the values this form sets
+		$this->add_signature_field( $form, 'subscribe', $args );
 
 		// Redirect
 		$form->add_field( 'hidden', [
@@ -1200,6 +1212,9 @@ final class Wampum_Forms {
 
 		}
 
+		// Signature for the values this form sets
+		$this->add_signature_field( $join, 'membership', $args );
+
 		// Redirect
 		$join->add_field( 'hidden', [
 			'name'  => 'redirect',
@@ -1280,6 +1295,9 @@ final class Wampum_Forms {
 
 		}
 
+		// Signature for the values this form sets
+		$this->add_signature_field( $login, 'login', array_merge( $args, [ 'notifications' => '' ] ) ); // This login form has no notifications field
+
 		// Redirect
 		$login->add_field( 'hidden', [
 			'name'  => 'redirect',
@@ -1306,6 +1324,38 @@ final class Wampum_Forms {
 		// Bring it all home baby
 		return sprintf( '<div class="wampum-form">%s</div>', $html );
 
+	}
+
+	/**
+	 * Add the hidden wampum_sig field that proves the request kept the values this form set.
+	 *
+	 * @since  1.5.1
+	 *
+	 * @param  Wampum_Form  $form  The form object.
+	 * @param  string       $type  The form type used to sign: login, password, register, subscribe or membership.
+	 * @param  array        $args  The sanitized form args.
+	 *
+	 * @return void
+	 */
+	private function add_signature_field( $form, string $type, array $args ): void {
+		// Only sign the values this form type outputs, so they match what its script sends.
+		$values = [
+			'notifications' => $args['notifications'],
+		];
+
+		if ( in_array( $type, [ 'register', 'subscribe', 'membership' ], true ) ) {
+			$values['ac_list_ids'] = $args['ac_list_ids'];
+			$values['ac_tags']     = $args['ac_tags'];
+		}
+
+		if ( 'membership' === $type ) {
+			$values['plan_id'] = $args['plan_id'];
+		}
+
+		$form->add_field( 'hidden', [
+			'name'  => 'wampum_sig',
+			'value' => wampum_forms_get_signature( $type, $values ),
+		]);
 	}
 
 }

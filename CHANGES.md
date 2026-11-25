@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.1 (11/25/26)
+* Fixed: Forms now sign the membership plan, ActiveCampaign lists and tags, and notification emails they set. A request that changes them is refused.
+* Fixed: The register route refuses new accounts when "Anyone can register" is off. Use the `wampum_forms_allow_register` filter to allow them anyway.
+* Changed: A form with any of those values, on a page opened before this update, asks the visitor to reload the page.
+
 ## 1.5.0 (4/9/26)
 * Changed: PHP 8.4 compatibility.
 * Fixed: Dynamic property deprecation for $settings.

@@ -169,3 +169,39 @@ function wampum_forms_setup_ac_contact( $data ) {
 
 	return $contact;
 }
+
+/**
+ * Get the signature for the values a form sets itself.
+ *
+ * The form outputs this in a hidden wampum_sig field, and the REST route
+ * builds it again from the request. Both sides must use this function,
+ * so the two can never build it differently.
+ *
+ * @since  1.5.1
+ *
+ * @param  string  $form_type  The form type: login, password, register, subscribe or membership.
+ * @param  array   $values     The signed values, keyed by field name. Missing keys count as empty.
+ *
+ * @return string  The signature.
+ */
+function wampum_forms_get_signature( string $form_type, $values ): string {
+	$parts = [ $form_type ];
+
+	foreach ( wampum_forms_get_signed_fields() as $field ) {
+		$value   = $values[ $field ] ?? '';
+		$parts[] = is_scalar( $value ) ? (string) $value : '';
+	}
+
+	return wp_hash( implode( '|', $parts ) );
+}
+
+/**
+ * Get the field names whose values the site sets and the request must not change.
+ *
+ * @since  1.5.1
+ *
+ * @return array
+ */
+function wampum_forms_get_signed_fields(): array {
+	return [ 'plan_id', 'ac_list_ids', 'ac_tags', 'notifications' ];
+}

@@ -181,6 +181,12 @@ final class Wampum_Forms_Submissions {
 			return $spam;
 		}
 
+		// Refuse values the form did not set
+		$signed = $this->verify_signature( 'login', $data );
+		if ( true !== $signed ) {
+			return $signed;
+		}
+
 		// Validate submission
 		$valid = $this->valid_submission( 'login', $data );
 
@@ -257,6 +263,12 @@ final class Wampum_Forms_Submissions {
 				'success' => false,
 				'message' => __( 'You must be logged in to save a password', 'wampum' ),
 			];
+		}
+
+		// Refuse values the form did not set
+		$signed = $this->verify_signature( 'password', $data );
+		if ( true !== $signed ) {
+			return $signed;
 		}
 
 		// If both fields are empty
@@ -342,6 +354,46 @@ final class Wampum_Forms_Submissions {
 	 * @return  array
 	 */
 	public function register( $data = [] ) {
+
+		/**
+		 * Only make accounts here when the site allows signups.
+		 * Membership forms make accounts through create_user() instead,
+		 * because their signed plan ID shows the site offered that signup.
+		 *
+		 * @since 1.5.1
+		 *
+		 * @param bool  $allow  Whether this route may make accounts. Defaults to the "Anyone can register" setting.
+		 * @param mixed $data   The request.
+		 */
+		$allow = (bool) apply_filters( 'wampum_forms_allow_register', (bool) get_option( 'users_can_register' ), $data );
+
+		if ( ! $allow ) {
+			return [
+				'success' => false,
+				'message' => __( 'Registration is closed on this site.', 'wampum' ),
+			];
+		}
+
+		// Refuse values the form did not set
+		$signed = $this->verify_signature( 'register', $data );
+		if ( true !== $signed ) {
+			return $signed;
+		}
+
+		return $this->create_user( $data );
+	}
+
+	/**
+	 * Make a user account and maybe log them in.
+	 * Used by the register route and the membership flow.
+	 *
+	 * @since   1.5.1
+	 *
+	 * @param   array|WP_REST_Request  $data  The same data as register().
+	 *
+	 * @return  array
+	 */
+	private function create_user( $data ) {
 
 		// Honeypot
 		$spam = $this->validate_say_what($data);
@@ -512,6 +564,12 @@ final class Wampum_Forms_Submissions {
 	 */
 	public function subscribe( $data = [] ) {
 
+		// Refuse values the form did not set
+		$signed = $this->verify_signature( 'subscribe', $data );
+		if ( true !== $signed ) {
+			return $signed;
+		}
+
 		// ActiveCampaign
 		$ac = $this->maybe_do_active_campaign( $data );
 
@@ -671,6 +729,12 @@ final class Wampum_Forms_Submissions {
 			];
 		}
 
+		// Refuse a plan, list, tag or notification address the form did not set
+		$signed = $this->verify_signature( 'membership', $data );
+		if ( true !== $signed ) {
+			return $signed;
+		}
+
 		// TODO: Check and set all variables here. Sanitize too?
 
 		$email = sanitize_email($data['email']);
@@ -729,7 +793,7 @@ final class Wampum_Forms_Submissions {
 			 * and maybe log them in.
 			 */
 			// $data['log_in'] = true;
-			$register = $this->register( $data );
+			$register = $this->create_user( $data );
 
 			// Bail if unsuccessful
 			if ( false === $register['success'] ) {
@@ -789,6 +853,55 @@ final class Wampum_Forms_Submissions {
 			'user'    => $user_id, // false|user_id If user was created in the process
 		];
 
+	}
+
+	/**
+	 * Check the request kept the values the form set.
+	 *
+	 * Forms sign plan_id, ac_list_ids, ac_tags and notifications into a hidden
+	 * wampum_sig field. A request that carries any of them must carry a matching
+	 * signature. A request with none of them has nothing to check.
+	 *
+	 * @since   1.5.1
+	 *
+	 * @param   string                 $form_type  The form type the route serves.
+	 * @param   array|WP_REST_Request  $data       The request.
+	 *
+	 * @return  true|array  True when the values are the form's own, or the error response.
+	 */
+	public function verify_signature( string $form_type, $data ) {
+		$refused = [
+			'success' => false,
+			'message' => __( 'This form is out of date. Reload the page and try again.', 'wampum' ),
+		];
+
+		$values = [];
+
+		foreach ( wampum_forms_get_signed_fields() as $field ) {
+			$value = $data[ $field ] ?? '';
+
+			// Forms only ever send plain strings. An array here could slip past the check.
+			if ( ! is_scalar( $value ) ) {
+				return $refused;
+			}
+
+			$values[ $field ] = (string) $value;
+		}
+
+		// Nothing the site sets was sent, so there is nothing to protect.
+		if ( '' === implode( '', $values ) ) {
+			return true;
+		}
+
+		$sent     = $data['wampum_sig'] ?? '';
+		$sent     = is_string( $sent ) ? $sent : '';
+		$expected = wampum_forms_get_signature( $form_type, $values );
+
+		if ( '' !== $sent && hash_equals( $expected, $sent ) ) {
+			return true;
+		}
+
+		return $refused;
 	}
 
 	/**

@@ -33,7 +33,7 @@ Split `register()` into the route callback and the internal worker. The route ca
 
 ### 3. Leave everything else alone
 
-Login and password routes are unchanged. No settings screen, no new options.
+Login and password routes keep working as before, with one addition found while building: both read `notifications` (and login also the ActiveCampaign fields), so they check the signature too. A request that sends none of the signed values is not checked, so a plain login from a page cached before the update still works. No settings screen, no new options.
 
 ## Verify
 
