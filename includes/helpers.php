@@ -192,7 +192,8 @@ function wampum_forms_get_signature( string $form_type, $values ): string {
 		$parts[] = is_scalar( $value ) ? (string) $value : '';
 	}
 
-	return wp_hash( implode( '|', $parts ) );
+	// JSON keeps each value whole, so a "|" inside one value cannot shift text into the next.
+	return wp_hash( (string) wp_json_encode( $parts ) );
 }
 
 /**

@@ -19,7 +19,7 @@ Reported for the User Locations plugin by an outside researcher, whose proof use
 
 In `includes/class-forms.php`, every form that outputs any of `plan_id`, `ac_list_ids`, `ac_tags`, `notifications` or `redirect` also outputs a hidden `wampum_sig` field.
 
-- The signature is `wp_hash( $form_type . '|' . $plan_id . '|' . $ac_list_ids . '|' . $ac_tags . '|' . $notifications )`, with empty strings for values the form does not have. Put this in one helper used by both the form and the route, so the two can never build it differently.
+- The signature is `wp_hash( wp_json_encode( [ $form_type, $plan_id, $ac_list_ids, $ac_tags, $notifications ] ) )`, with empty strings for values the form does not have. JSON rather than joining on `|`, so a `|` inside one value cannot shift text into the next. Put this in one helper used by both the form and the route, so the two can never build it differently.
 - No nonce. Pages with these forms are cached, and `wp_hash()` stays stable until the salts change.
 - `js/wampum-forms.js` sends `wampum_sig` with every request that sends those fields, including the membership flow's two steps. Rebuild `wampum-forms.min.js`.
 
